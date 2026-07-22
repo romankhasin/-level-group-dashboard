@@ -191,6 +191,41 @@
       line-height: 1.55;
     }
 
+    .panel-disclosure {
+      display: flex;
+      justify-content: flex-end;
+      margin: 0 0 14px;
+    }
+
+    .panel-disclosure.attention-disclosure {
+      margin-top: 18px;
+    }
+
+    .panel-disclosure-button {
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid rgba(156,107,67,0.22);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.82);
+      color: var(--bronze);
+      font-family: "Montserrat", sans-serif;
+      font-size: 11px;
+      font-weight: 850;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .panel-disclosure-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(156,107,67,0.42);
+      box-shadow: 0 8px 20px rgba(32,35,58,0.07);
+    }
+
+    .collapsible-panel[hidden] {
+      display: none !important;
+    }
+
     input[type="file"] {
       width: 280px;
       max-width: 100%;
@@ -3147,6 +3182,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
   <main class="wrap">
     <div class="panel">
+      <div class="panel-disclosure">
+        <button class="panel-disclosure-button" id="toggleTechnicalPanel" type="button" aria-expanded="false" aria-controls="technicalPanel">Показать ручную загрузку</button>
+      </div>
+      <div class="collapsible-panel" id="technicalPanel" hidden>
       <div class="upload-grid">
         <div class="upload-card">
           <div>
@@ -3220,6 +3259,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           Данные сохраняются локально в этом браузере. Если открыть файл на другом компьютере или в другом браузере, архив нужно будет загрузить заново.
         </div>
       </div>
+      </div>
 
       <div class="kpi-grid">
         <div class="kpi">
@@ -3270,7 +3310,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         </div>
       </div>
 
-      <div class="analysis-grid" id="analysisGrid">
+      <div class="panel-disclosure attention-disclosure">
+        <button class="panel-disclosure-button" id="toggleAttentionPanel" type="button" aria-expanded="false" aria-controls="analysisGrid">Показать «Требует внимания»</button>
+      </div>
+      <div class="analysis-grid collapsible-panel" id="analysisGrid" hidden>
 <div class="analysis-card">
           <div class="analysis-head">
             <h2 class="analysis-title">Требует внимания</h2>
@@ -3575,6 +3618,8 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     let projectsOpen = false;
     let platformsOpen = false;
     let attentionExpanded = false;
+    let technicalPanelExpanded = false;
+    let attentionPanelExpanded = false;
     let summaryExpanded = false;
 
     const EMBEDDED_REPORT_DATA = null;
@@ -5252,6 +5297,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         planClicks: 0,
         planBudget: 0,
         factBudget: 0,
+        actualCost: 0,
+        hasActualCost: false,
+        impressionsWithoutActualCost: 0,
         ivtCount: 0,
         days: DATA ? DATA.dates.map(() => 0) : [],
         bounceDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
@@ -5275,6 +5323,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       target.planClicks += metrics.planClicks || 0;
       target.planBudget += metrics.planBudget || 0;
       target.factBudget += metrics.factBudget || 0;
+      target.actualCost += metrics.actualCost || 0;
+      target.hasActualCost = target.hasActualCost || Boolean(metrics.hasActualCost);
+      target.impressionsWithoutActualCost += metrics.impressionsWithoutActualCost || 0;
       target.ivtCount += impressions * (metrics.ivt || 0);
 
       (metrics.ivtDays || []).forEach((value, index) => {
@@ -5304,6 +5355,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         bounce: visits ? metric.bounceWeighted / visits : 0,
         timeSec: visits ? metric.timeWeighted / visits : 0,
         ivt: metric.impressions ? metric.ivtCount / metric.impressions : null,
+        actualCost: metric.actualCost || 0,
+        hasActualCost: Boolean(metric.hasActualCost),
+        impressionsWithoutActualCost: metric.impressionsWithoutActualCost || 0,
         factBudget: metric.factBudget || 0,
         planBudget: metric.planBudget || 0,
         budgetPlanRatio: metric.planBudget ? metric.factBudget / metric.planBudget : null,
@@ -9266,6 +9320,38 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       attentionToggle.addEventListener("click", () => {
         attentionExpanded = !attentionExpanded;
         renderAttentionSections();
+      });
+    }
+
+    function setCollapsiblePanel(panelId, buttonId, expanded, labels) {
+      const panel = document.getElementById(panelId);
+      const button = document.getElementById(buttonId);
+      if (panel) panel.hidden = !expanded;
+      if (button) {
+        button.setAttribute("aria-expanded", String(expanded));
+        button.textContent = expanded ? labels.hide : labels.show;
+      }
+    }
+
+    const technicalPanelToggle = document.getElementById("toggleTechnicalPanel");
+    if (technicalPanelToggle) {
+      technicalPanelToggle.addEventListener("click", () => {
+        technicalPanelExpanded = !technicalPanelExpanded;
+        setCollapsiblePanel("technicalPanel", "toggleTechnicalPanel", technicalPanelExpanded, {
+          show: "Показать ручную загрузку",
+          hide: "Скрыть ручную загрузку"
+        });
+      });
+    }
+
+    const attentionPanelToggle = document.getElementById("toggleAttentionPanel");
+    if (attentionPanelToggle) {
+      attentionPanelToggle.addEventListener("click", () => {
+        attentionPanelExpanded = !attentionPanelExpanded;
+        setCollapsiblePanel("analysisGrid", "toggleAttentionPanel", attentionPanelExpanded, {
+          show: "Показать «Требует внимания»",
+          hide: "Скрыть «Требует внимания»"
+        });
       });
     }
 

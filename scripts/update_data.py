@@ -9,6 +9,7 @@ import html
 import json
 import os
 from pathlib import Path
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -426,28 +427,84 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
 
 
 def journal_html(rows: list[dict], generated_at: str) -> str:
-    cards = []
-    for row in reversed(rows):
-        project = html.escape(row.get("Проект") or "Без проекта")
-        platform = html.escape(row.get("Площадка") or "Площадка не указана")
-        channel = html.escape(row.get("Канал") or "")
-        campaign_period = html.escape(row.get("Период РК") or "")
-        action_period = html.escape(row.get("Период оптимизационных действий") or "")
-        comment = html.escape(row.get("Комментарии по оптимизации") or "").replace("\n", "<br>")
-        next_steps = html.escape(row.get("Какие действия предпринимаем дальше") or "").replace("\n", "<br>")
-        meta = " · ".join(value for value in (channel, campaign_period, action_period) if value)
-        next_block = (
-            f'<div class="next"><strong>Следующие действия</strong><div>{next_steps}</div></div>'
-            if next_steps
-            else ""
-        )
-        cards.append(
+    def text(value: object, fallback: str = "") -> str:
+        value_text = str(value or "").strip()
+        return value_text or fallback
+
+    def period_label(value: str) -> str:
+        try:
+            return dt.datetime.strptime(value[:19], "%Y-%m-%d %H:%M:%S").strftime("%d.%m.%Y")
+        except ValueError:
+            return value
+
+    def period_sort_key(value: str) -> dt.date:
+        try:
+            return dt.datetime.strptime(value[:10], "%Y-%m-%d").date()
+        except ValueError:
+            matches = re.findall(r"(\d{1,2})\.(\d{1,2})", value)
+            if matches:
+                day, month = matches[-1]
+                try:
+                    return dt.date(2026, int(month), int(day))
+                except ValueError:
+                    pass
+        return dt.date.min
+
+    period_groups: dict[str, list[dict]] = {}
+    for row in rows:
+        period = text(row.get("Период оптимизационных действий"), "Без даты")
+        period_groups.setdefault(period, []).append(row)
+
+    period_blocks = []
+    sorted_periods = sorted(period_groups, key=period_sort_key, reverse=True)
+    for period_index, period in enumerate(sorted_periods):
+        period_rows = period_groups[period]
+        platform_groups: dict[str, list[dict]] = {}
+        for row in period_rows:
+            platform = text(row.get("Площадка"), "Площадка не указана")
+            platform_groups.setdefault(platform, []).append(row)
+
+        platform_blocks = []
+        for platform in sorted(platform_groups, key=str.casefold):
+            cards = []
+            for row in platform_groups[platform]:
+                project = html.escape(text(row.get("Проект"), "Без проекта"))
+                channel = html.escape(text(row.get("Канал")))
+                campaign_period = html.escape(text(row.get("Период РК")))
+                comment = html.escape(text(row.get("Комментарии по оптимизации"))).replace("\n", "<br>")
+                next_steps = html.escape(text(row.get("Какие действия предпринимаем дальше"))).replace("\n", "<br>")
+                meta = " · ".join(value for value in (channel, campaign_period) if value)
+                next_block = (
+                    f'<div class="next"><strong>Следующие действия</strong><div>{next_steps}</div></div>'
+                    if next_steps
+                    else ""
+                )
+                cards.append(
+                    f"""
+                    <article class="card">
+                      <div class="card-head"><h3>{project}</h3><span>{meta}</span></div>
+                      <div class="comment">{comment or 'Комментарий не заполнен'}</div>
+                      {next_block}
+                    </article>
+                    """
+                )
+
+            platform_blocks.append(
+                f"""
+                <details class="platform-group">
+                  <summary><span>{html.escape(platform)}</span><small>{len(cards)} записей</small></summary>
+                  <div class="cards">{''.join(cards)}</div>
+                </details>
+                """
+            )
+
+        open_attr = " open" if period_index == 0 else ""
+        period_blocks.append(
             f"""
-            <article class="card">
-              <div class="card-head"><div><h2>{project}</h2><p>{platform}</p></div><span>{meta}</span></div>
-              <div class="comment">{comment or 'Комментарий не заполнен'}</div>
-              {next_block}
-            </article>
+            <details class="period-group"{open_attr}>
+              <summary><span>{html.escape(period_label(period))}</span><small>{len(platform_groups)} площадок · {len(period_rows)} записей</small></summary>
+              <div class="platforms">{''.join(platform_blocks)}</div>
+            </details>
             """
         )
 
@@ -463,16 +520,23 @@ def journal_html(rows: list[dict], generated_at: str) -> str:
     header{{padding:32px 20px;background:linear-gradient(135deg,#fff,var(--blue));border-bottom:1px solid var(--line)}}
     header>div,main{{max-width:1180px;margin:auto}} h1{{margin:0 0 8px;font-size:clamp(28px,5vw,52px)}}
     header p{{margin:0;color:var(--muted);line-height:1.6}} .back{{display:inline-block;margin-top:18px;color:var(--ink);font-weight:700}}
-    main{{padding:28px 20px 60px;display:grid;gap:16px}} .card{{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 12px 34px rgba(32,35,58,.06)}}
+    main{{padding:28px 20px 60px;display:grid;gap:18px}} summary{{cursor:pointer;list-style:none}} summary::-webkit-details-marker{{display:none}}
+    .period-group{{background:#fff;border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 12px 34px rgba(32,35,58,.06)}}
+    .period-group>summary,.platform-group>summary{{display:flex;justify-content:space-between;align-items:center;gap:16px;font-weight:800}}
+    .period-group>summary{{padding:22px 24px;font-size:22px;background:linear-gradient(135deg,#fff,var(--blue))}}
+    summary small{{color:var(--muted);font-size:13px;font-weight:600}} summary span::before{{content:'›';display:inline-block;margin-right:12px;transition:transform .2s}}
+    details[open]>summary span::before{{transform:rotate(90deg)}} .platforms{{padding:14px;display:grid;gap:12px}}
+    .platform-group{{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fbfaf8}} .platform-group>summary{{padding:17px 18px;font-size:17px}}
+    .cards{{padding:0 12px 12px;display:grid;gap:12px}} .card{{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}}
     .card-head{{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}}
-    h2{{margin:0;font-size:21px}} .card-head p{{margin:5px 0 0;color:var(--green);font-weight:700}} .card-head span{{color:var(--muted);font-size:13px;text-align:right}}
+    h3{{margin:0;font-size:18px}} .card-head span{{color:var(--muted);font-size:13px;text-align:right}}
     .comment,.next{{line-height:1.65;font-size:14px}} .next{{margin-top:16px;padding:16px;border-radius:16px;background:#f2f8f4}} .next strong{{display:block;margin-bottom:8px}}
     @media(max-width:700px){{.card-head{{display:block}}.card-head span{{display:block;text-align:left;margin-top:8px}}}}
   </style>
 </head>
 <body>
   <header><div><h1>Журнал оптимизаций</h1><p>Все площадки · обновлено {html.escape(generated_at)}</p><a class="back" href="./">← Вернуться в дашборд</a></div></header>
-  <main>{''.join(cards) if cards else '<p>Записи пока отсутствуют.</p>'}</main>
+  <main>{''.join(period_blocks) if period_blocks else '<p>Записи пока отсутствуют.</p>'}</main>
 </body>
 </html>
 """
