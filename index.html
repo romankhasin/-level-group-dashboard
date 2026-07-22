@@ -3308,7 +3308,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         </div>
         <div class="action-group">
           <span class="action-group-label">Аналитика</span>
-          <a class="journal-link journal-link-strong" href="#" id="openJournal" role="button">Журнал оптимизаций</a>
+          <a class="journal-link journal-link-strong" href="journal.html" id="openJournal" target="_blank" rel="noopener">Журнал оптимизаций</a>
           <button class="export-link" id="openTargetingCreative" type="button">Таргетинги и креативы</button>
           <button class="export-link diagnostic-link" id="openDiagnostics" type="button">Диагностика данных</button>
         </div>
@@ -3481,6 +3481,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       date: ["период", "дата", "date", "interaction_dt"],
       impressions: ["показы", "impressions"],
       clicks: ["клики", "clicks"],
+      cost: ["расход", "расходы", "cost", "budget", "factbudget", "фактический бюджет"],
       givt: ["givt"],
       sivt: ["sivt", "fraud_impressions"]
     };
@@ -4333,6 +4334,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return {
         impressions: 0,
         clicks: 0,
+        actualCost: 0,
+        hasActualCost: false,
+        impressionsWithoutActualCost: 0,
         planImpressions: 0,
         planClicks: 0,
         ivtCount: 0,
@@ -4359,6 +4363,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       store[key].impressions += row.impressions;
       store[key].clicks += row.clicks;
+      if (row.hasActualCost) store[key].actualCost += row.cost || 0;
+      else store[key].impressionsWithoutActualCost += row.impressions || 0;
+      store[key].hasActualCost = store[key].hasActualCost || Boolean(row.hasActualCost);
       store[key].ivtCount += row.givt + row.sivt;
       addVerifierDaily(store[key], row);
     }
@@ -4378,6 +4385,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       const dateColumn = findColumn(columns, VERIFIER_ALIASES.date);
       const impressionsColumn = findColumn(columns, VERIFIER_ALIASES.impressions);
       const clicksColumn = findColumn(columns, VERIFIER_ALIASES.clicks);
+      const costColumn = findColumn(columns, VERIFIER_ALIASES.cost);
       const givtColumn = findColumn(columns, VERIFIER_ALIASES.givt);
       const sivtColumn = findColumn(columns, VERIFIER_ALIASES.sivt);
 
@@ -4398,12 +4406,19 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           dateKey: dateColumn ? dateKey(row[dateColumn]) : "",
           impressions: parseNumber(row[impressionsColumn]),
           clicks: parseNumber(row[clicksColumn]),
+          cost: costColumn ? parseNumber(row[costColumn]) : 0,
+          hasActualCost: Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
+            ? Boolean(row.has_actual_cost)
+            : Boolean(costColumn),
           givt: parseNumber(row[givtColumn]),
           sivt: parseNumber(row[sivtColumn])
         };
 
         empty.total.impressions += item.impressions;
         empty.total.clicks += item.clicks;
+        if (item.hasActualCost) empty.total.actualCost += item.cost;
+        else empty.total.impressionsWithoutActualCost += item.impressions;
+        empty.total.hasActualCost = empty.total.hasActualCost || item.hasActualCost;
         empty.total.ivtCount += item.givt + item.sivt;
         addVerifierDaily(empty.total, item);
 
@@ -4420,6 +4435,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       metrics.impressions = data.impressions;
       metrics.clicks = data.clicks;
+      metrics.actualCost = data.actualCost || 0;
+      metrics.hasActualCost = Boolean(data.hasActualCost);
+      metrics.impressionsWithoutActualCost = data.impressionsWithoutActualCost || 0;
       metrics.ctr = data.impressions ? data.clicks / data.impressions : null;
       metrics.ivt = data.impressions ? data.ivtCount / data.impressions : null;
       metrics.ivtDays = dates.map(date => {
@@ -4997,10 +5015,11 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       metrics.planCpm = monthly.impressions ? (monthly.budget || 0) / monthly.impressions * 1000 : null;
       metrics.planCpc = monthly.clicks ? (monthly.budget || 0) / monthly.clicks : null;
 
-      // Расчётный факт: фактические показы × плановый CPM.
-      metrics.factBudget = metrics.planCpm !== null
-        ? (metrics.impressions || 0) * metrics.planCpm / 1000
-        : 0;
+      // Для Yandex/MTS используем фактическую стоимость из Google-файла.
+      // Для остальных площадок сохраняем прежний расчёт по плановому CPM.
+      metrics.factBudget = (metrics.actualCost || 0) + (metrics.planCpm !== null
+        ? (metrics.impressionsWithoutActualCost || 0) * metrics.planCpm / 1000
+        : 0);
       metrics.factCpm = metrics.impressions
         ? metrics.factBudget / metrics.impressions * 1000
         : null;
@@ -5054,7 +5073,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       metrics.planCpm = metrics.planImpressionsMonthly ? metrics.planBudgetMonthly / metrics.planImpressionsMonthly * 1000 : null;
       metrics.planCpc = metrics.planClicksMonthly ? metrics.planBudgetMonthly / metrics.planClicksMonthly : null;
-      metrics.factBudget = metrics.planCpm !== null ? (metrics.impressions || 0) * metrics.planCpm / 1000 : 0;
+      metrics.factBudget = (metrics.actualCost || 0) + (metrics.planCpm !== null
+        ? (metrics.impressionsWithoutActualCost || 0) * metrics.planCpm / 1000
+        : 0);
       metrics.factCpm = metrics.impressions ? metrics.factBudget / metrics.impressions * 1000 : null;
       metrics.factCpc = metrics.clicks ? metrics.factBudget / metrics.clicks : null;
       metrics.budgetPlanRatio = metrics.planBudget ? metrics.factBudget / metrics.planBudget : null;
@@ -6825,6 +6846,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       const dateColumn = findColumn(columns, VERIFIER_ALIASES.date);
       const impressionsColumn = findColumn(columns, VERIFIER_ALIASES.impressions);
       const clicksColumn = findColumn(columns, VERIFIER_ALIASES.clicks);
+      const costColumn = findColumn(columns, VERIFIER_ALIASES.cost);
       const givtColumn = findColumn(columns, VERIFIER_ALIASES.givt);
       const sivtColumn = findColumn(columns, VERIFIER_ALIASES.sivt);
 
@@ -6839,10 +6861,14 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           interaction_dt: dateColumn ? String(row[dateColumn] || "").trim() : "",
           impressions: parseNumber(row[impressionsColumn]),
           clicks: parseNumber(row[clicksColumn]),
+          cost: costColumn ? parseNumber(row[costColumn]) : 0,
+          has_actual_cost: Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
+            ? Boolean(row.has_actual_cost)
+            : Boolean(costColumn),
           givt: parseNumber(row[givtColumn]),
           fraud_impressions: parseNumber(row[sivtColumn])
         }))
-        .filter(row => row.placement_nm && (row.impressions || row.clicks || row.givt || row.fraud_impressions));
+        .filter(row => row.placement_nm && (row.impressions || row.clicks || row.cost || row.givt || row.fraud_impressions));
     }
 
 
@@ -8100,13 +8126,18 @@ body.all-mode .artcl-hero { margin-top: 10px; }
             const planFactor = planPeriodFactor(DATA ? DATA.dates : []);
             const impressions = parseNumber(row[cols.impressions]);
             const planCpm = plan.impressions ? (plan.budget || 0) / plan.impressions * 1000 : null;
+            const hasActualCost = Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
+              ? Boolean(row.has_actual_cost)
+              : Boolean(cols.cost);
 
             addToAll(parsed, addTargetingVerifier, {
               impressions,
               clicks: parseNumber(row[cols.clicks]),
               givt: parseNumber(row[cols.givt]),
               sivt: parseNumber(row[cols.sivt]),
-              factBudget: planCpm !== null ? impressions * planCpm / 1000 : 0,
+              factBudget: hasActualCost
+                ? parseNumber(row[cols.cost])
+                : (planCpm !== null ? impressions * planCpm / 1000 : 0),
               planBudget: (plan.budget || 0) * planFactor,
               planImpressions: (plan.impressions || 0) * planFactor,
               planClicks: (plan.clicks || 0) * planFactor
@@ -8710,6 +8741,9 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         timeWeighted: 0,
         impressions: 0,
         clicks: 0,
+        actualCost: 0,
+        hasActualCost: false,
+        impressionsWithoutActualCost: 0,
         ivtCount: 0
       };
     }
@@ -8770,6 +8804,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         const dateCol = findColumn(cols, VERIFIER_ALIASES.date);
         const impressionsCol = findColumn(cols, VERIFIER_ALIASES.impressions);
         const clicksCol = findColumn(cols, VERIFIER_ALIASES.clicks);
+        const costCol = findColumn(cols, VERIFIER_ALIASES.cost);
         const givtCol = findColumn(cols, VERIFIER_ALIASES.givt);
         const sivtCol = findColumn(cols, VERIFIER_ALIASES.sivt);
 
@@ -8785,6 +8820,12 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
           item.impressions += parseNumber(row[impressionsCol]);
           item.clicks += parseNumber(row[clicksCol]);
+          const hasActualCost = Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
+            ? Boolean(row.has_actual_cost)
+            : Boolean(costCol);
+          if (hasActualCost) item.actualCost += costCol ? parseNumber(row[costCol]) : 0;
+          else item.impressionsWithoutActualCost += parseNumber(row[impressionsCol]);
+          item.hasActualCost = item.hasActualCost || hasActualCost;
           item.ivtCount += parseNumber(row[givtCol]) + parseNumber(row[sivtCol]);
         });
       }
@@ -8809,7 +8850,9 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         const planClicks = plan.clicks * factor;
         const planBudget = plan.budget * factor;
         const planCpm = plan.impressions ? plan.budget / plan.impressions * 1000 : null;
-        const factBudget = planCpm !== null ? item.impressions * planCpm / 1000 : 0;
+        const factBudget = item.actualCost + (planCpm !== null
+          ? item.impressionsWithoutActualCost * planCpm / 1000
+          : 0);
         const ctr = item.impressions ? item.clicks / item.impressions : null;
         const ivt = item.impressions ? item.ivtCount / item.impressions : null;
         const cpm = item.impressions ? factBudget / item.impressions * 1000 : null;
@@ -9016,6 +9059,47 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       refreshDashboard();
     }
 
+    async function loadAutomaticReportData() {
+      if (EMBEDDED_REPORT_DATA || window.location.protocol === "file:") return false;
+
+      try {
+        const response = await fetch(`data/latest.json?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        if (!payload || !Array.isArray(payload.rawRows) || !payload.rawRows.length) return false;
+
+        RAW_ROWS = payload.rawRows;
+        VERIFIER_ROWS = Array.isArray(payload.verifierRows) ? payload.verifierRows : null;
+        CURRENT_VERIFIER_ROWS = VERIFIER_ROWS;
+        METRIKA_FILES = [];
+        ARCHIVE_METRIKA_FILES = [];
+        ARCHIVE_VERIFIER_FILES = [];
+        SOURCE_FILE = payload.sourceFile || "Автоматическая выгрузка Яндекс Метрики";
+        VERIFIER_FILE = payload.verifierFile || "Автоматические данные площадок";
+        PERIOD_FILTER = { from: "", to: "" };
+
+        const fromInput = document.getElementById("periodFrom");
+        const toInput = document.getElementById("periodTo");
+        if (fromInput) fromInput.value = "";
+        if (toInput) toInput.value = "";
+
+        refreshDashboard();
+
+        const verifierStatus = document.getElementById("verifierStatus");
+        if (verifierStatus) {
+          const targetAdsEnabled = Boolean(payload.status && payload.status.targetads && payload.status.targetads.enabled);
+          verifierStatus.textContent = targetAdsEnabled
+            ? "Автоматически: Google Данные_метрика + Target Ads."
+            : "Автоматически: Google Данные_метрика (Yandex/MTS). Target Ads подключится после добавления токена.";
+          verifierStatus.style.color = "var(--muted)";
+        }
+        return true;
+      } catch (error) {
+        console.warn("Не удалось загрузить автоматические данные:", error);
+        return false;
+      }
+    }
+
     function makeClientExportHtml() {
       if ((!RAW_ROWS || !RAW_ROWS.length) && REPORT_MODE !== "artcl") {
         alert("Сначала загрузите файл Метрики, затем экспортируйте отчёт.");
@@ -9110,7 +9194,9 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     }
 
     const journalButton = document.getElementById("openJournal");
-    if (journalButton) journalButton.addEventListener("click", openEmbeddedJournal);
+    if (journalButton && window.location.protocol === "file:") {
+      journalButton.addEventListener("click", openEmbeddedJournal);
+    }
 
     document.addEventListener("click", event => {
       const target = event.target;
@@ -9166,6 +9252,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     if (ARCHIVE_METRIKA_FILES.length) rebuildMetrikaRowsFromFiles();
 
     applyEmbeddedReportData();
+    loadAutomaticReportData();
     document.addEventListener("click", event => {
       const target = event.target;
 
