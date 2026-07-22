@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T14:45:52.629969Z",
+  "generatedAt": "2026-07-22T15:17:09.757120Z",
   "metrika": {
     "new_rows": 0,
     "total_rows": 66767,
@@ -17,7 +17,7 @@
     }
   },
   "google": {
-    "metric_rows": 5200,
+    "metric_rows": 12603,
     "journal_rows": 343,
     "journal_platforms": [
       "AdsHeads",
@@ -35,7 +35,9 @@
       "МТС Баннеры",
       "МТС баннеры",
       "Яндекс"
-    ]
+    ],
+    "archive_rows": 7403,
+    "live_rows": 5200
   },
   "targetads": {
     "enabled": false,
