@@ -3795,13 +3795,23 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     }
 
     function parseTime(value) {
-      const parts = String(value || "").split(":").map(Number);
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+
+      const raw = String(value || "").trim();
+      if (/^-?\d+(?:[.,]\d+)?$/.test(raw)) return Math.max(0, parseNumber(raw));
+
+      const parts = raw.split(":").map(Number);
       if (parts.some(Number.isNaN)) return 0;
 
       if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
       if (parts.length === 2) return parts[0] * 60 + parts[1];
 
       return 0;
+    }
+
+    function parseBounce(value) {
+      const bounce = parseNumber(value);
+      return bounce > 1 ? bounce / 100 : bounce;
     }
 
     function parseDate(value) {
@@ -4022,6 +4032,16 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       if (!PERIOD_FILTER.from && !PERIOD_FILTER.to) return rows;
 
       return rows.filter(row => isDateInPeriod(dateAccessor(row)));
+    }
+
+    function campaignMatchesReportingMonth(campaign, dateValue) {
+      const date = parseDate(dateValue);
+      if (Number.isNaN(date.getTime()) || date.getTime() === 0) return false;
+
+      const monthCodes = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+      const expected = `${monthCodes[date.getMonth()]}${String(date.getFullYear()).slice(-2)}`;
+      const tokens = String(campaign || "").trim().toLowerCase().split("_").filter(Boolean);
+      return tokens.includes(expected);
     }
 
     function createMetric(dates) {
@@ -5103,6 +5123,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       const rows = rawRows
         .filter(row => shouldKeepCampaign(row[campaignColumn]))
+        .filter(row => campaignMatchesReportingMonth(row[campaignColumn], row[dateColumn]))
         .map(row => {
           const parsed = parseCampaign(row[campaignColumn]);
 
@@ -5112,7 +5133,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
             campaign,
             date: String(row[dateColumn] || "").trim(),
             visits: Math.round(parseNumber(row[visitsColumn])),
-            bounce: parseNumber(row[bounceColumn]),
+            bounce: parseBounce(row[bounceColumn]),
             timeSec: parseTime(row[timeColumn]),
             channel: campaignChannel(campaign),
             ...parsed
@@ -8101,13 +8122,14 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         RAW_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => isDateInPeriod(row[cols.date]))
+          .filter(row => campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
 
                 addToAll(parsed, addTargetingMetrika, {
               visits: Math.round(parseNumber(row[cols.visits])),
-              bounce: parseNumber(row[cols.bounce]),
+              bounce: parseBounce(row[cols.bounce]),
               timeSec: parseTime(row[cols.time])
             });
           });
@@ -8269,12 +8291,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         RAW_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => isDateInPeriod(row[cols.date]))
+          .filter(row => campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
             addToCreativeTree(parsed, addTargetingMetrika, {
               visits: Math.round(parseNumber(row[cols.visits])),
-              bounce: parseNumber(row[cols.bounce]),
+              bounce: parseBounce(row[cols.bounce]),
               timeSec: parseTime(row[cols.time])
             });
           });
@@ -8787,6 +8810,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         if (!shouldKeepCampaign(campaign)) return;
         const key = dateKey(row[metricDate]);
         if (!key || key < exportFrom || key > exportTo) return;
+        if (!campaignMatchesReportingMonth(campaign, row[metricDate])) return;
 
         const parsed = parseCampaign(campaign);
         const segment = excelSegment(key, segmentation, exportFrom, exportTo);
@@ -8794,7 +8818,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         const visits = Math.round(parseNumber(row[metricVisits]));
 
         item.visits += visits;
-        item.bounceWeighted += parseNumber(row[metricBounce]) * visits;
+        item.bounceWeighted += parseBounce(row[metricBounce]) * visits;
         item.timeWeighted += parseTime(row[metricTime]) * visits;
       });
 
