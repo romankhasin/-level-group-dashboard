@@ -24,6 +24,7 @@ METRIKA_HISTORY_PATH = DATA_DIR / "metrika.json"
 TARGETADS_HISTORY_PATH = DATA_DIR / "targetads.json"
 LATEST_PATH = DATA_DIR / "latest.json"
 STATUS_PATH = DATA_DIR / "status.json"
+GOOGLE_ARCHIVE_PATH = DATA_DIR / "google_archive.json"
 JOURNAL_PATH = ROOT / "journal.html"
 
 START_DATE = dt.date(2026, 5, 1)
@@ -33,6 +34,7 @@ GOOGLE_WORKBOOK_URL = (
     "1chd_Rr_pZPZM83xfI2vx6gziNdLGRmdS/export?format=xlsx"
 )
 TARGETADS_PROJECT_ID = 12787
+GOOGLE_ACTUAL_COST_VAT_MULTIPLIER = 1.22
 
 
 def request_json(
@@ -302,7 +304,9 @@ def read_google_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], li
         item = aggregated[key]
         item["impressions"] += number(row[metric_index["impressions"]])
         item["clicks"] += number(row[metric_index["clicks"]])
-        item["cost"] += number(row[metric_index["cost"]])
+        # The Yandex/MTS source reports actual spend without VAT, while all
+        # dashboard plans already include VAT. Add 22% VAT only to actual cost.
+        item["cost"] += number(row[metric_index["cost"]]) * GOOGLE_ACTUAL_COST_VAT_MULTIPLIER
 
     journal_headers, journal_source_rows = workbook_rows(workbook["Дневник оптимизации"])
     expected_journal_headers = [
@@ -423,6 +427,21 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
     for row in google_rows:
         key = (str(row.get("interaction_dt") or ""), str(row.get("placement_nm") or "").lower())
         merged[key] = row
+    return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
+
+
+def merge_google_rows(archive_rows: list[dict], live_rows: list[dict]) -> list[dict]:
+    """Combine the fixed historical archive with the current Google report.
+
+    Live rows win if a date + technical_mark pair ever exists in both sources.
+    """
+    merged: dict[tuple[str, str], dict] = {}
+    for row in (*archive_rows, *live_rows):
+        report_date = str(row.get("interaction_dt") or "").strip()
+        technical_mark = str(row.get("placement_nm") or "").strip()
+        if not report_date or not technical_mark:
+            continue
+        merged[(report_date, technical_mark.lower())] = row
     return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
 
 
@@ -566,7 +585,16 @@ def main() -> None:
     workbook_path = args.workbook or (ROOT / ".cache" / "level_group_report.xlsx")
     if args.workbook is None:
         download_file(GOOGLE_WORKBOOK_URL, workbook_path)
-    google_rows, journal_rows, google_status = read_google_workbook(workbook_path, yesterday)
+    live_google_rows, journal_rows, google_status = read_google_workbook(workbook_path, yesterday)
+    archived_google_rows = read_json_rows(GOOGLE_ARCHIVE_PATH)
+    google_rows = merge_google_rows(archived_google_rows, live_google_rows)
+    google_status.update(
+        {
+            "archive_rows": len(archived_google_rows),
+            "live_rows": len(live_google_rows),
+            "metric_rows": len(google_rows),
+        }
+    )
 
     targetads_token = os.environ.get("TARGETADS_TOKEN", "").strip()
     if targetads_token:
@@ -588,7 +616,8 @@ def main() -> None:
         "rawRows": metrika_rows,
         "verifierRows": verifier_rows,
         "sourceFile": "Автоматическая выгрузка Яндекс Метрики",
-        "verifierFile": "Google Данные_метрика" + (" + Target Ads" if targetads_token else ""),
+        "verifierFile": "Google Данные_метрика + фиксированный архив июня"
+        + (" + Target Ads" if targetads_token else ""),
         "status": {
             "metrika": metrika_status,
             "google": google_status,
