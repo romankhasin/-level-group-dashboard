@@ -2,6 +2,10 @@ name: Export Metrika 2025
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/export-metrika-2025.yml"
 
 permissions:
   contents: write
