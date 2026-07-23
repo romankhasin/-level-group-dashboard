@@ -1,0 +1,272 @@
+name: Export Metrika 2025
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: export-metrika-2025
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install openpyxl==3.1.5
+
+      - name: Export monthly reports
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import calendar
+          import json
+          import os
+          from pathlib import Path
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          from openpyxl import Workbook
+          from openpyxl.styles import Alignment, Font, PatternFill
+          from openpyxl.utils import get_column_letter
+
+
+          COUNTERS = (53197618, 100470605)
+          OUTPUT_DIR = Path("reports/metrika_2025")
+          METRICS = (
+              "ym:s:visits,"
+              "ym:s:bounceRate,"
+              "ym:s:avgVisitDurationSeconds,"
+              "ym:s:anyGoalReaches"
+          )
+          DIMENSION = "ym:s:lastsignUTMCampaign"
+          FILTER = "ym:s:lastsignUTMCampaign=@'25'"
+
+
+          def request_json(url: str, token: str, attempts: int = 4) -> dict:
+              for attempt in range(1, attempts + 1):
+                  request = urllib.request.Request(
+                      url,
+                      headers={
+                          "Authorization": f"OAuth {token}",
+                          "Accept": "application/json",
+                          "User-Agent": "LevelGroupMetrikaExport/1.0",
+                      },
+                  )
+                  try:
+                      with urllib.request.urlopen(request, timeout=180) as response:
+                          return json.load(response)
+                  except urllib.error.HTTPError as error:
+                      details = error.read().decode("utf-8", errors="replace")[:1000]
+                      if error.code not in {429, 500, 502, 503, 504} or attempt == attempts:
+                          raise RuntimeError(f"HTTP {error.code}: {details}") from error
+                  except (urllib.error.URLError, TimeoutError) as error:
+                      if attempt == attempts:
+                          raise RuntimeError(f"Request failed: {error}") from error
+                  time.sleep(min(2**attempt, 15))
+              raise RuntimeError("Request failed")
+
+
+          def dimension_text(value: object) -> str:
+              if isinstance(value, dict):
+                  return str(value.get("name") or value.get("id") or "").strip()
+              return str(value or "").strip()
+
+
+          def fetch_month(token: str, counter_id: int, month: int) -> tuple[list[dict], list[float]]:
+              date1 = f"2025-{month:02d}-01"
+              date2 = f"2025-{month:02d}-{calendar.monthrange(2025, month)[1]:02d}"
+              rows: list[dict] = []
+              totals: list[float] = [0, 0, 0, 0]
+              offset = 1
+              limit = 100_000
+
+              while True:
+                  params = {
+                      "ids": str(counter_id),
+                      "date1": date1,
+                      "date2": date2,
+                      "dimensions": DIMENSION,
+                      "metrics": METRICS,
+                      "filters": FILTER,
+                      "accuracy": "full",
+                      "limit": str(limit),
+                      "offset": str(offset),
+                      "sort": "-ym:s:visits",
+                  }
+                  url = "https://api-metrika.yandex.net/stat/v1/data?" + urllib.parse.urlencode(params)
+                  payload = request_json(url, token)
+                  page = payload.get("data") or []
+                  if offset == 1:
+                      totals = [float(value or 0) for value in (payload.get("totals") or totals)]
+
+                  for item in page:
+                      dimensions = item.get("dimensions") or []
+                      metrics = item.get("metrics") or []
+                      if not dimensions or len(metrics) < 4:
+                          continue
+                      campaign = dimension_text(dimensions[0])
+                      if not campaign or "25" not in campaign.lower():
+                          continue
+                      rows.append(
+                          {
+                              "campaign": campaign,
+                              "visits": int(round(float(metrics[0] or 0))),
+                              "bounce_rate": float(metrics[1] or 0),
+                              "avg_duration": float(metrics[2] or 0),
+                              "conversions": int(round(float(metrics[3] or 0))),
+                          }
+                      )
+
+                  total_rows = int(payload.get("total_rows") or len(page))
+                  if not page or offset - 1 + len(page) >= total_rows:
+                      break
+                  offset += len(page)
+
+              return rows, totals
+
+
+          def save_report(counter_id: int, month: int, rows: list[dict], totals: list[float]) -> Path:
+              month_key = f"2025-{month:02d}"
+              counter_dir = OUTPUT_DIR / str(counter_id)
+              counter_dir.mkdir(parents=True, exist_ok=True)
+              path = counter_dir / f"metrika_{counter_id}_{month_key}.xlsx"
+
+              workbook = Workbook()
+              sheet = workbook.active
+              sheet.title = "Отчет"
+              sheet.freeze_panes = "A2"
+              sheet.auto_filter.ref = "A1:G1"
+
+              headers = [
+                  "Счетчик",
+                  "Период",
+                  "UTM Campaign",
+                  "Визиты",
+                  "Отказы",
+                  "Время на сайте",
+                  "Конверсии",
+              ]
+              sheet.append(headers)
+              for cell in sheet[1]:
+                  cell.font = Font(color="FFFFFF", bold=True)
+                  cell.fill = PatternFill("solid", fgColor="20233A")
+                  cell.alignment = Alignment(horizontal="center", vertical="center")
+
+              total_values = list(totals) + [0, 0, 0, 0]
+              sheet.append(
+                  [
+                      counter_id,
+                      month_key,
+                      "ИТОГО",
+                      int(round(total_values[0])),
+                      total_values[1] / 100,
+                      total_values[2] / 86400,
+                      int(round(total_values[3])),
+                  ]
+              )
+              for cell in sheet[2]:
+                  cell.font = Font(bold=True)
+                  cell.fill = PatternFill("solid", fgColor="DDEEF8")
+
+              for row in rows:
+                  sheet.append(
+                      [
+                          counter_id,
+                          month_key,
+                          row["campaign"],
+                          row["visits"],
+                          row["bounce_rate"] / 100,
+                          row["avg_duration"] / 86400,
+                          row["conversions"],
+                      ]
+                  )
+
+              for row_number in range(2, sheet.max_row + 1):
+                  sheet.cell(row_number, 5).number_format = "0.00%"
+                  sheet.cell(row_number, 6).number_format = "[m]:ss"
+                  sheet.cell(row_number, 4).number_format = "#,##0"
+                  sheet.cell(row_number, 7).number_format = "#,##0"
+
+              widths = [14, 12, 70, 14, 14, 18, 16]
+              for index, width in enumerate(widths, start=1):
+                  sheet.column_dimensions[get_column_letter(index)].width = width
+              sheet.sheet_view.showGridLines = False
+
+              info = workbook.create_sheet("Параметры")
+              info_rows = [
+                  ("Счетчик", counter_id),
+                  ("Период", month_key),
+                  ("Группировка", "UTM Campaign, без разбивки по дням"),
+                  ("Фильтр", "UTM Campaign содержит 25"),
+                  ("Конверсии", "Достижения любых целей (ym:s:anyGoalReaches)"),
+                  ("Точность", "full"),
+              ]
+              for key, value in info_rows:
+                  info.append([key, value])
+              info.column_dimensions["A"].width = 24
+              info.column_dimensions["B"].width = 70
+              for cell in info["A"]:
+                  cell.font = Font(bold=True)
+
+              workbook.save(path)
+              return path
+
+
+          token = os.environ.get("YANDEX_METRIKA_TOKEN", "").strip()
+          if not token:
+              raise RuntimeError("YANDEX_METRIKA_TOKEN is not configured")
+
+          generated = []
+          for counter_id in COUNTERS:
+              for month in range(1, 13):
+                  rows, totals = fetch_month(token, counter_id, month)
+                  path = save_report(counter_id, month, rows, totals)
+                  generated.append(
+                      {
+                          "counter": counter_id,
+                          "month": f"2025-{month:02d}",
+                          "rows": len(rows),
+                          "file": str(path),
+                      }
+                  )
+                  print(json.dumps(generated[-1], ensure_ascii=False))
+
+          (OUTPUT_DIR / "manifest.json").write_text(
+              json.dumps({"files": generated}, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(f"Generated {len(generated)} monthly reports")
+          PY
+
+      - name: Upload reports artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrika-2025-reports
+          path: reports/metrika_2025
+          retention-days: 30
+
+      - name: Commit reports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/metrika_2025
+          git commit -m "Export Metrika reports for 2025"
+          git push
