@@ -1,0 +1,251 @@
+name: Export Metrika 2025 source
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/export-metrika-2025-source.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: export-metrika-2025-source
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Download source data
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import calendar
+          import datetime as dt
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+
+          COUNTER_CONFIG = {
+              53197618: {"filter_25": True},
+              100470605: {"filter_25": False},
+          }
+          GOAL_NAME = "первично-качественные звонки UIS"
+          DIMENSION = "ym:s:lastsignUTMCampaign"
+          OUTPUT_PATH = Path("metrika_2025_source.json")
+
+
+          def request_json(url: str, token: str, attempts: int = 4) -> dict:
+              for attempt in range(1, attempts + 1):
+                  request = urllib.request.Request(
+                      url,
+                      headers={
+                          "Authorization": f"OAuth {token}",
+                          "Accept": "application/json",
+                          "User-Agent": "LevelGroupMetrikaExport/2.0",
+                      },
+                  )
+                  try:
+                      with urllib.request.urlopen(request, timeout=180) as response:
+                          return json.load(response)
+                  except urllib.error.HTTPError as error:
+                      details = error.read().decode("utf-8", errors="replace")[:1000]
+                      if error.code not in {429, 500, 502, 503, 504} or attempt == attempts:
+                          raise RuntimeError(f"HTTP {error.code} for {url}: {details}") from error
+                  except (urllib.error.URLError, TimeoutError) as error:
+                      if attempt == attempts:
+                          raise RuntimeError(f"Request failed for {url}: {error}") from error
+                  time.sleep(min(2**attempt, 15))
+              raise RuntimeError(f"Request failed for {url}")
+
+
+          def normalized_name(value: object) -> str:
+              text = str(value or "").strip().casefold().replace("ё", "е")
+              return re.sub(r"\s+", " ", text)
+
+
+          def resolve_goal(token: str, counter_id: int) -> dict:
+              url = f"https://api-metrika.yandex.net/management/v1/counter/{counter_id}/goals"
+              goals = request_json(url, token).get("goals") or []
+              expected = normalized_name(GOAL_NAME)
+              exact = [goal for goal in goals if normalized_name(goal.get("name")) == expected]
+              if exact:
+                  return exact[0]
+              partial = [
+                  goal
+                  for goal in goals
+                  if expected in normalized_name(goal.get("name"))
+                  or normalized_name(goal.get("name")) in expected
+              ]
+              if len(partial) == 1:
+                  return partial[0]
+              available = [str(goal.get("name") or "") for goal in goals]
+              raise RuntimeError(
+                  f"Goal {GOAL_NAME!r} was not uniquely resolved for counter {counter_id}. "
+                  f"Available goals: {available}"
+              )
+
+
+          def dimension_text(value: object) -> str:
+              if isinstance(value, dict):
+                  return str(value.get("name") or value.get("id") or "").strip()
+              return str(value or "").strip()
+
+
+          def fetch_month(
+              token: str,
+              counter_id: int,
+              goal_id: int,
+              month: int,
+              filter_25: bool,
+          ) -> dict:
+              date1 = f"2025-{month:02d}-01"
+              date2 = f"2025-{month:02d}-{calendar.monthrange(2025, month)[1]:02d}"
+              metrics = (
+                  "ym:s:visits,"
+                  "ym:s:bounceRate,"
+                  "ym:s:avgVisitDurationSeconds,"
+                  "ym:s:anyGoalReaches,"
+                  f"ym:s:goal<{goal_id}>reaches"
+              )
+              rows: list[dict] = []
+              totals: list[float] = [0, 0, 0, 0, 0]
+              offset = 1
+              limit = 100_000
+
+              while True:
+                  params = {
+                      "ids": str(counter_id),
+                      "date1": date1,
+                      "date2": date2,
+                      "dimensions": DIMENSION,
+                      "metrics": metrics,
+                      "accuracy": "full",
+                      "limit": str(limit),
+                      "offset": str(offset),
+                      "sort": "-ym:s:visits",
+                  }
+                  if filter_25:
+                      params["filters"] = "ym:s:lastsignUTMCampaign=@'25'"
+                  url = "https://api-metrika.yandex.net/stat/v1/data?" + urllib.parse.urlencode(params)
+                  payload = request_json(url, token)
+                  page = payload.get("data") or []
+                  if offset == 1:
+                      totals = [float(value or 0) for value in (payload.get("totals") or totals)]
+
+                  for item in page:
+                      dimensions = item.get("dimensions") or []
+                      values = item.get("metrics") or []
+                      if not dimensions or len(values) < 5:
+                          continue
+                      campaign = dimension_text(dimensions[0])
+                      if not campaign:
+                          continue
+                      if filter_25 and "25" not in campaign.casefold():
+                          continue
+                      rows.append(
+                          {
+                              "campaign": campaign,
+                              "visits": int(round(float(values[0] or 0))),
+                              "bounce_rate": float(values[1] or 0),
+                              "avg_duration": float(values[2] or 0),
+                              "all_goal_reaches": int(round(float(values[3] or 0))),
+                              "primary_quality_calls": int(round(float(values[4] or 0))),
+                          }
+                      )
+
+                  total_rows = int(payload.get("total_rows") or len(page))
+                  if not page or offset - 1 + len(page) >= total_rows:
+                      break
+                  offset += len(page)
+
+              return {
+                  "month": f"2025-{month:02d}",
+                  "date1": date1,
+                  "date2": date2,
+                  "totals": {
+                      "visits": int(round(totals[0] if len(totals) > 0 else 0)),
+                      "bounce_rate": totals[1] if len(totals) > 1 else 0,
+                      "avg_duration": totals[2] if len(totals) > 2 else 0,
+                      "all_goal_reaches": int(round(totals[3] if len(totals) > 3 else 0)),
+                      "primary_quality_calls": int(round(totals[4] if len(totals) > 4 else 0)),
+                  },
+                  "rows": rows,
+              }
+
+
+          token = os.environ.get("YANDEX_METRIKA_TOKEN", "").strip()
+          if not token:
+              raise RuntimeError("YANDEX_METRIKA_TOKEN is not configured")
+
+          result = {
+              "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+              "goal_name": GOAL_NAME,
+              "counters": {},
+          }
+          for counter_id, config in COUNTER_CONFIG.items():
+              goal = resolve_goal(token, counter_id)
+              counter_result = {
+                  "counter_id": counter_id,
+                  "goal_id": int(goal["id"]),
+                  "goal_name": str(goal.get("name") or GOAL_NAME),
+                  "filter": "UTM Campaign содержит 25" if config["filter_25"] else "Без фильтра",
+                  "months": [],
+              }
+              for month in range(1, 13):
+                  month_result = fetch_month(
+                      token,
+                      counter_id,
+                      counter_result["goal_id"],
+                      month,
+                      config["filter_25"],
+                  )
+                  counter_result["months"].append(month_result)
+                  print(
+                      json.dumps(
+                          {
+                              "counter": counter_id,
+                              "month": month_result["month"],
+                              "rows": len(month_result["rows"]),
+                              "goal_id": counter_result["goal_id"],
+                              "primary_quality_calls": month_result["totals"]["primary_quality_calls"],
+                          },
+                          ensure_ascii=False,
+                      )
+                  )
+              result["counters"][str(counter_id)] = counter_result
+
+          OUTPUT_PATH.write_text(
+              json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(f"Saved {OUTPUT_PATH} ({OUTPUT_PATH.stat().st_size} bytes)")
+          PY
+
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: metrika-2025-source
+          path: metrika_2025_source.json
+          retention-days: 7
