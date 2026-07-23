@@ -7106,11 +7106,25 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return interactionDate && campaign ? `${interactionDate}||${campaign}` : "";
     }
 
+    function googleVerifierRowHasMediaFacts(row) {
+      return ["impressions", "clicks", "cost"]
+        .some(field => parseNumber((row || {})[field]) !== 0);
+    }
+
+    function googleVerifierCoverageKeys() {
+      return new Set(
+        (AUTOMATIC_GOOGLE_VERIFIER_ROWS || [])
+          .filter(googleVerifierRowHasMediaFacts)
+          .map(verifierSourceRowKey)
+          .filter(Boolean)
+      );
+    }
+
     function rebuildVerifierRowsFromSources() {
       const targetAdsRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
-      ].filter(row => !isYandexMtsPrgVerifierRow(row));
+      ];
 
       const merged = new Map();
       targetAdsRows.forEach((row, index) => {
@@ -7118,12 +7132,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         merged.set(key, row);
       });
 
-      // Yandex and MTS PRG always come from Google. They are applied last so
-      // that Google wins even if an uploaded Target Ads file contains the same
-      // date + technical_mark combination.
+      // A non-empty Google row wins for the exact date + technical_mark.
+      // If Google is empty or missing, keep Target Ads as the fallback.
       (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `google||${index}`;
-        merged.set(key, row);
+        if (googleVerifierRowHasMediaFacts(row) || !merged.has(key)) {
+          merged.set(key, row);
+        }
       });
 
       const rows = Array.from(merged.values());
@@ -7809,12 +7824,19 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         const text = await readFileAsText(file);
         const parsedRows = parseCSV(text);
         CURRENT_VERIFIER_ROWS = normalizeVerifierRows(parsedRows);
-        const excludedGooglePrgRows = CURRENT_VERIFIER_ROWS.filter(isYandexMtsPrgVerifierRow).length;
+        const googleCoverage = googleVerifierCoverageKeys();
+        const googleOverrideRows = CURRENT_VERIFIER_ROWS.filter(row => {
+          return isYandexMtsPrgVerifierRow(row) && googleCoverage.has(verifierSourceRowKey(row));
+        }).length;
+        const targetAdsFallbackRows = CURRENT_VERIFIER_ROWS.filter(row => {
+          return isYandexMtsPrgVerifierRow(row) && !googleCoverage.has(verifierSourceRowKey(row));
+        }).length;
         VERIFIER_FILE = file.name;
         rebuildVerifierRowsFromSources();
 
-        status.textContent = `Готово: ${file.name} · строк Target Ads: ${CURRENT_VERIFIER_ROWS.length - excludedGooglePrgRows}`
-          + `${excludedGooglePrgRows ? ` · Yandex/MTS PRG исключено: ${excludedGooglePrgRows}` : ""}`
+        status.textContent = `Готово: ${file.name} · строк Target Ads: ${CURRENT_VERIFIER_ROWS.length - googleOverrideRows}`
+          + `${googleOverrideRows ? ` · Yandex/MTS из Google: ${googleOverrideRows}` : ""}`
+          + `${targetAdsFallbackRows ? ` · резерв Yandex/MTS из Target Ads: ${targetAdsFallbackRows}` : ""}`
           + `${ARCHIVE_VERIFIER_FILES.length ? ` · архив Target Ads: ${ARCHIVE_VERIFIER_FILES.length}` : ""}`;
         status.style.color = "var(--muted)";
 
