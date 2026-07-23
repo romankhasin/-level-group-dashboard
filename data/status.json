@@ -1,23 +1,23 @@
 {
-  "generatedAt": "2026-07-23T07:33:18.415109Z",
+  "generatedAt": "2026-07-23T09:32:20.409570Z",
   "metrika": {
-    "new_rows": 762,
+    "new_rows": 0,
     "total_rows": 67529,
     "ranges": {
       "53197618": {
-        "from": "2026-07-22",
+        "from": "2026-07-23",
         "to": "2026-07-22",
-        "new_rows": 690
+        "new_rows": 0
       },
       "100470605": {
-        "from": "2026-07-22",
+        "from": "2026-07-23",
         "to": "2026-07-22",
-        "new_rows": 72
+        "new_rows": 0
       }
     }
   },
   "google": {
-    "metric_rows": 12740,
+    "metric_rows": 12769,
     "journal_rows": 343,
     "journal_platforms": [
       "AdsHeads",
@@ -37,11 +37,13 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 5337
+    "live_rows": 5366
   },
   "targetads": {
-    "enabled": false,
-    "message": "TARGETADS_TOKEN is not configured",
-    "total_rows": 0
+    "enabled": true,
+    "new_rows": 0,
+    "total_rows": 0,
+    "from": "2026-05-01",
+    "to": "2026-07-22"
   }
 }
