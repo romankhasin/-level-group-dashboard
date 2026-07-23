@@ -127,7 +127,7 @@ jobs:
                   "ym:s:bounceRate,"
                   "ym:s:avgVisitDurationSeconds,"
                   "ym:s:anyGoalReaches,"
-                  f"ym:s:goal<{goal_id}>reaches"
+                  f"ym:s:goal{goal_id}reaches"
               )
               rows: list[dict] = []
               totals: list[float] = [0, 0, 0, 0, 0]
