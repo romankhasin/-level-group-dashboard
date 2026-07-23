@@ -343,11 +343,6 @@ def read_google_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], li
     )
 
 
-def targetads_platform_is_google_override(campaign: str) -> bool:
-    normalized = "_" + campaign.strip().lower() + "_"
-    return "_yandex_" in normalized or "_mts_" in normalized
-
-
 def fetch_targetads_period(token: str, start: dt.date, end: dt.date) -> list[dict]:
     url = (
         "https://api.targetads.io/v1/reports/agg_report?"
@@ -417,16 +412,35 @@ def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
 
 
 def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
+    """Merge media facts with Google as a non-empty Yandex/MTS override.
+
+    Target Ads remains the fallback for an exact date + campaign whenever the
+    matching Google row is absent or its impressions, clicks, and cost are all
+    empty. The merged rows are later parsed into both project and platform
+    breakdowns, so the same priority applies at every dashboard level.
+    """
     merged: dict[tuple[str, str], dict] = {}
     for row in targetads_rows:
         campaign = str(row.get("placement_nm") or "")
-        if targetads_platform_is_google_override(campaign):
+        report_date = str(row.get("interaction_dt") or "")
+        if not report_date or not campaign:
             continue
-        key = (str(row.get("interaction_dt") or ""), campaign.lower())
+        key = (report_date, campaign.lower())
         merged[key] = row
+
     for row in google_rows:
-        key = (str(row.get("interaction_dt") or ""), str(row.get("placement_nm") or "").lower())
-        merged[key] = row
+        report_date = str(row.get("interaction_dt") or "")
+        campaign = str(row.get("placement_nm") or "")
+        if not report_date or not campaign:
+            continue
+        key = (report_date, campaign.lower())
+        google_has_media_facts = any(
+            number(row.get(metric)) != 0
+            for metric in ("impressions", "clicks", "cost")
+        )
+        if google_has_media_facts or key not in merged:
+            merged[key] = row
+
     return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
 
 
