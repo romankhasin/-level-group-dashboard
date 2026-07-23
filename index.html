@@ -3538,6 +3538,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     let METRIKA_FILES = [];
     let VERIFIER_ROWS = null;
     let CURRENT_VERIFIER_ROWS = null;
+    let AUTOMATIC_GOOGLE_VERIFIER_ROWS = [];
     let ARCHIVE_METRIKA_FILES = [];
     let ARCHIVE_VERIFIER_FILES = [];
     const ARCHIVE_STORAGE_KEY = "level_group_unified_archive_v1";
@@ -6941,7 +6942,8 @@ body.all-mode .artcl-hero { margin-top: 10px; }
             ? Boolean(row.has_actual_cost)
             : Boolean(costColumn),
           givt: parseNumber(row[givtColumn]),
-          fraud_impressions: parseNumber(row[sivtColumn])
+          fraud_impressions: parseNumber(row[sivtColumn]),
+          metric_source: String(row.metric_source || "targetads").trim().toLowerCase()
         }))
         .filter(row => row.placement_nm && (row.impressions || row.clicks || row.cost || row.givt || row.fraud_impressions));
     }
@@ -7086,12 +7088,45 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       }));
     }
 
+    function isGoogleVerifierSource(row) {
+      const source = String((row || {}).metric_source || "").trim().toLowerCase();
+      return source === "yandex" || source === "mts";
+    }
+
+    function isYandexMtsPrgVerifierRow(row) {
+      const campaign = String((row || {}).placement_nm || "").trim();
+      if (!campaign || campaignChannel(campaign) !== "prg") return false;
+      const platformCode = String(parseCampaign(campaign).platformCode || "").trim().toLowerCase();
+      return platformCode === "yandex" || platformCode === "mts";
+    }
+
+    function verifierSourceRowKey(row) {
+      const campaign = String((row || {}).placement_nm || "").trim().toLowerCase();
+      const interactionDate = dateKey((row || {}).interaction_dt || "");
+      return interactionDate && campaign ? `${interactionDate}||${campaign}` : "";
+    }
+
     function rebuildVerifierRowsFromSources() {
-      const rows = [
+      const targetAdsRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
-      ];
+      ].filter(row => !isYandexMtsPrgVerifierRow(row));
 
+      const merged = new Map();
+      targetAdsRows.forEach((row, index) => {
+        const key = verifierSourceRowKey(row) || `targetads||${index}`;
+        merged.set(key, row);
+      });
+
+      // Yandex and MTS PRG always come from Google. They are applied last so
+      // that Google wins even if an uploaded Target Ads file contains the same
+      // date + technical_mark combination.
+      (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
+        const key = verifierSourceRowKey(row) || `google||${index}`;
+        merged.set(key, row);
+      });
+
+      const rows = Array.from(merged.values());
       VERIFIER_ROWS = rows.length ? rows : null;
 
       renderArchiveStatus();
@@ -7774,10 +7809,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         const text = await readFileAsText(file);
         const parsedRows = parseCSV(text);
         CURRENT_VERIFIER_ROWS = normalizeVerifierRows(parsedRows);
+        const excludedGooglePrgRows = CURRENT_VERIFIER_ROWS.filter(isYandexMtsPrgVerifierRow).length;
         VERIFIER_FILE = file.name;
         rebuildVerifierRowsFromSources();
 
-        status.textContent = `Готово: ${file.name} · PRG-строк: ${CURRENT_VERIFIER_ROWS.length}${ARCHIVE_VERIFIER_FILES.length ? ` · архив Target Ads: ${ARCHIVE_VERIFIER_FILES.length}` : ""}`;
+        status.textContent = `Готово: ${file.name} · строк Target Ads: ${CURRENT_VERIFIER_ROWS.length - excludedGooglePrgRows}`
+          + `${excludedGooglePrgRows ? ` · Yandex/MTS PRG исключено: ${excludedGooglePrgRows}` : ""}`
+          + `${ARCHIVE_VERIFIER_FILES.length ? ` · архив Target Ads: ${ARCHIVE_VERIFIER_FILES.length}` : ""}`;
         status.style.color = "var(--muted)";
 
         refreshDashboard();
@@ -9126,6 +9164,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       RAW_ROWS = EMBEDDED_REPORT_DATA.rawRows || null;
       METRIKA_FILES = [];
       VERIFIER_ROWS = EMBEDDED_REPORT_DATA.verifierRows || null;
+      AUTOMATIC_GOOGLE_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(isGoogleVerifierSource);
+      CURRENT_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
       SOURCE_FILE = EMBEDDED_REPORT_DATA.sourceFile || "Встроенная Метрика";
       VERIFIER_FILE = EMBEDDED_REPORT_DATA.verifierFile || "Встроенный Target Ads";
       PERIOD_FILTER = EMBEDDED_REPORT_DATA.periodFilter || { from: "", to: "" };
@@ -9148,7 +9188,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
         RAW_ROWS = payload.rawRows;
         VERIFIER_ROWS = Array.isArray(payload.verifierRows) ? payload.verifierRows : null;
-        CURRENT_VERIFIER_ROWS = VERIFIER_ROWS;
+        AUTOMATIC_GOOGLE_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(isGoogleVerifierSource);
+        CURRENT_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
         METRIKA_FILES = [];
         ARCHIVE_METRIKA_FILES = [];
         ARCHIVE_VERIFIER_FILES = [];
