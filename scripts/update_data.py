@@ -29,6 +29,11 @@ JOURNAL_PATH = ROOT / "journal.html"
 
 START_DATE = dt.date(2026, 5, 1)
 COUNTER_IDS = (53197618, 100470605)
+METRIKA_QUALITY_CALL_GOAL_IDS = {
+    53197618: 411053186,
+    100470605: 411053614,
+}
+METRIKA_QUALITY_CALL_FIELD = "Первично-качественные звонки"
 GOOGLE_WORKBOOK_URL = (
     "https://docs.google.com/spreadsheets/d/"
     "1chd_Rr_pZPZM83xfI2vx6gziNdLGRmdS/export?format=xlsx"
@@ -127,6 +132,7 @@ def fetch_metrika_period(
     rows: list[dict] = []
     offset = 1
     limit = 100_000
+    goal_id = METRIKA_QUALITY_CALL_GOAL_IDS[counter_id]
 
     while True:
         params = {
@@ -134,7 +140,12 @@ def fetch_metrika_period(
             "date1": start.isoformat(),
             "date2": end.isoformat(),
             "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign",
-            "metrics": "ym:s:visits,ym:s:bounceRate,ym:s:avgVisitDurationSeconds",
+            "metrics": (
+                "ym:s:visits,"
+                "ym:s:bounceRate,"
+                "ym:s:avgVisitDurationSeconds,"
+                f"ym:s:goal{goal_id}reaches"
+            ),
             "accuracy": "full",
             "limit": str(limit),
             "offset": str(offset),
@@ -146,7 +157,7 @@ def fetch_metrika_period(
         for item in page:
             dimensions = item.get("dimensions") or []
             metrics = item.get("metrics") or []
-            if len(dimensions) < 2 or len(metrics) < 3:
+            if len(dimensions) < 2 or len(metrics) < 4:
                 continue
             report_date = dimension_text(dimensions[0])
             campaign = dimension_text(dimensions[1])
@@ -161,6 +172,7 @@ def fetch_metrika_period(
                     "Визиты": visits,
                     "Отказы": float(metrics[1] or 0),
                     "Время на сайте": float(metrics[2] or 0),
+                    METRIKA_QUALITY_CALL_FIELD: int(round(float(metrics[3] or 0))),
                 }
             )
 
@@ -190,16 +202,25 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     fetched_count = 0
     ranges: dict[str, dict[str, str | int]] = {}
     for counter_id in COUNTER_IDS:
+        needs_quality_calls_backfill = any(
+            key[0] == counter_id
+            and METRIKA_QUALITY_CALL_FIELD not in row
+            for key, row in keyed.items()
+        )
         counter_dates = [
             dt.date.fromisoformat(key[1])
             for key in keyed
             if key[0] == counter_id and key[1]
         ]
-        fetch_from = max(counter_dates) + dt.timedelta(days=1) if counter_dates else START_DATE
+        if needs_quality_calls_backfill or not counter_dates:
+            fetch_from = START_DATE
+        else:
+            fetch_from = max(counter_dates) + dt.timedelta(days=1)
         ranges[str(counter_id)] = {
             "from": fetch_from.isoformat(),
             "to": yesterday.isoformat(),
             "new_rows": 0,
+            "quality_calls_backfill": needs_quality_calls_backfill,
         }
         if fetch_from > yesterday:
             continue
