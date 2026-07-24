@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-24T11:58:56.891585+00:00",
+  "generated_at": "2026-07-24T12:01:11.671638+00:00",
   "counter_id": 53197618,
   "period": {
     "from": "2026-05-01",
@@ -27,15 +27,18 @@
     0.01445035
   ],
   "rows": {
+    "source": 20,
     "tech": 100000,
     "ip": 200000
   },
   "total_rows_api": {
+    "source": 20,
     "tech": 100000,
     "ip": 200000
   },
   "sampled": {
     "total": false,
+    "source": false,
     "tech": false,
     "ip": false
   },
