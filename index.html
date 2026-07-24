@@ -7106,15 +7106,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return interactionDate && campaign ? `${interactionDate}||${campaign}` : "";
     }
 
-    function googleVerifierRowHasMediaFacts(row) {
-      return ["impressions", "clicks", "cost"]
-        .some(field => parseNumber((row || {})[field]) !== 0);
-    }
-
     function googleVerifierCoverageKeys() {
       return new Set(
         (AUTOMATIC_GOOGLE_VERIFIER_ROWS || [])
-          .filter(googleVerifierRowHasMediaFacts)
+          .filter(isYandexMtsPrgVerifierRow)
           .map(verifierSourceRowKey)
           .filter(Boolean)
       );
@@ -7132,11 +7127,12 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         merged.set(key, row);
       });
 
-      // A non-empty Google row wins for the exact date + technical_mark.
-      // If Google is empty or missing, keep Target Ads as the fallback.
+      // For Yandex/MTS PRG, the existence of a Google row always wins for
+      // the exact date + technical_mark, including rows with zero values.
+      // Target Ads is used only when that Google row is absent.
       (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `google||${index}`;
-        if (googleVerifierRowHasMediaFacts(row) || !merged.has(key)) {
+        if (isYandexMtsPrgVerifierRow(row) || !merged.has(key)) {
           merged.set(key, row);
         }
       });

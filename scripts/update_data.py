@@ -432,13 +432,20 @@ def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     }
 
 
-def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
-    """Merge media facts with Google as a non-empty Yandex/MTS override.
+def is_yandex_mts_prg_campaign(campaign: str) -> bool:
+    tokens = [token for token in campaign.strip().lower().split("_") if token]
+    return bool(tokens) and tokens[-1] == "prg" and any(
+        platform in tokens for platform in ("yandex", "mts")
+    )
 
-    Target Ads remains the fallback for an exact date + campaign whenever the
-    matching Google row is absent or its impressions, clicks, and cost are all
-    empty. The merged rows are later parsed into both project and platform
-    breakdowns, so the same priority applies at every dashboard level.
+
+def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
+    """Merge media facts with strict Google priority for Yandex/MTS PRG.
+
+    For an exact date + campaign, any matching Google row wins, including a
+    row containing zero values. Target Ads remains the fallback only when the
+    Google row is absent. Google rows outside Yandex/MTS PRG are used only when
+    Target Ads has no matching row.
     """
     merged: dict[tuple[str, str], dict] = {}
     for row in targetads_rows:
@@ -455,11 +462,7 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
         if not report_date or not campaign:
             continue
         key = (report_date, campaign.lower())
-        google_has_media_facts = any(
-            number(row.get(metric)) != 0
-            for metric in ("impressions", "clicks", "cost")
-        )
-        if google_has_media_facts or key not in merged:
+        if is_yandex_mts_prg_campaign(campaign) or key not in merged:
             merged[key] = row
 
     return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
