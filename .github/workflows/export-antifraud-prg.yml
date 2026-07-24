@@ -1,0 +1,40 @@
+name: Export Antifraud PRG 53197618
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/export_antifraud_prg.py"
+      - ".github/workflows/export-antifraud-prg.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: export-antifraud-prg-53197618
+  cancel-in-progress: true
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Export filtered Metrica reports
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: python scripts/export_antifraud_prg.py
+      - name: Commit exports
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add antifraud_prg_53197618/raw
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Export PRG antifraud data for 53197618"
+            git push
+          fi
