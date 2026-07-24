@@ -170,6 +170,7 @@ def main() -> None:
         raise RuntimeError("Итоговый запрос вернул пустой результат")
     totals = total_rows[0]["metrics"]
 
+    source_dims = ["ym:s:lastsignUTMSource"]
     tech_dims = [
         "ym:s:lastsignUTMSource",
         "ym:s:operatingSystem",
@@ -178,9 +179,20 @@ def main() -> None:
         "ym:s:screenResolution",
     ]
     ip_dims = ["ym:s:lastsignUTMSource", "ym:s:ipAddress"]
+    source_rows, source_payload = fetch_report(token, source_dims, metrics)
     tech_rows, tech_payload = fetch_report(token, tech_dims, metrics)
     ip_rows, ip_payload = fetch_report(token, ip_dims, metrics)
 
+    source_headers = [
+        "UTM Source",
+        "Визиты",
+        "Посетители",
+        "Отказы",
+        "Время на сайте",
+        "Доля новых посетителей",
+        "Конверсия (Первично-качественные звонки UIS)",
+        "Конверсия (Первичные звонки UIS)",
+    ]
     tech_headers = [
         "UTM Source",
         "Операционная система (детально)",
@@ -206,6 +218,7 @@ def main() -> None:
         "Конверсия (Первично-качественные звонки UIS)",
         "Конверсия (Первичные звонки UIS)",
     ]
+    write_csv(OUT_DIR / "source.csv", source_headers, len(source_dims), source_rows, totals)
     write_csv(OUT_DIR / "tech.csv", tech_headers, len(tech_dims), tech_rows, totals)
     write_csv(OUT_DIR / "ip.csv", ip_headers, len(ip_dims), ip_rows, totals)
 
@@ -220,13 +233,15 @@ def main() -> None:
             "primary": {"id": primary_id, "name": "Первичные звонки UIS"},
         },
         "totals": metric_values(totals),
-        "rows": {"tech": len(tech_rows), "ip": len(ip_rows)},
+        "rows": {"source": len(source_rows), "tech": len(tech_rows), "ip": len(ip_rows)},
         "total_rows_api": {
+            "source": int(source_payload.get("total_rows") or len(source_rows)),
             "tech": int(tech_payload.get("total_rows") or len(tech_rows)),
             "ip": int(ip_payload.get("total_rows") or len(ip_rows)),
         },
         "sampled": {
             "total": bool(total_payload.get("sampled")),
+            "source": bool(source_payload.get("sampled")),
             "tech": bool(tech_payload.get("sampled")),
             "ip": bool(ip_payload.get("sampled")),
         },
