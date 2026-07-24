@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - "scripts/export_antifraud_prg.py"
-      - "scripts/build_antifraud_prg_report.py"
+      - "scripts/analyze_antifraud_prg.py"
       - ".github/workflows/export-antifraud-prg.yml"
 
 permissions:
@@ -18,7 +18,7 @@ concurrency:
 jobs:
   export:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
@@ -28,20 +28,8 @@ jobs:
         env:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
         run: python scripts/export_antifraud_prg.py
-      - name: Apply minimum-sample safeguard
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          path = Path("scripts/build_antifraud_prg_report.py")
-          text = path.read_text(encoding="utf-8")
-          old = "  sc=min(100,sc);risk='Высокий' if sc>=60 else 'Средний' if sc>=35 else 'Низкий'"
-          new = "  if v<500:sc=min(sc,25);why=['маленькая выборка — вывод предварительный']+why\n  sc=min(100,sc);risk='Высокий' if sc>=60 else 'Средний' if sc>=35 else 'Низкий'"
-          if old not in text:
-              raise SystemExit("Risk scoring marker not found")
-          path.write_text(text.replace(old, new), encoding="utf-8")
-          PY
-      - name: Build source-centric HTML
-        run: python scripts/build_antifraud_prg_report.py
+      - name: Build comprehensive antifraud HTML
+        run: python scripts/analyze_antifraud_prg.py
       - name: Commit exports and report
         run: |
           git config user.name "github-actions[bot]"
@@ -50,6 +38,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Build PRG antifraud report for 53197618"
+            git commit -m "Update PRG antifraud report for 53197618"
             git push
           fi
