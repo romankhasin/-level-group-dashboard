@@ -6,6 +6,7 @@ on:
       - ".github/workflows/update-fraud-data.yml"
       - ".github/workflows/validate-fraud-data.yml"
       - "scripts/update_fraud_data.py"
+      - "scripts/fraud_visit_classifier.py"
 
 permissions:
   contents: read
@@ -24,8 +25,21 @@ jobs:
 
       - name: Check Python syntax and aggregation
         run: |
-          python -m py_compile scripts/update_fraud_data.py
+          python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py
+          python scripts/fraud_visit_classifier.py
           python scripts/update_fraud_data.py --self-test
+
+      - name: Check visit-level summaries and privacy
+        run: |
+          grep -q "DATA_VERSION = 2" scripts/update_fraud_data.py
+          grep -q '"visitRisk": visit_risk' scripts/update_fraud_data.py
+          grep -q "existing_version < DATA_VERSION" scripts/update_fraud_data.py
+          grep -q '"suspiciousVisits": suspicious' scripts/fraud_visit_classifier.py
+          grep -q '"highRiskVisits": levels\["high"\]' scripts/fraud_visit_classifier.py
+          grep -q '"reviewVisits": levels\["review"\]' scripts/fraud_visit_classifier.py
+          grep -q "совпадения нескольких независимых признаков" scripts/fraud_visit_classifier.py
+          grep -q "client-cluster.*not in serialized\|client-cluster\" not in serialized" scripts/fraud_visit_classifier.py
+          grep -q "10.20.30.40.*not in serialized\|10.20.30.40\" not in serialized" scripts/fraud_visit_classifier.py
 
       - name: Check privacy and counter configuration
         run: |
@@ -37,3 +51,5 @@ jobs:
           grep -q "raw IP, ClientID and VisitID are never committed" scripts/update_fraud_data.py
           grep -q "YANDEX_METRIKA_TOKEN" .github/workflows/update-fraud-data.yml
           grep -q "data/fraud" .github/workflows/update-fraud-data.yml
+          test ! -f scripts/apply_visit_risk_summary.py
+          test ! -f .github/workflows/apply-visit-risk-summary.yml
