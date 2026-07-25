@@ -439,13 +439,16 @@ def is_yandex_mts_prg_campaign(campaign: str) -> bool:
     )
 
 
-def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
-    """Merge media facts with strict Google priority for Yandex/MTS PRG.
+def google_row_has_media_facts(row: dict) -> bool:
+    return any(number(row.get(metric)) != 0 for metric in ("impressions", "clicks", "cost"))
 
-    For an exact date + campaign, any matching Google row wins, including a
-    row containing zero values. Target Ads remains the fallback only when the
-    Google row is absent. Google rows outside Yandex/MTS PRG are used only when
-    Target Ads has no matching row.
+
+def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
+    """Merge media facts without duplicating Google and Target Ads.
+
+    For Yandex/MTS PRG, a matching Google row wins only when it contains
+    non-zero media facts. When Google is zero or absent, Target Ads remains
+    the fallback. Every date + campaign key produces exactly one row.
     """
     merged: dict[tuple[str, str], dict] = {}
     for row in targetads_rows:
@@ -462,7 +465,7 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
         if not report_date or not campaign:
             continue
         key = (report_date, campaign.lower())
-        if is_yandex_mts_prg_campaign(campaign) or key not in merged:
+        if (is_yandex_mts_prg_campaign(campaign) and google_row_has_media_facts(row)) or key not in merged:
             merged[key] = row
 
     return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))

@@ -4436,6 +4436,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       addVerifierDaily(store[key], row);
     }
 
+    function verifierRowHasActualCost(row) {
+      if (Object.prototype.hasOwnProperty.call(row || {}, "has_actual_cost")) {
+        return Boolean(row.has_actual_cost);
+      }
+      return isGoogleVerifierSource(row);
+    }
+
     function parseVerifierRows(rawRows) {
       const empty = {
         total: emptyVerifierMetric(),
@@ -4473,9 +4480,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           impressions: parseNumber(row[impressionsColumn]),
           clicks: parseNumber(row[clicksColumn]),
           cost: costColumn ? parseNumber(row[costColumn]) : 0,
-          hasActualCost: Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
-            ? Boolean(row.has_actual_cost)
-            : Boolean(costColumn),
+          hasActualCost: verifierRowHasActualCost(row),
           givt: parseNumber(row[givtColumn]),
           sivt: parseNumber(row[sivtColumn])
         };
@@ -6938,9 +6943,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           impressions: parseNumber(row[impressionsColumn]),
           clicks: parseNumber(row[clicksColumn]),
           cost: costColumn ? parseNumber(row[costColumn]) : 0,
-          has_actual_cost: Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
-            ? Boolean(row.has_actual_cost)
-            : Boolean(costColumn),
+          has_actual_cost: verifierRowHasActualCost(row),
           givt: parseNumber(row[givtColumn]),
           fraud_impressions: parseNumber(row[sivtColumn]),
           metric_source: String(row.metric_source || "targetads").trim().toLowerCase()
@@ -7106,10 +7109,15 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return interactionDate && campaign ? `${interactionDate}||${campaign}` : "";
     }
 
+    function googleVerifierRowHasMediaFacts(row) {
+      return ["impressions", "clicks", "cost"]
+        .some(field => parseNumber((row || {})[field]) !== 0);
+    }
+
     function googleVerifierCoverageKeys() {
       return new Set(
         (AUTOMATIC_GOOGLE_VERIFIER_ROWS || [])
-          .filter(isYandexMtsPrgVerifierRow)
+          .filter(row => isYandexMtsPrgVerifierRow(row) && googleVerifierRowHasMediaFacts(row))
           .map(verifierSourceRowKey)
           .filter(Boolean)
       );
@@ -7127,12 +7135,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         merged.set(key, row);
       });
 
-      // For Yandex/MTS PRG, the existence of a Google row always wins for
-      // the exact date + technical_mark, including rows with zero values.
-      // Target Ads is used only when that Google row is absent.
+      // For Yandex/MTS PRG, a non-zero Google row wins for the exact
+      // date + technical_mark. A zero Google row falls back to Target Ads.
+      // The Map keeps only one row per date + campaign, so sources never sum.
       (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `google||${index}`;
-        if (isYandexMtsPrgVerifierRow(row) || !merged.has(key)) {
+        const googleHasMediaFacts = googleVerifierRowHasMediaFacts(row);
+        if ((isYandexMtsPrgVerifierRow(row) && googleHasMediaFacts) || !merged.has(key)) {
           merged.set(key, row);
         }
       });
@@ -8954,9 +8963,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
           item.impressions += parseNumber(row[impressionsCol]);
           item.clicks += parseNumber(row[clicksCol]);
-          const hasActualCost = Object.prototype.hasOwnProperty.call(row, "has_actual_cost")
-            ? Boolean(row.has_actual_cost)
-            : Boolean(costCol);
+          const hasActualCost = verifierRowHasActualCost(row);
           if (hasActualCost) item.actualCost += costCol ? parseNumber(row[costCol]) : 0;
           else item.impressionsWithoutActualCost += parseNumber(row[impressionsCol]);
           item.hasActualCost = item.hasActualCost || hasActualCost;
