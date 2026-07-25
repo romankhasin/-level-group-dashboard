@@ -12,27 +12,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: List relevant dashboard functions
+      - name: Extract selected functions
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
+
           text=Path('index.html').read_text(encoding='utf-8')
-          rows=[]
-          for m in re.finditer(r'(^|\n)[ \t]*function\s+([A-Za-z0-9_$]+)\s*\(',text,re.M):
-              name=m.group(2)
-              if any(k in name.lower() for k in ('verifier','budget','cpm','cost','plan','target','google','source')):
-                  line=text.count('\n',0,m.start())+1
-                  rows.append((line,name))
-          lines=text.splitlines()
-          direct=[]
-          for i,line in enumerate(lines):
-              if any(k.lower() in line.lower() for k in ('impressionsWithoutActualCost','hasActualCost','AUTOMATIC_GOOGLE_VERIFIER_ROWS','googleVerifierCoverageKeys','verifierSourceRowKey')) and len(line)<1000:
-                  direct.append(f'{i+1:05d}: {line}')
-          body=['## Relevant function inventory','```text']
-          body += [f'{line:05d}: {name}' for line,name in rows]
-          body += ['```','\n## Direct references','```javascript'] + direct + ['```']
-          Path('inspection-comment.md').write_text('\n'.join(body),encoding='utf-8')
+          selected={
+            'applyPlan','mergeDirectPlan','currentVerifierRows','isGoogleVerifierSource',
+            'isYandexMtsPrgVerifierRow','verifierSourceRowKey','googleVerifierCoverageKeys',
+            'rebuildVerifierRowsFromSources','normalizeVerifierRows','verifierRowsFromFiles',
+            'getPeriodPlanMetric','getPeriodPlanValues','applyVerifier','parseVerifierRows'
+          }
+
+          def extract(start):
+              brace=text.find('{',start)
+              depth=0; quote=None; escape=False
+              for i in range(brace,len(text)):
+                  ch=text[i]
+                  if quote:
+                      if escape: escape=False
+                      elif ch=='\\': escape=True
+                      elif ch==quote: quote=None
+                      continue
+                  if ch in ('"',"'",'`'): quote=ch
+                  elif ch=='{': depth+=1
+                  elif ch=='}':
+                      depth-=1
+                      if depth==0: return text[start:i+1]
+              return ''
+
+          out=['## Selected merge and budget functions']
+          pattern=re.compile(r'(^|\n)([ \t]*function\s+([A-Za-z0-9_$]+)\s*\([^\n]*\)\s*\{)',re.M)
+          for m in pattern.finditer(text):
+              name=m.group(3)
+              if name not in selected: continue
+              start=m.start(2)
+              line=text.count('\n',0,start)+1
+              block=extract(start)
+              out.append(f'\n### {name} · line {line}\n```javascript\n{block}\n```')
+          Path('inspection-comment.md').write_text('\n'.join(out),encoding='utf-8')
           PY
       - name: Post inspection to PR
         env:
