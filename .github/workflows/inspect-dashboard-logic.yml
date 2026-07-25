@@ -18,43 +18,68 @@ jobs:
           from pathlib import Path
           import re
 
-          lines = Path('index.html').read_text(encoding='utf-8').splitlines()
-          needles = [
-              'googleVerifierCoverageKeys',
-              'verifierSourceRowKey',
-              'AUTOMATIC_GOOGLE_VERIFIER_ROWS',
-              'mergeVerifier',
-              'verifierRows',
-              'has_actual_cost',
-              'plannedCpm',
-              'planCpm',
-              'budget',
-              'cost',
-          ]
-          hits=[]
-          for i,line in enumerate(lines):
-              if any(n.lower() in line.lower() for n in needles):
-                  hits.append(i)
+          text = Path('index.html').read_text(encoding='utf-8')
+          function_re = re.compile(r'(^|\n)([ \t]*function\s+([A-Za-z0-9_$]+)\s*\([^\n]*\)\s*\{)', re.M)
+          keywords = ('verifier','budget','cpm','cost','plan','targetads','google')
+          body_needles = ('AUTOMATIC_GOOGLE_VERIFIER_ROWS','has_actual_cost','googleVerifierCoverageKeys','verifierSourceRowKey')
 
-          windows=[]
-          for i in hits:
-              start=max(0,i-16); end=min(len(lines),i+34)
-              # Expand backwards to the nearest function declaration when close.
-              for j in range(i, max(-1,i-80), -1):
-                  if re.search(r'\bfunction\s+[A-Za-z0-9_$]+\s*\(', lines[j]):
-                      start=j
-                      break
-              if any(not (end < a or start > b) for a,b in windows):
+          def extract_function(start):
+              brace = text.find('{', start)
+              if brace < 0:
+                  return None
+              depth = 0
+              quote = None
+              escape = False
+              for i in range(brace, len(text)):
+                  ch = text[i]
+                  if quote:
+                      if escape:
+                          escape = False
+                      elif ch == '\\':
+                          escape = True
+                      elif ch == quote:
+                          quote = None
+                      continue
+                  if ch in ('"', "'", '`'):
+                      quote = ch
+                  elif ch == '{':
+                      depth += 1
+                  elif ch == '}':
+                      depth -= 1
+                      if depth == 0:
+                          return text[start:i+1]
+              return None
+
+          blocks=[]
+          for match in function_re.finditer(text):
+              name = match.group(3)
+              block = extract_function(match.start(2))
+              if not block:
                   continue
-              windows.append((start,end))
+              relevant = any(k in name.lower() for k in keywords) or any(n in block for n in body_needles)
+              if relevant and len(block) <= 18000:
+                  line = text.count('\n',0,match.start(2))+1
+                  blocks.append((line,name,block))
 
-          out=['## Dashboard logic inspection','```javascript']
-          for start,end in windows:
-              block='\n'.join(f'{j+1:05d}: {lines[j]}' for j in range(start,end))
-              if len('\n'.join(out))+len(block)>52000:
+          # Add short non-function contexts for aliases and upload handlers.
+          lines=text.splitlines()
+          contexts=[]
+          context_needles=('VERIFIER_ALIASES','verifierFile','addEventListener("change"','addEventListener(\'change\'')
+          for i,line in enumerate(lines):
+              if any(n.lower() in line.lower() for n in context_needles) and len(line)<600:
+                  start=max(0,i-5); end=min(len(lines),i+14)
+                  snippet='\n'.join(f'{j+1:05d}: {lines[j]}' for j in range(start,end) if len(lines[j])<1200)
+                  contexts.append(snippet)
+
+          out=['## Focused dashboard logic inspection']
+          total=0
+          for line,name,block in blocks:
+              section=f'\n### {name} · line {line}\n```javascript\n{block}\n```\n'
+              if total+len(section)>52000:
                   break
-              out.append(f'\n// ===== LINES {start+1}-{end} =====\n{block}')
-          out.append('```')
+              out.append(section); total+=len(section)
+          if contexts and total<50000:
+              out.append('\n### Related handlers and aliases\n```javascript\n'+'\n\n'.join(contexts[:8])+'\n```')
           Path('inspection-comment.md').write_text('\n'.join(out),encoding='utf-8')
           PY
       - name: Post inspection to PR
