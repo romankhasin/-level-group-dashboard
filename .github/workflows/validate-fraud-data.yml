@@ -37,9 +37,9 @@ jobs:
           grep -q '"suspiciousVisits": suspicious' scripts/fraud_visit_classifier.py
           grep -q '"highRiskVisits": levels\["high"\]' scripts/fraud_visit_classifier.py
           grep -q '"reviewVisits": levels\["review"\]' scripts/fraud_visit_classifier.py
-          grep -q "совпадения нескольких независимых признаков" scripts/fraud_visit_classifier.py
-          grep -q "client-cluster.*not in serialized\|client-cluster\" not in serialized" scripts/fraud_visit_classifier.py
-          grep -q "10.20.30.40.*not in serialized\|10.20.30.40\" not in serialized" scripts/fraud_visit_classifier.py
+          grep -q "совпадение нескольких независимых признаков" scripts/fraud_visit_classifier.py
+          grep -q 'assert "client-cluster" not in serialized' scripts/fraud_visit_classifier.py
+          grep -q 'assert "10.20.30.40" not in serialized' scripts/fraud_visit_classifier.py
 
       - name: Check privacy and counter configuration
         run: |
