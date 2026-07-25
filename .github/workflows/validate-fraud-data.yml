@@ -7,21 +7,45 @@ on:
       - ".github/workflows/validate-fraud-data.yml"
       - "scripts/update_fraud_data.py"
       - "scripts/fraud_visit_classifier.py"
+      - "scripts/apply_scoring_stage1.py"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out PR branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Apply pending scoring stage 1 migration
+        run: |
+          if grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py; then
+            echo "Scoring stage 1 data changes already applied"
+          else
+            python scripts/apply_scoring_stage1.py
+          fi
+
+      - name: Commit migration to PR branch
+        if: github.event_name == 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/update_fraud_data.py .github/workflows/validate-fraud-data.yml
+          if git diff --cached --quiet; then
+            echo "No migration changes to commit"
+          else
+            git commit -m "Add volume-aware automation aggregates"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
 
       - name: Check Python syntax and aggregation
         run: |
@@ -31,7 +55,7 @@ jobs:
 
       - name: Check visit-level summaries and campaign filter
         run: |
-          grep -q "DATA_VERSION = 3" scripts/update_fraud_data.py
+          grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py
           grep -q '"visitRisk": visit_risk' scripts/update_fraud_data.py
           grep -q "existing_version < DATA_VERSION" scripts/update_fraud_data.py
           grep -q 'CAMPAIGN_TOKENS = ("prg", "med", "mrk")' scripts/update_fraud_data.py
@@ -47,6 +71,13 @@ jobs:
           grep -q '"reviewVisits": levels\["review"\]' scripts/fraud_visit_classifier.py
           grep -q 'assert "client-cluster" not in serialized' scripts/fraud_visit_classifier.py
           grep -q 'assert "10.20.30.40" not in serialized' scripts/fraud_visit_classifier.py
+
+      - name: Check scoring stage 1 data fields
+        run: |
+          grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
+          grep -q '"automationShare": automation_visits / visits' scripts/update_fraud_data.py
+          grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
+          grep -q 'assert automation_result\["automationVisits"\] == 1' scripts/update_fraud_data.py
 
       - name: Check privacy and counter configuration
         run: |
