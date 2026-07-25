@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "fraud"
 CATALOG_PATH = DATA_DIR / "catalog.json"
 STATUS_PATH = DATA_DIR / "status.json"
-DATA_VERSION = 2
+DATA_VERSION = 3
 
 START_DATE = dt.date(2026, 5, 1)
 COUNTER_IDS = (53197618, 100470605)
@@ -35,6 +35,7 @@ QUALITY_CALL_GOAL_IDS = {
     53197618: 411053186,
     100470605: 411053614,
 }
+CAMPAIGN_TOKENS = ("prg", "med", "mrk")
 REFRESH_DAYS = 3
 POLL_INTERVAL_SECONDS = 8
 POLL_TIMEOUT_SECONDS = 45 * 60
@@ -46,6 +47,7 @@ LOG_FIELDS = [
     "ym:s:clientID",
     "ym:s:ipAddress",
     "ym:s:<attribution>UTMSource",
+    "ym:s:<attribution>UTMCampaign",
     "ym:s:bounce",
     "ym:s:visitDuration",
     "ym:s:isNewUser",
@@ -227,6 +229,11 @@ def source_name(value: object) -> str:
     return "Не определено" if text.lower() in INVALID_IDS else text.lower()
 
 
+def campaign_in_scope(value: object) -> bool:
+    campaign = str(value or "").strip().lower()
+    return bool(campaign) and any(token in campaign for token in CAMPAIGN_TOKENS)
+
+
 def subnet_of(ip: str) -> str:
     value = str(ip or "").strip()
     if ":" in value:
@@ -290,6 +297,9 @@ def process_visit(
 ) -> None:
     report_date = field_value(row, "ym:s:date").strip()
     if not report_date:
+        return
+    campaign = field_value(row, "ym:s:<attribution>UTMCampaign", "UTMCampaign")
+    if not campaign_in_scope(campaign):
         return
     source = source_name(field_value(row, "ym:s:<attribution>UTMSource", "UTMSource"))
     bucket = store.setdefault((source, report_date), empty_bucket())
@@ -415,9 +425,13 @@ def fetch_logs_period(
         for (source, report_date), bucket in store.items()
     ]
     rows.sort(key=lambda item: (item["date"], item["source"]))
+    included_visits = sum(int(row.get("visits") or 0) for row in rows)
     return rows, {
         "requestId": request_id,
         "rawVisits": raw_visits,
+        "includedVisits": included_visits,
+        "excludedVisits": max(0, raw_visits - included_visits),
+        "campaignFilter": list(CAMPAIGN_TOKENS),
         "dailySourceRows": len(rows),
         "from": start.isoformat(),
         "to": end.isoformat(),
@@ -538,6 +552,7 @@ def write_month_file(
             "to": max(dates) if dates else "",
             "generatedAt": generated_at,
             "source": "Yandex Metrica Logs API",
+            "campaignFilter": list(CAMPAIGN_TOKENS),
             "privacy": "Only daily aggregates are stored; raw IP, ClientID and VisitID are discarded.",
             "summary": {
                 "visits": sum(int(row.get("visits") or 0) for row in rows),
@@ -655,6 +670,7 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
         "generatedAt": generated_at,
         "dataThrough": max((item["to"] for item in catalog_counters), default=""),
         "refresh": "daily, previous 3 complete days",
+        "campaignFilter": list(CAMPAIGN_TOKENS),
         "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
         "counters": catalog_counters,
     }
@@ -668,6 +684,7 @@ def self_test() -> None:
             "ym:s:clientID": "1234567890123456789",
             "ym:s:ipAddress": "10.20.30.40",
             "ym:s:lastUTMSource": "MTS",
+            "ym:s:lastUTMCampaign": "level_prg_test",
             "ym:s:bounce": "0",
             "ym:s:visitDuration": "120",
             "ym:s:isNewUser": "1",
@@ -687,9 +704,30 @@ def self_test() -> None:
             "ym:s:clientID": "1234567890123456789",
             "ym:s:ipAddress": "10.20.30.40",
             "ym:s:lastUTMSource": "MTS",
+            "ym:s:lastUTMCampaign": "level_prg_test",
             "ym:s:bounce": "1",
             "ym:s:visitDuration": "0",
             "ym:s:isNewUser": "0",
+            "ym:s:goalsID": "[]",
+            "ym:s:browser": "Chrome",
+            "ym:s:browserMajorVersion": "138",
+            "ym:s:browserMinorVersion": "0",
+            "ym:s:operatingSystem": "Android",
+            "ym:s:deviceCategory": "2",
+            "ym:s:screenWidth": "360",
+            "ym:s:screenHeight": "800",
+            "ym:s:cookieEnabled": "1",
+        },
+        {
+            "ym:s:date": "2026-07-01",
+            "ym:s:counterUserIDHash": "999",
+            "ym:s:clientID": "9999999999999999999",
+            "ym:s:ipAddress": "10.20.30.99",
+            "ym:s:lastUTMSource": "MTS",
+            "ym:s:lastUTMCampaign": "brand_search_only",
+            "ym:s:bounce": "1",
+            "ym:s:visitDuration": "0",
+            "ym:s:isNewUser": "1",
             "ym:s:goalsID": "[]",
             "ym:s:browser": "Chrome",
             "ym:s:browserMajorVersion": "138",
@@ -705,6 +743,10 @@ def self_test() -> None:
     for row in rows:
         process_visit(store, row, quality_goal_id=411053186)
     result = finalize_bucket("mts", "2026-07-01", store[("mts", "2026-07-01")])
+    assert campaign_in_scope("LEVEL_PRG_VIDEO")
+    assert campaign_in_scope("level-med-july")
+    assert campaign_in_scope("brand_mrk_test")
+    assert not campaign_in_scope("brand_search_only")
     assert result["visits"] == 2
     assert result["uniqueClientIds"] == 1
     assert result["clientIdVisits"] == 2
