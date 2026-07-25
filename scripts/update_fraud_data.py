@@ -17,10 +17,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from fraud_visit_classifier import append_visit_feature, summarize_visit_risk
+
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "fraud"
 CATALOG_PATH = DATA_DIR / "catalog.json"
 STATUS_PATH = DATA_DIR / "status.json"
+DATA_VERSION = 2
 
 START_DATE = dt.date(2026, 5, 1)
 COUNTER_IDS = (53197618, 100470605)
@@ -275,6 +278,7 @@ def empty_bucket() -> dict:
         "ipv6_visits": 0,
         "unknown_browser_visits": 0,
         "automation": False,
+        "visit_features": [],
     }
 
 
@@ -330,8 +334,23 @@ def process_visit(
     bucket["profile_counts"][profile] += 1
     if UNKNOWN_RE.search(browser_version):
         bucket["unknown_browser_visits"] += 1
-    if AUTOMATION_RE.search(browser_version):
+    automation = bool(AUTOMATION_RE.search(browser_version))
+    if automation:
         bucket["automation"] = True
+
+    append_visit_feature(
+        bucket,
+        client_id=client_id,
+        ip=ip,
+        subnet=subnet_of(ip) if ip else "",
+        profile=profile,
+        bounce=bool(safe_int(field_value(row, "ym:s:bounce"))),
+        duration=max(0, safe_int(field_value(row, "ym:s:visitDuration"))),
+        is_new=bool(safe_int(field_value(row, "ym:s:isNewUser"))),
+        cookie_enabled=bool(safe_int(field_value(row, "ym:s:cookieEnabled"))),
+        quality_goal=quality_goal_id in parse_goals(field_value(row, "ym:s:goalsID")),
+        automation=automation,
+    )
 
 
 def download_and_process_parts(
@@ -411,6 +430,7 @@ def finalize_bucket(source: str, report_date: str, bucket: dict) -> dict:
     client_id_visits = sum(bucket["client_counts"].values())
     unique_client_ids = len(bucket["client_counts"])
     top_client = hidden_top_entry(bucket["client_counts"], client_id_visits)
+    visit_risk = summarize_visit_risk(bucket, visits)
     metrics = {
         "visits": visits,
         "users": users,
@@ -446,6 +466,7 @@ def finalize_bucket(source: str, report_date: str, bucket: dict) -> dict:
         "ipv6Share": bucket["ipv6_visits"] / visits if visits else 0.0,
         "unknownBrowserShare": bucket["unknown_browser_visits"] / visits if visits else 0.0,
         "cookieEnabledShare": bucket["cookie_sum"] / visits if visits else 0.0,
+        "visitRisk": visit_risk,
         "automation": bool(bucket["automation"]),
         "concentrationScope": "daily",
         "dataSource": "yandex-metrica-logs-api",
@@ -509,7 +530,7 @@ def write_month_file(
     write_json(
         path,
         {
-            "version": 1,
+            "version": DATA_VERSION,
             "counterId": counter["id"],
             "counterName": counter["name"],
             "month": f"{month:%Y-%m}",
@@ -542,7 +563,9 @@ def ranges_to_refresh(
         available_start = max(start, month)
         available_end = min(end, month_end(month))
         path = month_path(counter_id, month)
-        if force or not path.exists():
+        existing_payload = read_json(path, {}) if path.exists() else {}
+        existing_version = int(existing_payload.get("version") or 0) if isinstance(existing_payload, dict) else 0
+        if force or not path.exists() or existing_version < DATA_VERSION:
             result.append((month, available_start, available_end))
             continue
         overlap_start = max(available_start, refresh_start)
@@ -628,7 +651,7 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
             }
         )
     return {
-        "version": 1,
+        "version": DATA_VERSION,
         "generatedAt": generated_at,
         "dataThrough": max((item["to"] for item in catalog_counters), default=""),
         "refresh": "daily, previous 3 complete days",
@@ -689,6 +712,9 @@ def self_test() -> None:
     assert result["metrics"]["bounce"] == 0.5
     assert result["metrics"]["quality"] == 0.5
     assert result["topIp"]["key"] == "скрыто"
+    assert result["visitRisk"]["classifiedVisits"] == 2
+    assert result["visitRisk"]["highRiskVisits"] == 0
+    assert result["visitRisk"]["reviewVisits"] == 0
     assert "1234567890123456789" not in json.dumps(result)
     print("Fraud Logs API self-test passed")
 
