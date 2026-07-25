@@ -7,47 +7,21 @@ on:
       - ".github/workflows/validate-fraud-data.yml"
       - "scripts/update_fraud_data.py"
       - "scripts/fraud_visit_classifier.py"
-      - "scripts/apply_scoring_stage1.py"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out PR branch
+      - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Apply pending scoring stage 1 migration
-        run: |
-          if grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py; then
-            echo "Scoring stage 1 data changes already applied"
-          else
-            python scripts/apply_scoring_stage1.py || true
-            grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py
-            grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
-          fi
-
-      - name: Commit migration to PR branch
-        if: github.event_name == 'pull_request'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/update_fraud_data.py .github/workflows/validate-fraud-data.yml
-          if git diff --cached --quiet; then
-            echo "No migration changes to commit"
-          else
-            git commit -m "Add volume-aware automation aggregates"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
 
       - name: Check Python syntax and aggregation
         run: |
@@ -93,3 +67,5 @@ jobs:
           grep -q "data/fraud" .github/workflows/update-fraud-data.yml
           test ! -f scripts/apply_campaign_filter.py
           test ! -f .github/workflows/apply-campaign-filter.yml
+          test ! -f scripts/apply_scoring_stage1.py
+          test ! -f .github/workflows/apply-scoring-stage1.yml
