@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-25T20:49:23.292238Z",
+  "dataThrough": "2026-07-24",
+  "refresh": "daily, previous 3 complete days",
+  "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
+  "counters": [
+    {
+      "id": 53197618,
+      "name": "level.ru",
+      "site": "level.ru",
+      "permission": "view",
+      "from": "2026-05-01",
+      "to": "2026-07-24",
+      "visits": 3202228,
+      "files": [
+        {
+          "month": "2026-05",
+          "path": "53197618/2026-05.json",
+          "from": "2026-05-01",
+          "to": "2026-05-31",
+          "visits": 1194708
+        },
+        {
+          "month": "2026-06",
+          "path": "53197618/2026-06.json",
+          "from": "2026-06-01",
+          "to": "2026-06-30",
+          "visits": 1206424
+        },
+        {
+          "month": "2026-07",
+          "path": "53197618/2026-07.json",
+          "from": "2026-07-01",
+          "to": "2026-07-24",
+          "visits": 801096
+        }
+      ]
+    },
+    {
+      "id": 100470605,
+      "name": "business.level.ru",
+      "site": "business.level.ru",
+      "permission": "view",
+      "from": "2026-05-01",
+      "to": "2026-07-24",
+      "visits": 400702,
+      "files": [
+        {
+          "month": "2026-05",
+          "path": "100470605/2026-05.json",
+          "from": "2026-05-01",
+          "to": "2026-05-31",
+          "visits": 138542
+        },
+        {
+          "month": "2026-06",
+          "path": "100470605/2026-06.json",
+          "from": "2026-06-01",
+          "to": "2026-06-30",
+          "visits": 126298
+        },
+        {
+          "month": "2026-07",
+          "path": "100470605/2026-07.json",
+          "from": "2026-07-01",
+          "to": "2026-07-24",
+          "visits": 135862
+        }
+      ]
+    }
+  ]
+}

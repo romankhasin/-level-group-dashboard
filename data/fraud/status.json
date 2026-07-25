@@ -1,0 +1,70 @@
+{
+  "generatedAt": "2026-07-25T20:49:23.292238Z",
+  "period": {
+    "from": "2026-05-01",
+    "to": "2026-07-24"
+  },
+  "counters": [
+    {
+      "counterId": 53197618,
+      "status": "ok",
+      "operations": [
+        {
+          "requestId": 57768176,
+          "rawVisits": 1194708,
+          "dailySourceRows": 1814,
+          "from": "2026-05-01",
+          "to": "2026-05-31",
+          "month": "2026-05"
+        },
+        {
+          "requestId": 57768200,
+          "rawVisits": 1206424,
+          "dailySourceRows": 1879,
+          "from": "2026-06-01",
+          "to": "2026-06-30",
+          "month": "2026-06"
+        },
+        {
+          "requestId": 57768216,
+          "rawVisits": 801096,
+          "dailySourceRows": 1478,
+          "from": "2026-07-01",
+          "to": "2026-07-24",
+          "month": "2026-07"
+        }
+      ]
+    },
+    {
+      "counterId": 100470605,
+      "status": "ok",
+      "operations": [
+        {
+          "requestId": 57768261,
+          "rawVisits": 138542,
+          "dailySourceRows": 394,
+          "from": "2026-05-01",
+          "to": "2026-05-31",
+          "month": "2026-05"
+        },
+        {
+          "requestId": 57768266,
+          "rawVisits": 126298,
+          "dailySourceRows": 390,
+          "from": "2026-06-01",
+          "to": "2026-06-30",
+          "month": "2026-06"
+        },
+        {
+          "requestId": 57768269,
+          "rawVisits": 135862,
+          "dailySourceRows": 301,
+          "from": "2026-07-01",
+          "to": "2026-07-24",
+          "month": "2026-07"
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
