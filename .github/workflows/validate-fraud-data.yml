@@ -31,7 +31,7 @@ jobs:
 
       - name: Check visit-level summaries and campaign filter
         run: |
-          grep -q "DATA_VERSION = 3" scripts/update_fraud_data.py
+          grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py
           grep -q '"visitRisk": visit_risk' scripts/update_fraud_data.py
           grep -q "existing_version < DATA_VERSION" scripts/update_fraud_data.py
           grep -q 'CAMPAIGN_TOKENS = ("prg", "med", "mrk")' scripts/update_fraud_data.py
@@ -48,6 +48,13 @@ jobs:
           grep -q 'assert "client-cluster" not in serialized' scripts/fraud_visit_classifier.py
           grep -q 'assert "10.20.30.40" not in serialized' scripts/fraud_visit_classifier.py
 
+      - name: Check scoring stage 1 data fields
+        run: |
+          grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
+          grep -q '"automationShare": automation_visits / visits' scripts/update_fraud_data.py
+          grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
+          grep -q 'assert automation_result\["automationVisits"\] == 1' scripts/update_fraud_data.py
+
       - name: Check privacy and counter configuration
         run: |
           grep -q "COUNTER_IDS = (53197618, 100470605)" scripts/update_fraud_data.py
@@ -60,3 +67,5 @@ jobs:
           grep -q "data/fraud" .github/workflows/update-fraud-data.yml
           test ! -f scripts/apply_campaign_filter.py
           test ! -f .github/workflows/apply-campaign-filter.yml
+          test ! -f scripts/apply_scoring_stage1.py
+          test ! -f .github/workflows/apply-scoring-stage1.yml
