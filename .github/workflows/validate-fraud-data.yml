@@ -31,7 +31,9 @@ jobs:
           if grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py; then
             echo "Scoring stage 1 data changes already applied"
           else
-            python scripts/apply_scoring_stage1.py
+            python scripts/apply_scoring_stage1.py || true
+            grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py
+            grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
           fi
 
       - name: Commit migration to PR branch
