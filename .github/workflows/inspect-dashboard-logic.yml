@@ -1,60 +1,88 @@
-name: Inspect dashboard merge logic
+name: Apply source priority and budget fix
 
 on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
-  inspect:
+  patch-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Extract selected functions
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Apply patch
+        run: python scripts/apply_source_priority_budget_fix.py
+      - name: Validate Python and source rules
+        run: |
+          python -m py_compile scripts/update_data.py scripts/apply_source_priority_budget_fix.py
+          grep -q "function googleVerifierRowHasMediaFacts" index.html
+          grep -q "function verifierRowHasActualCost" index.html
+          grep -q "zero Google row falls back to Target Ads" index.html
+          ! grep -q ': Boolean(costColumn)' index.html
+          ! grep -q ': Boolean(costCol)' index.html
+      - name: Test backend priority
+        run: |
+          python - <<'PY'
+          from scripts.update_data import merge_verifier_rows
+
+          target = [{
+              'placement_nm':'lm_yandex_banner_prg', 'interaction_dt':'2026-07-01',
+              'impressions':1000, 'clicks':10, 'cost':0, 'has_actual_cost':False,
+              'metric_source':'targetads'
+          }]
+          google_zero = [{
+              'placement_nm':'lm_yandex_banner_prg', 'interaction_dt':'2026-07-01',
+              'impressions':0, 'clicks':0, 'cost':0, 'has_actual_cost':True,
+              'metric_source':'yandex'
+          }]
+          google_fact = [{
+              'placement_nm':'lm_yandex_banner_prg', 'interaction_dt':'2026-07-01',
+              'impressions':900, 'clicks':12, 'cost':4500, 'has_actual_cost':True,
+              'metric_source':'yandex'
+          }]
+
+          fallback = merge_verifier_rows(target, google_zero)
+          assert len(fallback) == 1 and fallback[0]['metric_source'] == 'targetads', fallback
+          priority = merge_verifier_rows(target, google_fact)
+          assert len(priority) == 1 and priority[0]['metric_source'] == 'yandex', priority
+          print('backend priority tests passed')
+          PY
+      - name: Check inline JavaScript syntax
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
-
           text=Path('index.html').read_text(encoding='utf-8')
-          selected={
-            'applyPlan','mergeDirectPlan','currentVerifierRows','isGoogleVerifierSource',
-            'isYandexMtsPrgVerifierRow','verifierSourceRowKey','googleVerifierCoverageKeys',
-            'rebuildVerifierRowsFromSources','normalizeVerifierRows','verifierRowsFromFiles',
-            'getPeriodPlanMetric','getPeriodPlanValues','applyVerifier','parseVerifierRows'
-          }
-
-          def extract(start):
-              brace=text.find('{',start)
-              depth=0; quote=None; escape=False
-              for i in range(brace,len(text)):
-                  ch=text[i]
-                  if quote:
-                      if escape: escape=False
-                      elif ch=='\\': escape=True
-                      elif ch==quote: quote=None
-                      continue
-                  if ch in ('"',"'",'`'): quote=ch
-                  elif ch=='{': depth+=1
-                  elif ch=='}':
-                      depth-=1
-                      if depth==0: return text[start:i+1]
-              return ''
-
-          out=['## Selected merge and budget functions']
-          pattern=re.compile(r'(^|\n)([ \t]*function\s+([A-Za-z0-9_$]+)\s*\([^\n]*\)\s*\{)',re.M)
-          for m in pattern.finditer(text):
-              name=m.group(3)
-              if name not in selected: continue
-              start=m.start(2)
-              line=text.count('\n',0,start)+1
-              block=extract(start)
-              out.append(f'\n### {name} · line {line}\n```javascript\n{block}\n```')
-          Path('inspection-comment.md').write_text('\n'.join(out),encoding='utf-8')
+          scripts=[m.group(1) for m in re.finditer(r'<script(?:\s[^>]*)?>(.*?)</script>',text,re.S|re.I)]
+          inline=max(scripts,key=len)
+          Path('/tmp/dashboard-inline.js').write_text(inline,encoding='utf-8')
           PY
-      - name: Post inspection to PR
+          node --check /tmp/dashboard-inline.js
+      - name: Commit patched files
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html scripts/update_data.py
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Fix Google Target Ads priority and budgets"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Comment result
+        if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh pr comment ${{ github.event.pull_request.number }} --body-file inspection-comment.md
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "Патч применён: Google/Target Ads дедуплицируются по дате и кампании; нулевой Google использует Target Ads; ручной Target Ads рассчитывает бюджет по плановому CPM. Проверки Python и JavaScript прошли."
