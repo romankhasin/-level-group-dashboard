@@ -1,8 +1,13 @@
 {
-  "version": 2,
-  "generatedAt": "2026-07-25T21:45:58.619591Z",
+  "version": 3,
+  "generatedAt": "2026-07-25T22:16:42.116719Z",
   "dataThrough": "2026-07-25",
   "refresh": "daily, previous 3 complete days",
+  "campaignFilter": [
+    "prg",
+    "med",
+    "mrk"
+  ],
   "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
   "counters": [
     {
@@ -12,28 +17,28 @@
       "permission": "view",
       "from": "2026-05-01",
       "to": "2026-07-25",
-      "visits": 3238601,
+      "visits": 1551848,
       "files": [
         {
           "month": "2026-05",
           "path": "53197618/2026-05.json",
           "from": "2026-05-01",
           "to": "2026-05-31",
-          "visits": 1194708
+          "visits": 563080
         },
         {
           "month": "2026-06",
           "path": "53197618/2026-06.json",
           "from": "2026-06-01",
           "to": "2026-06-30",
-          "visits": 1206424
+          "visits": 603395
         },
         {
           "month": "2026-07",
           "path": "53197618/2026-07.json",
           "from": "2026-07-01",
           "to": "2026-07-25",
-          "visits": 837469
+          "visits": 385373
         }
       ]
     },
@@ -44,28 +49,28 @@
       "permission": "view",
       "from": "2026-05-01",
       "to": "2026-07-25",
-      "visits": 409253,
+      "visits": 290303,
       "files": [
         {
           "month": "2026-05",
           "path": "100470605/2026-05.json",
           "from": "2026-05-01",
           "to": "2026-05-31",
-          "visits": 138542
+          "visits": 100738
         },
         {
           "month": "2026-06",
           "path": "100470605/2026-06.json",
           "from": "2026-06-01",
           "to": "2026-06-30",
-          "visits": 126298
+          "visits": 82374
         },
         {
           "month": "2026-07",
           "path": "100470605/2026-07.json",
           "from": "2026-07-01",
           "to": "2026-07-25",
-          "visits": 144413
+          "visits": 107191
         }
       ]
     }
