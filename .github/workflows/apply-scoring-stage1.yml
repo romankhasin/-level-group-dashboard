@@ -1,0 +1,51 @@
+name: Apply scoring stage 1 data changes
+
+on:
+  push:
+    branches:
+      - agent/scoring-stage1-data
+    paths:
+      - "scripts/apply_scoring_stage1.py"
+      - ".github/workflows/apply-scoring-stage1.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/scoring-stage1-data
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply changes
+        run: python scripts/apply_scoring_stage1.py
+
+      - name: Validate data pipeline
+        run: |
+          python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py
+          python scripts/fraud_visit_classifier.py
+          python scripts/update_fraud_data.py --self-test
+          grep -q 'DATA_VERSION = 4' scripts/update_fraud_data.py
+          grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
+          grep -q '"automationShare": automation_visits / visits' scripts/update_fraud_data.py
+          grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
+
+      - name: Commit applied changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/update_fraud_data.py .github/workflows/validate-fraud-data.yml
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add volume-aware automation aggregates"
+            git push origin HEAD:agent/scoring-stage1-data
+          fi
