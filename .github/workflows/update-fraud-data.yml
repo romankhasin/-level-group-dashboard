@@ -47,7 +47,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
           if [ -d data/fraud ]; then
             git add data/fraud
           fi
@@ -55,7 +54,8 @@ jobs:
             echo "No fraud data changes"
           else
             git commit -m "Update fraud analysis data"
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
       - name: Fail when Logs API update failed
