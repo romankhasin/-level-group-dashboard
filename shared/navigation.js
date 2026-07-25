@@ -4,7 +4,7 @@
     dashboard: "https://romankhasin.github.io/-level-group-dashboard/dashboard/",
     creative: "https://creative-quality-checker-one.vercel.app/",
     news: "https://romankhasin.github.io/level-realty-radar-new/",
-    fraud: null
+    fraud: "https://romankhasin.github.io/traffic-fraud-lab/"
   };
 
   const settings = Object.assign(
@@ -65,5 +65,36 @@
       </nav>`;
   };
 
+  const activateFraudCard = () => {
+    const card = document.querySelector("#fraud-lab");
+    if (!card || card.tagName.toLowerCase() === "a") return;
+
+    const link = document.createElement("a");
+    link.id = card.id;
+    link.className = card.className.replace("tool-card--disabled", "").trim();
+    link.href = settings.links.fraud;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.setAttribute("aria-label", "Открыть Traffic Fraud Lab");
+    link.innerHTML = card.innerHTML;
+
+    const status = link.querySelector(".tool-card__status");
+    if (status) {
+      status.classList.remove("tool-card__status--planned");
+      status.textContent = "Работает";
+    }
+
+    const action = link.querySelector(".tool-card__action");
+    if (action) {
+      action.innerHTML = `Открыть проверку <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>`;
+    }
+
+    card.replaceWith(link);
+
+    const summary = document.querySelector(".hero-summary__note");
+    if (summary) summary.textContent = "Все четыре сервиса подключены к общей навигации Digital Hub.";
+  };
+
   document.querySelectorAll("[data-level-navigation]").forEach(renderNavigation);
+  activateFraudCard();
 })();
