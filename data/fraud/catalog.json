@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "generatedAt": "2026-07-25T21:14:23.090429Z",
+  "version": 2,
+  "generatedAt": "2026-07-25T21:45:58.619591Z",
   "dataThrough": "2026-07-25",
   "refresh": "daily, previous 3 complete days",
   "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
