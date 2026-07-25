@@ -1,0 +1,45 @@
+name: Update portal copy
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      - name: Apply portal copy changes
+        run: python scripts/update_portal_copy.py
+      - name: Verify portal content
+        run: |
+          grep -q "Level Group digital dashboard" portal/index.html
+          grep -q "в одной системе с общей навигацией" portal/index.html
+          ! grep -q "Единый центр digital-инструментов" portal/index.html
+          ! grep -q "Каждый раздел решает отдельную задачу" portal/index.html
+          ! grep -q "Одна навигация" portal/index.html
+          ! grep -q "Единый дизайн" portal/index.html
+          ! grep -q "Независимые модули" portal/index.html
+      - name: Commit portal page
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add portal/index.html
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Update portal headline and remove principles"
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Comment result
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body "Тексты главной страницы обновлены, описание разделов и блок принципов удалены. Остальные элементы портала не изменены."
