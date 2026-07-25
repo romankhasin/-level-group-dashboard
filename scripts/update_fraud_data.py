@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data" / "fraud"
 CATALOG_PATH = DATA_DIR / "catalog.json"
 STATUS_PATH = DATA_DIR / "status.json"
-DATA_VERSION = 3
+DATA_VERSION = 4
 
 START_DATE = dt.date(2026, 5, 1)
 COUNTER_IDS = (53197618, 100470605)
@@ -284,7 +284,7 @@ def empty_bucket() -> dict:
         "profile_counts": Counter(),
         "ipv6_visits": 0,
         "unknown_browser_visits": 0,
-        "automation": False,
+        "automation_visits": 0,
         "visit_features": [],
     }
 
@@ -346,7 +346,7 @@ def process_visit(
         bucket["unknown_browser_visits"] += 1
     automation = bool(AUTOMATION_RE.search(browser_version))
     if automation:
-        bucket["automation"] = True
+        bucket["automation_visits"] += 1
 
     append_visit_feature(
         bucket,
@@ -445,6 +445,7 @@ def finalize_bucket(source: str, report_date: str, bucket: dict) -> dict:
     unique_client_ids = len(bucket["client_counts"])
     top_client = hidden_top_entry(bucket["client_counts"], client_id_visits)
     visit_risk = summarize_visit_risk(bucket, visits)
+    automation_visits = int(bucket.get("automation_visits") or 0)
     metrics = {
         "visits": visits,
         "users": users,
@@ -481,7 +482,9 @@ def finalize_bucket(source: str, report_date: str, bucket: dict) -> dict:
         "unknownBrowserShare": bucket["unknown_browser_visits"] / visits if visits else 0.0,
         "cookieEnabledShare": bucket["cookie_sum"] / visits if visits else 0.0,
         "visitRisk": visit_risk,
-        "automation": bool(bucket["automation"]),
+        "automationVisits": automation_visits,
+        "automationShare": automation_visits / visits if visits else 0.0,
+        "automation": automation_visits > 0,
         "concentrationScope": "daily",
         "dataSource": "yandex-metrica-logs-api",
     }
@@ -671,6 +674,7 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
         "dataThrough": max((item["to"] for item in catalog_counters), default=""),
         "refresh": "daily, previous 3 complete days",
         "campaignFilter": list(CAMPAIGN_TOKENS),
+        "scoringModel": "directional-volume-multisignal-stage1",
         "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
         "counters": catalog_counters,
     }
@@ -757,6 +761,18 @@ def self_test() -> None:
     assert result["visitRisk"]["classifiedVisits"] == 2
     assert result["visitRisk"]["highRiskVisits"] == 0
     assert result["visitRisk"]["reviewVisits"] == 0
+    assert result["automationVisits"] == 0
+    assert result["automationShare"] == 0
+
+    automation_row = dict(rows[0])
+    automation_row["ym:s:browser"] = "HeadlessChrome"
+    automation_store: dict[tuple[str, str], dict] = {}
+    process_visit(automation_store, automation_row, quality_goal_id=411053186)
+    automation_result = finalize_bucket(
+        "mts", "2026-07-01", automation_store[("mts", "2026-07-01")]
+    )
+    assert automation_result["automationVisits"] == 1
+    assert automation_result["automationShare"] == 1
     assert "1234567890123456789" not in json.dumps(result)
     print("Fraud Logs API self-test passed")
 
