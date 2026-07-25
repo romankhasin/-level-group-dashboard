@@ -1,0 +1,63 @@
+name: Update fraud analysis data
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/update-fraud-data.yml"
+      - "scripts/update_fraud_data.py"
+  schedule:
+    # GitHub Actions uses UTC. 03:30 UTC = 06:30 Moscow.
+    - cron: "30 3 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-fraud-analysis-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate aggregation locally
+        run: python scripts/update_fraud_data.py --self-test
+
+      - name: Download Logs API data and build safe summaries
+        id: build
+        continue-on-error: true
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: python -u scripts/update_fraud_data.py
+
+      - name: Commit refreshed fraud summaries
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main
+          if [ -d data/fraud ]; then
+            git add data/fraud
+          fi
+          if git diff --cached --quiet; then
+            echo "No fraud data changes"
+          else
+            git commit -m "Update fraud analysis data"
+            git push
+          fi
+
+      - name: Fail when Logs API update failed
+        if: steps.build.outcome != 'success'
+        run: exit 1

@@ -1,0 +1,39 @@
+name: Validate fraud API data pipeline
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/update-fraud-data.yml"
+      - ".github/workflows/validate-fraud-data.yml"
+      - "scripts/update_fraud_data.py"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check Python syntax and aggregation
+        run: |
+          python -m py_compile scripts/update_fraud_data.py
+          python scripts/update_fraud_data.py --self-test
+
+      - name: Check privacy and counter configuration
+        run: |
+          grep -q "COUNTER_IDS = (53197618, 100470605)" scripts/update_fraud_data.py
+          grep -q '"ym:s:visitID"' scripts/update_fraud_data.py
+          grep -q '"ym:s:clientID"' scripts/update_fraud_data.py
+          grep -q '"ym:s:ipAddress"' scripts/update_fraud_data.py
+          grep -q 'entry\["key"\] = "скрыто"' scripts/update_fraud_data.py
+          grep -q "raw IP, ClientID and VisitID are never committed" scripts/update_fraud_data.py
+          grep -q "YANDEX_METRIKA_TOKEN" .github/workflows/update-fraud-data.yml
+          grep -q "data/fraud" .github/workflows/update-fraud-data.yml
