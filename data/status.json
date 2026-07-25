@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-07-24T19:51:14.116597Z",
+  "generatedAt": "2026-07-25T09:20:42.742460Z",
   "metrika": {
-    "new_rows": 0,
-    "total_rows": 68341,
+    "new_rows": 781,
+    "total_rows": 69122,
     "ranges": {
       "53197618": {
         "from": "2026-07-24",
-        "to": "2026-07-23",
-        "new_rows": 0,
+        "to": "2026-07-24",
+        "new_rows": 710,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-24",
-        "to": "2026-07-23",
-        "new_rows": 0,
+        "to": "2026-07-24",
+        "new_rows": 71,
         "quality_calls_backfill": false
       }
     }
@@ -46,6 +46,6 @@
     "new_rows": 0,
     "total_rows": 0,
     "from": "2026-05-01",
-    "to": "2026-07-23"
+    "to": "2026-07-24"
   }
 }
