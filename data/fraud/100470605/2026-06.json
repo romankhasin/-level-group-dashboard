@@ -1,11 +1,11 @@
 {
-  "version": 3,
+  "version": 4,
   "counterId": 100470605,
   "counterName": "business.level.ru",
   "month": "2026-06",
   "from": "2026-06-01",
   "to": "2026-06-30",
-  "generatedAt": "2026-07-25T22:16:42.116719Z",
+  "generatedAt": "2026-07-25T22:58:12.648244Z",
   "source": "Yandex Metrica Logs API",
   "campaignFilter": [
     "prg",
@@ -102,6 +102,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -188,6 +190,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -274,6 +278,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -320,7 +326,7 @@
         "share": 0.208955223880597
       },
       "topProfile": {
-        "key": "chrome 134 · windows10 · 1 · 1920x1080",
+        "key": "chrome 148 · windows10 · 1 · 1920x1080",
         "value": 6,
         "share": 0.08955223880597014
       },
@@ -360,6 +366,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -446,6 +454,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -532,6 +542,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -618,6 +630,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -704,6 +718,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -790,6 +806,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -876,6 +894,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -962,6 +982,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1048,6 +1070,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1134,6 +1158,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1220,6 +1246,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1306,6 +1334,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1392,6 +1422,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1478,6 +1510,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1564,6 +1598,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1669,6 +1705,8 @@
         ],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1755,6 +1793,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1841,6 +1881,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -1927,6 +1969,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2013,6 +2057,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2099,6 +2145,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2204,6 +2252,8 @@
         ],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2290,6 +2340,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2376,6 +2428,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2462,6 +2516,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2548,6 +2604,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2634,6 +2692,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2720,6 +2780,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2806,6 +2868,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2892,6 +2956,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -2978,6 +3044,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3064,6 +3132,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3150,6 +3220,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3236,6 +3308,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3322,6 +3396,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3408,6 +3484,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3494,6 +3572,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3580,6 +3660,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3666,6 +3748,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3752,6 +3836,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3838,6 +3924,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -3943,6 +4031,8 @@
         ],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4029,6 +4119,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4115,6 +4207,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4201,6 +4295,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4287,6 +4383,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4373,6 +4471,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4459,6 +4559,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4545,6 +4647,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4631,6 +4735,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4677,7 +4783,7 @@
         "share": 0.1351981351981352
       },
       "topProfile": {
-        "key": "android_browser 16 · android_16 · 2 · 384x832",
+        "key": "safari_mobile 26.5 · ios26 · 2 · 414x896",
         "value": 12,
         "share": 0.027972027972027972
       },
@@ -4717,6 +4823,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4803,6 +4911,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4889,6 +4999,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -4975,6 +5087,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5061,6 +5175,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5147,6 +5263,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5233,6 +5351,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5319,6 +5439,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5405,6 +5527,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5491,6 +5615,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5577,6 +5703,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5663,6 +5791,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5749,6 +5879,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5835,6 +5967,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -5921,6 +6055,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6007,6 +6143,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6093,6 +6231,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6179,6 +6319,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6265,6 +6407,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6351,6 +6495,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6437,6 +6583,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6523,6 +6671,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6609,6 +6759,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6695,6 +6847,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6781,6 +6935,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6867,6 +7023,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -6953,6 +7111,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7039,6 +7199,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7125,6 +7287,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7211,6 +7375,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7297,6 +7463,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7396,6 +7564,8 @@
         ],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7482,6 +7652,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7568,6 +7740,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7650,17 +7824,17 @@
         "suspiciousVisits": 1,
         "suspiciousShare": 0.000731528895391368,
         "confidence": "Высокая",
-        "comment": "1 визитов требуют внимания: 0 высокого риска и 1 требуют проверки. Основные причины — очень короткие визиты с отказом и одинаковый технический профиль.",
+        "comment": "1 визитов требуют внимания: 0 высокого риска и 1 требуют проверки. Основные причины — одинаковый технический профиль и очень короткие визиты с отказом.",
         "reasons": [
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "concentrated_profile",
+            "label": "одинаковый технический профиль",
             "visits": 1,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_profile",
-            "label": "одинаковый технический профиль",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 1,
             "shareOfSuspicious": 1.0
           },
@@ -7673,6 +7847,8 @@
         ],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7759,6 +7935,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7845,6 +8023,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -7931,6 +8111,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8017,6 +8199,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8103,6 +8287,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8189,6 +8375,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8275,6 +8463,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8361,6 +8551,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8460,6 +8652,8 @@
         ],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8546,6 +8740,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8632,6 +8828,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8718,6 +8916,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8804,6 +9004,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8890,6 +9092,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -8976,6 +9180,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9062,6 +9268,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9148,6 +9356,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9234,6 +9444,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9320,6 +9532,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9406,6 +9620,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9492,6 +9708,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9578,6 +9796,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9664,6 +9884,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9750,6 +9972,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9836,6 +10060,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -9922,6 +10148,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10008,6 +10236,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10094,6 +10324,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10180,6 +10412,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10266,6 +10500,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10352,6 +10588,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10438,6 +10676,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10524,6 +10764,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10610,6 +10852,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10696,6 +10940,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10782,6 +11028,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10868,6 +11116,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -10954,6 +11204,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11040,6 +11292,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11126,6 +11380,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11212,6 +11468,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11298,6 +11556,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11344,7 +11604,7 @@
         "share": 0.12538226299694188
       },
       "topProfile": {
-        "key": "chromemobile 149 · android_13 · 2 · 393x873",
+        "key": "safari_mobile 26.5 · ios26 · 2 · 414x896",
         "value": 5,
         "share": 0.01529051987767584
       },
@@ -11384,6 +11644,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11470,6 +11732,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11556,6 +11820,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11642,6 +11908,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11728,6 +11996,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11814,6 +12084,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11900,6 +12172,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -11986,6 +12260,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12072,6 +12348,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12158,6 +12436,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12244,6 +12524,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12330,6 +12612,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12416,6 +12700,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12502,6 +12788,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"
@@ -12588,6 +12876,8 @@
         "reasons": [],
         "method": "rule-based visit clusters v1"
       },
+      "automationVisits": 0,
+      "automationShare": 0.0,
       "automation": false,
       "concentrationScope": "daily",
       "dataSource": "yandex-metrica-logs-api"

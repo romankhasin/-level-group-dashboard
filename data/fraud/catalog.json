@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "generatedAt": "2026-07-25T22:16:42.116719Z",
+  "version": 4,
+  "generatedAt": "2026-07-25T22:58:12.648244Z",
   "dataThrough": "2026-07-25",
   "refresh": "daily, previous 3 complete days",
   "campaignFilter": [
@@ -8,6 +8,7 @@
     "med",
     "mrk"
   ],
+  "scoringModel": "directional-volume-multisignal-stage1",
   "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
   "counters": [
     {
