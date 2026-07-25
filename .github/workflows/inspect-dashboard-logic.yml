@@ -2,44 +2,62 @@ name: Inspect dashboard merge logic
 
 on:
   pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   inspect:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Print relevant dashboard code
+      - name: Extract relevant dashboard functions
         run: |
           python - <<'PY'
           from pathlib import Path
-          text = Path('index.html').read_text(encoding='utf-8')
-          lines = text.splitlines()
-          patterns = [
-              'AUTOMATIC_GOOGLE_VERIFIER_ROWS',
+          import re
+
+          lines = Path('index.html').read_text(encoding='utf-8').splitlines()
+          needles = [
               'googleVerifierCoverageKeys',
               'verifierSourceRowKey',
+              'AUTOMATIC_GOOGLE_VERIFIER_ROWS',
               'mergeVerifier',
+              'verifierRows',
               'has_actual_cost',
               'plannedCpm',
               'planCpm',
-              'CPM',
               'budget',
               'cost',
-              'Target Ads',
           ]
+          hits=[]
+          for i,line in enumerate(lines):
+              if any(n.lower() in line.lower() for n in needles):
+                  hits.append(i)
+
           windows=[]
-          for i, line in enumerate(lines):
-              if any(p.lower() in line.lower() for p in patterns):
-                  start=max(0,i-10); end=min(len(lines),i+24)
-                  if any(not (end < a or start > b) for a,b in windows):
-                      continue
-                  windows.append((start,end))
+          for i in hits:
+              start=max(0,i-16); end=min(len(lines),i+34)
+              # Expand backwards to the nearest function declaration when close.
+              for j in range(i, max(-1,i-80), -1):
+                  if re.search(r'\bfunction\s+[A-Za-z0-9_$]+\s*\(', lines[j]):
+                      start=j
+                      break
+              if any(not (end < a or start > b) for a,b in windows):
+                  continue
+              windows.append((start,end))
+
+          out=['## Dashboard logic inspection','```javascript']
           for start,end in windows:
-              print(f'\n===== LINES {start+1}-{end} =====')
-              for j in range(start,end):
-                  print(f'{j+1:05d}: {lines[j]}')
+              block='\n'.join(f'{j+1:05d}: {lines[j]}' for j in range(start,end))
+              if len('\n'.join(out))+len(block)>52000:
+                  break
+              out.append(f'\n// ===== LINES {start+1}-{end} =====\n{block}')
+          out.append('```')
+          Path('inspection-comment.md').write_text('\n'.join(out),encoding='utf-8')
           PY
+      - name: Post inspection to PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file inspection-comment.md
