@@ -28,27 +28,26 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('scripts/update_clientid_periods.py')
-          text = path.read_text(encoding='utf-8')
-          block_start = text.index('# Cookie methodology v4')
-          marker = 'def _subtract_stats(total: dict, part: dict) -> dict:\n'
+          path = Path("scripts/update_clientid_periods.py")
+          text = path.read_text(encoding="utf-8")
+          block_start = text.index("# Cookie methodology v4")
+          marker = "def _subtract_stats(total: dict, part: dict) -> dict:\n"
           marker_index = text.index(marker, block_start)
-          override = '''def metric_rates(metrics: dict) -> dict:
-              visits = int(metrics.get("visits") or 0)
-              return {
-                  "visits": visits,
-                  "bounce": int(metrics.get("bounceVisits") or 0) / visits if visits else 0.0,
-                  "time": int(metrics.get("durationSum") or 0) / visits if visits else 0.0,
-                  "depth": int(metrics.get("pageViewsSum") or 0) / visits if visits else 0.0,
-                  "quality": int(metrics.get("qualityVisits") or 0) / visits if visits else 0.0,
-                  "newShare": int(metrics.get("newVisits") or 0) / visits if visits else 0.0,
-              }
-
-
-'''
-          if 'def metric_rates(metrics: dict) -> dict:' not in text[block_start:marker_index]:
+          override = (
+              "def metric_rates(metrics: dict) -> dict:\n"
+              "    visits = int(metrics.get(\"visits\") or 0)\n"
+              "    return {\n"
+              "        \"visits\": visits,\n"
+              "        \"bounce\": int(metrics.get(\"bounceVisits\") or 0) / visits if visits else 0.0,\n"
+              "        \"time\": int(metrics.get(\"durationSum\") or 0) / visits if visits else 0.0,\n"
+              "        \"depth\": int(metrics.get(\"pageViewsSum\") or 0) / visits if visits else 0.0,\n"
+              "        \"quality\": int(metrics.get(\"qualityVisits\") or 0) / visits if visits else 0.0,\n"
+              "        \"newShare\": int(metrics.get(\"newVisits\") or 0) / visits if visits else 0.0,\n"
+              "    }\n\n\n"
+          )
+          if "def metric_rates(metrics: dict) -> dict:" not in text[block_start:marker_index]:
               text = text[:marker_index] + override + text[marker_index:]
-          path.write_text(text, encoding='utf-8')
+          path.write_text(text, encoding="utf-8")
           PY
 
       - name: Validate Python and methodology
