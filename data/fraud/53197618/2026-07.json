@@ -5,7 +5,7 @@
   "month": "2026-07",
   "from": "2026-07-01",
   "to": "2026-07-25",
-  "generatedAt": "2026-07-26T08:19:54.862176Z",
+  "generatedAt": "2026-07-26T10:45:23.567503Z",
   "source": "Yandex Metrica Logs API",
   "campaignFilter": [
     "prg",
@@ -43202,7 +43202,7 @@
         "primary": 0.0
       },
       "topBrowser": {
-        "key": "chromemobile 150",
+        "key": "safari_mobile 26.5",
         "value": 14,
         "share": 0.22580645161290322
       },
@@ -44499,17 +44499,17 @@
         "suspiciousVisits": 7,
         "suspiciousShare": 0.004864489228630994,
         "confidence": "Высокая",
-        "comment": "7 визитов требуют внимания: 0 высокого риска и 7 требуют проверки. Основные причины — концентрация одного IP и одинаковый технический профиль.",
+        "comment": "7 визитов требуют внимания: 0 высокого риска и 7 требуют проверки. Основные причины — одинаковый технический профиль и концентрация одного IP.",
         "reasons": [
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "concentrated_profile",
+            "label": "одинаковый технический профиль",
             "visits": 7,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_profile",
-            "label": "одинаковый технический профиль",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 7,
             "shareOfSuspicious": 1.0
           },
@@ -45411,7 +45411,7 @@
         "suspiciousVisits": 7,
         "suspiciousShare": 0.025735294117647058,
         "confidence": "Средняя",
-        "comment": "7 визитов требуют внимания: 0 высокого риска и 7 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
+        "comment": "7 визитов требуют внимания: 0 высокого риска и 7 требуют проверки. Основные причины — концентрация одного IP и повторные визиты одного ClientID.",
         "reasons": [
           {
             "code": "concentrated_ip",
@@ -45420,14 +45420,14 @@
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "repeated_clientid",
+            "label": "повторные визиты одного ClientID",
             "visits": 7,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "repeated_clientid",
-            "label": "повторные визиты одного ClientID",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 7,
             "shareOfSuspicious": 1.0
           }
@@ -46153,17 +46153,17 @@
         "suspiciousVisits": 6,
         "suspiciousShare": 0.012526096033402923,
         "confidence": "Средняя",
-        "comment": "6 визитов требуют внимания: 0 высокого риска и 6 требуют проверки. Основные причины — концентрация одного IP и одинаковый технический профиль.",
+        "comment": "6 визитов требуют внимания: 0 высокого риска и 6 требуют проверки. Основные причины — одинаковый технический профиль и концентрация одного IP.",
         "reasons": [
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "concentrated_profile",
+            "label": "одинаковый технический профиль",
             "visits": 6,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_profile",
-            "label": "одинаковый технический профиль",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 6,
             "shareOfSuspicious": 1.0
           },
@@ -48000,8 +48000,8 @@
       "tech": {
         "visits": 3083,
         "users": 2696,
-        "bounce": 0.4219915666558547,
-        "time": 88.71359065844956,
+        "bounce": 0.421342847875446,
+        "time": 88.87706779111255,
         "newShare": 0.6519623743107363,
         "quality": 0.0,
         "primary": 0.0
@@ -48009,8 +48009,8 @@
       "ip": {
         "visits": 3083,
         "users": 2696,
-        "bounce": 0.4219915666558547,
-        "time": 88.71359065844956,
+        "bounce": 0.421342847875446,
+        "time": 88.87706779111255,
         "newShare": 0.6519623743107363,
         "quality": 0.0,
         "primary": 0.0
@@ -48018,8 +48018,8 @@
       "metrics": {
         "visits": 3083,
         "users": 2696,
-        "bounce": 0.4219915666558547,
-        "time": 88.71359065844956,
+        "bounce": 0.421342847875446,
+        "time": 88.87706779111255,
         "newShare": 0.6519623743107363,
         "quality": 0.0,
         "primary": 0.0

@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generatedAt": "2026-07-26T08:19:54.862176Z",
+  "generatedAt": "2026-07-26T10:45:23.567503Z",
   "dataThrough": "2026-07-25",
   "refresh": "daily, previous 3 complete days",
   "campaignFilter": [
@@ -43,20 +43,42 @@
         }
       ],
       "periodMetrics": {
-        "version": 2,
+        "version": 3,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
-        "method": "exact-concentration-period-v2"
+        "method": "exact-period-metrics-v3"
       },
       "clientIdPeriods": {
-        "version": 2,
+        "version": 3,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
-        "method": "exact-concentration-period-v2"
+        "method": "exact-period-metrics-v3"
+      },
+      "sliceMetrics": {
+        "version": 1,
+        "from": "2026-05-01",
+        "to": "2026-07-25",
+        "maxDays": 90,
+        "pathTemplate": "53197618/slices/{month}.json",
+        "method": "safe-daily-slices-v1",
+        "months": [
+          "2026-05",
+          "2026-06",
+          "2026-07"
+        ],
+        "dimensions": [
+          "browser",
+          "resolution",
+          "os",
+          "deviceModel",
+          "referrer",
+          "browserResolution",
+          "fingerprint"
+        ]
       }
     },
     {
@@ -91,25 +113,49 @@
         }
       ],
       "periodMetrics": {
-        "version": 2,
+        "version": 3,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
-        "method": "exact-concentration-period-v2"
+        "method": "exact-period-metrics-v3"
       },
       "clientIdPeriods": {
-        "version": 2,
+        "version": 3,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
-        "method": "exact-concentration-period-v2"
+        "method": "exact-period-metrics-v3"
+      },
+      "sliceMetrics": {
+        "version": 1,
+        "from": "2026-05-01",
+        "to": "2026-07-25",
+        "maxDays": 90,
+        "pathTemplate": "100470605/slices/{month}.json",
+        "method": "safe-daily-slices-v1",
+        "months": [
+          "2026-05",
+          "2026-06",
+          "2026-07"
+        ],
+        "dimensions": [
+          "browser",
+          "resolution",
+          "os",
+          "deviceModel",
+          "referrer",
+          "browserResolution",
+          "fingerprint"
+        ]
       }
     }
   ],
-  "periodMetricsGeneratedAt": "2026-07-26T08:22:13.724430Z",
-  "periodMetricsModel": "exact-all-ranges-concentration-v2",
-  "clientIdPeriodsGeneratedAt": "2026-07-26T08:22:13.724430Z",
-  "clientIdPeriodModel": "exact-all-ranges-concentration-v2"
+  "periodMetricsGeneratedAt": "2026-07-26T10:47:13.307590Z",
+  "periodMetricsModel": "exact-period-metrics-v3",
+  "clientIdPeriodsGeneratedAt": "2026-07-26T10:47:13.307590Z",
+  "clientIdPeriodModel": "exact-period-metrics-v3",
+  "sliceMetricsGeneratedAt": "2026-07-26T10:47:13.307590Z",
+  "sliceMetricsModel": "safe-daily-slices-v1"
 }
