@@ -19,6 +19,7 @@ from collections import Counter, defaultdict
 from pathlib import Path
 import re
 import shutil
+import statistics
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -43,7 +44,7 @@ from update_fraud_data import (
     write_json,
 )
 
-PERIOD_VERSION = 3
+PERIOD_VERSION = 4
 SLICE_VERSION = 1
 MAX_PERIOD_DAYS = 90
 MIN_SOURCE_VISITS = 20
@@ -606,7 +607,7 @@ def build_period_payloads(
             "from": day.isoformat(),
             "to": end.isoformat(),
             "generatedAt": generated_at,
-            "method": "exact-period-metrics-v3",
+            "method": "exact-period-metrics-v4-cookie-segments",
             "campaignFilter": list(CAMPAIGN_TOKENS),
             "privacy": (
                 "Only counts, shares, referrer hostnames and non-sensitive technical labels "
@@ -813,7 +814,7 @@ def patch_catalog(
         "to": end.isoformat(),
         "maxDays": MAX_PERIOD_DAYS,
         "pathTemplate": f"{counter_id}/clientid-periods/{{from}}.json",
-        "method": "exact-period-metrics-v3",
+        "method": "exact-period-metrics-v4-cookie-segments",
     }
     slice_info = {
         "version": SLICE_VERSION,
@@ -836,9 +837,9 @@ def patch_catalog(
     if not found:
         raise RuntimeError(f"Counter {counter_id} is missing from fraud catalog")
     catalog["periodMetricsGeneratedAt"] = generated_at
-    catalog["periodMetricsModel"] = "exact-period-metrics-v3"
+    catalog["periodMetricsModel"] = "exact-period-metrics-v4-cookie-segments"
     catalog["clientIdPeriodsGeneratedAt"] = generated_at
-    catalog["clientIdPeriodModel"] = "exact-period-metrics-v3"
+    catalog["clientIdPeriodModel"] = "exact-period-metrics-v4-cookie-segments"
     catalog["sliceMetricsGeneratedAt"] = generated_at
     catalog["sliceMetricsModel"] = "safe-daily-slices-v1"
     write_json(CATALOG_PATH, catalog)
@@ -918,6 +919,560 @@ def self_test() -> None:
     assert "secret=1" not in serialized
     print("Exact period metrics and safe slice self-test passed")
 
+
+
+# Cookie methodology v4: explicit cookie states, segmented ClientID and technical intersections.
+COOKIE_STATUSES = ("on", "off", "unknown")
+TECH_SEGMENT_KEYS = (
+    "mobileTablet", "cookieOn", "cookieOff", "cookieUnknown",
+    "missingReferrer", "resolutionUnavailable", "unknownMobileModel", "ipv6",
+    "cookieOffMissingReferrer", "cookieOffResolutionUnavailable",
+    "cookieOffUnknownMobileModel", "missingReferrerUnknownMobileModel",
+    "cookieOffMissingReferrerResolutionUnavailable",
+)
+INTERSECTION_SEGMENT_KEYS = (
+    "cookieOffMissingReferrer", "cookieOffResolutionUnavailable",
+    "cookieOffUnknownMobileModel", "missingReferrerUnknownMobileModel",
+    "cookieOffMissingReferrerResolutionUnavailable",
+)
+
+
+def parse_cookie_status(value: object) -> str:
+    raw = str(value or "").strip().lower()
+    if raw in {"1", "true", "yes", "enabled", "on"}:
+        return "on"
+    if raw in {"0", "false", "no", "disabled", "off"}:
+        return "off"
+    return "unknown"
+
+
+def empty_day() -> dict:
+    return {
+        "visits": 0, "metrics": empty_stats(), "clients": Counter(),
+        "bounceClients": Counter(), "ips": Counter(), "subnets": Counter(),
+        "browsers": Counter(), "profiles": Counter(),
+        "groups": {dimension: {} for dimension in SLICE_DIMENSIONS},
+        "groupMeta": {dimension: {} for dimension in SLICE_DIMENSIONS},
+        "cookieStatusVisits": Counter(),
+        "cookieClients": {status: Counter() for status in COOKIE_STATUSES},
+        "technicalSegments": {key: empty_stats() for key in TECH_SEGMENT_KEYS},
+        "fastAnyGoal15Visits": 0, "fastAnyGoal30Visits": 0,
+        "fastQualityGoal15Visits": 0, "fastQualityGoal30Visits": 0,
+        "multiGoalVisits": 0, "zeroResolutionVisits": 0,
+        "unknownResolutionVisits": 0, "unknownBrowserVisits": 0,
+        "unknownOsVisits": 0, "unknownModelVisits": 0,
+        "missingReferrerVisits": 0, "ipv6Visits": 0,
+        "mobileTabletVisits": 0, "cookieOnVisits": 0,
+        "cookieOffVisits": 0, "cookieUnknownVisits": 0,
+        "cookieDisabledVisits": 0,
+    }
+
+
+def _add_tech(bucket: dict, key: str, stats: dict) -> None:
+    add_stats(bucket["technicalSegments"][key], stats)
+
+
+def process_period_row(
+    daily: dict[str, dict[str, dict]],
+    row: dict[str, str],
+    *,
+    quality_goal_id: int,
+) -> bool:
+    campaign = field_value(row, "ym:s:<attribution>UTMCampaign", "UTMCampaign")
+    if not campaign_in_scope(campaign):
+        return False
+    report_date = field_value(row, "ym:s:date").strip()
+    if not report_date:
+        return False
+    source = source_name(field_value(row, "ym:s:<attribution>UTMSource", "UTMSource"))
+    bucket = daily[source].setdefault(report_date, empty_day())
+    bucket["visits"] += 1
+
+    bounce = bool(safe_int(field_value(row, "ym:s:bounce")))
+    duration = max(0, safe_int(field_value(row, "ym:s:visitDuration")))
+    pageviews = max(0, safe_int(field_value(row, "ym:s:pageViews")))
+    is_new = bool(safe_int(field_value(row, "ym:s:isNewUser")))
+    goal_ids = set(parse_int_array(field_value(row, "ym:s:goalsID")))
+    quality = quality_goal_id in goal_ids
+    stats = visit_stats(
+        bounce=bounce, duration=duration, pageviews=pageviews,
+        quality=quality, is_new=is_new,
+    )
+    add_stats(bucket["metrics"], stats)
+
+    cookie_status = parse_cookie_status(field_value(row, "ym:s:cookieEnabled"))
+    bucket["cookieStatusVisits"][cookie_status] += 1
+    bucket[f"cookie{cookie_status.title()}Visits"] += 1
+    if cookie_status == "off":
+        bucket["cookieDisabledVisits"] += 1
+
+    client_id = valid_id(field_value(row, "ym:s:clientID"))
+    if client_id:
+        bucket["clients"][client_id] += 1
+        bucket["cookieClients"][cookie_status][client_id] += 1
+        if bounce:
+            bucket["bounceClients"][client_id] += 1
+
+    ip = valid_id(field_value(row, "ym:s:ipAddress"))
+    is_ipv6 = False
+    if ip:
+        bucket["ips"][ip] += 1
+        bucket["subnets"][subnet_of(ip)] += 1
+        is_ipv6 = ":" in ip
+        if is_ipv6:
+            bucket["ipv6Visits"] += 1
+
+    labels = technical_labels(row)
+    bucket["browsers"][labels["browser"]] += 1
+    bucket["profiles"][labels["fingerprint"]] += 1
+    referrer = referrer_hostname(field_value(row, "ym:s:referer"))
+    is_mobile_tablet = labels["deviceCategory"] in {"2", "3"}
+    resolution_unavailable = labels["resolution"] in {"0x0", "Не определено"}
+    unknown_mobile_model = is_mobile_tablet and bool(UNKNOWN_RE.search(labels["deviceModel"]))
+    missing_referrer = referrer == "Не определено"
+
+    add_group(bucket, "browser", labels["browser"], stats)
+    add_group(bucket, "resolution", labels["resolution"], stats)
+    add_group(bucket, "os", labels["os"], stats)
+    if labels["deviceModel"] != "Не применимо":
+        add_group(bucket, "deviceModel", labels["deviceModel"], stats)
+    add_group(bucket, "referrer", referrer, stats)
+    add_group(
+        bucket, "browserResolution", labels["browserResolution"], stats,
+        {"browser": labels["browser"], "resolution": labels["resolution"]},
+    )
+    add_group(
+        bucket, "fingerprint", labels["fingerprint"], stats,
+        {
+            "browser": labels["browser"], "resolution": labels["resolution"],
+            "os": labels["os"], "deviceCategory": labels["deviceCategory"],
+            "deviceModel": labels["deviceModel"],
+        },
+    )
+
+    _add_tech(bucket, f"cookie{cookie_status.title()}", stats)
+    if is_mobile_tablet:
+        bucket["mobileTabletVisits"] += 1
+        _add_tech(bucket, "mobileTablet", stats)
+    if missing_referrer:
+        bucket["missingReferrerVisits"] += 1
+        _add_tech(bucket, "missingReferrer", stats)
+    if resolution_unavailable:
+        _add_tech(bucket, "resolutionUnavailable", stats)
+    if unknown_mobile_model:
+        bucket["unknownModelVisits"] += 1
+        _add_tech(bucket, "unknownMobileModel", stats)
+    if is_ipv6:
+        _add_tech(bucket, "ipv6", stats)
+
+    if labels["resolution"] == "0x0":
+        bucket["zeroResolutionVisits"] += 1
+    if labels["resolution"] == "Не определено":
+        bucket["unknownResolutionVisits"] += 1
+    if UNKNOWN_RE.search(labels["browser"]):
+        bucket["unknownBrowserVisits"] += 1
+    if UNKNOWN_RE.search(labels["os"]):
+        bucket["unknownOsVisits"] += 1
+
+    if cookie_status == "off" and missing_referrer:
+        _add_tech(bucket, "cookieOffMissingReferrer", stats)
+    if cookie_status == "off" and resolution_unavailable:
+        _add_tech(bucket, "cookieOffResolutionUnavailable", stats)
+    if cookie_status == "off" and unknown_mobile_model:
+        _add_tech(bucket, "cookieOffUnknownMobileModel", stats)
+    if missing_referrer and unknown_mobile_model:
+        _add_tech(bucket, "missingReferrerUnknownMobileModel", stats)
+    if cookie_status == "off" and missing_referrer and resolution_unavailable:
+        _add_tech(bucket, "cookieOffMissingReferrerResolutionUnavailable", stats)
+
+    for key, value in goal_speed_flags(row, quality_goal_id).items():
+        bucket[key] += int(value)
+    return True
+
+
+def metric_rates(metrics: dict) -> dict:
+    visits = int(metrics.get("visits") or 0)
+    return {
+        "visits": visits,
+        "bounce": int(metrics.get("bounceVisits") or 0) / visits if visits else 0.0,
+        "time": int(metrics.get("durationSum") or 0) / visits if visits else 0.0,
+        "depth": int(metrics.get("pageViewsSum") or 0) / visits if visits else 0.0,
+        "quality": int(metrics.get("qualityVisits") or 0) / visits if visits else 0.0,
+        "newShare": int(metrics.get("newVisits") or 0) / visits if visits else 0.0,
+    }
+
+
+def _subtract_stats(total: dict, part: dict) -> dict:
+    return {
+        key: max(0, int(total.get(key) or 0) - int(part.get(key) or 0))
+        for key in empty_stats()
+    }
+
+
+def _client_segment(segment_visits: int, clients: Counter[str], total_visits: int) -> dict:
+    client_visits = sum(clients.values())
+    unique_clients = len(clients)
+    entries = clients.most_common(10)
+    top1 = entries[0][1] if entries else 0
+    top10 = sum(count for _, count in entries)
+    return {
+        "visits": int(segment_visits),
+        "share": segment_visits / total_visits if total_visits else 0.0,
+        "clientIdVisits": client_visits,
+        "coverage": client_visits / segment_visits if segment_visits else 0.0,
+        "uniqueClientIds": unique_clients,
+        "visitsPerClientId": client_visits / unique_clients if unique_clients else 0.0,
+        "top1Visits": top1,
+        "top1Share": top1 / client_visits if client_visits else 0.0,
+        "top10Visits": top10,
+        "top10Share": top10 / client_visits if client_visits else 0.0,
+        "repeatClientVisitShare": (
+            max(0, client_visits - unique_clients) / client_visits if client_visits else 0.0
+        ),
+        "representative": client_visits >= 100 and unique_clients >= 10,
+    }
+
+
+def _tech_segment(
+    segment_stats: dict,
+    comparison_metrics: dict,
+    denominator: int,
+    daily_shares: list[float],
+    peak: dict,
+) -> dict:
+    rates = metric_rates(segment_stats)
+    rest = metric_rates(_subtract_stats(comparison_metrics, segment_stats))
+    return {
+        **rates,
+        "share": rates["visits"] / denominator if denominator else 0.0,
+        "denominatorVisits": int(denominator),
+        "restVisits": rest["visits"],
+        "restBounce": rest["bounce"], "restTime": rest["time"],
+        "restDepth": rest["depth"], "restQuality": rest["quality"],
+        "restNewShare": rest["newShare"],
+        "dailyTypicalShare": statistics.median(daily_shares) if daily_shares else 0.0,
+        "dailyMaxShare": float(peak.get("share") or 0.0),
+        "dailyMaxDate": peak.get("date"),
+        "dailyMaxVisits": int(peak.get("visits") or 0),
+        "dailyMaxSourceVisits": int(peak.get("sourceVisits") or 0),
+    }
+
+
+def _range_summary_v4(
+    *,
+    visits: int, client_visits: int, cumulative: dict, heaps: dict,
+    metrics: dict, repeat_bounce_clients5: int, behavior: dict,
+    technical_quality: dict, cookie_status_visits: Counter[str],
+    cookie_clients: dict[str, Counter[str]], technical_segments: dict[str, dict],
+    technical_daily_shares: dict[str, list[float]],
+    technical_peaks: dict[str, dict], active_days: int,
+) -> dict:
+    client_entries = current_top_entries(cumulative["clients"], heaps["clients"], 10)
+    ip_entries = current_top_entries(cumulative["ips"], heaps["ips"], 1)
+    subnet_entries = current_top_entries(cumulative["subnets"], heaps["subnets"], 1)
+    browser_entries = current_top_entries(cumulative["browsers"], heaps["browsers"], 1)
+    profile_entries = current_top_entries(cumulative["profiles"], heaps["profiles"], 1)
+    unique_clients = len(cumulative["clients"])
+    top1 = client_entries[0][1] if client_entries else 0
+    top10 = sum(count for _, count in client_entries)
+    top_ip = ip_entries[0][1] if ip_entries else 0
+    top_subnet = subnet_entries[0][1] if subnet_entries else 0
+    top_browser, top_browser_visits = browser_entries[0] if browser_entries else ("—", 0)
+    top_profile, top_profile_visits = profile_entries[0] if profile_entries else ("—", 0)
+    rates = metric_rates(metrics)
+    mobile_metrics = technical_segments["mobileTablet"]
+    mobile_visits = int(mobile_metrics.get("visits") or 0)
+
+    client_by_cookie = {
+        status: _client_segment(
+            int(cookie_status_visits.get(status, 0)),
+            cookie_clients[status],
+            visits,
+        )
+        for status in COOKIE_STATUSES
+    }
+    segment_summaries = {}
+    for key in TECH_SEGMENT_KEYS:
+        segment_stats = technical_segments[key]
+        comparison = mobile_metrics if key == "unknownMobileModel" else metrics
+        denominator = mobile_visits if key == "unknownMobileModel" else visits
+        segment_summaries[key] = _tech_segment(
+            segment_stats, comparison, denominator,
+            technical_daily_shares[key], technical_peaks[key],
+        )
+
+    result = {
+        "visits": visits, "clientIdVisits": client_visits,
+        "coverage": client_visits / visits if visits else 0.0,
+        "uniqueClientIds": unique_clients,
+        "top1Visits": top1, "top1Share": top1 / client_visits if client_visits else 0.0,
+        "top10Visits": top10, "top10Share": top10 / client_visits if client_visits else 0.0,
+        "visitsPerClientId": client_visits / unique_clients if unique_clients else 0.0,
+        "repeatClientVisitShare": (
+            max(0, client_visits - unique_clients) / client_visits if client_visits else 0.0
+        ),
+        "clientIdByCookie": client_by_cookie,
+        "topIpVisits": top_ip, "topIpShare": top_ip / visits if visits else 0.0,
+        "topSubnetVisits": top_subnet,
+        "topSubnetShare": top_subnet / visits if visits else 0.0,
+        "topBrowser": top_browser, "topBrowserVisits": top_browser_visits,
+        "topBrowserShare": top_browser_visits / visits if visits else 0.0,
+        "topProfile": top_profile, "topProfileVisits": top_profile_visits,
+        "topProfileShare": top_profile_visits / visits if visits else 0.0,
+        "repeatBounceClients5": repeat_bounce_clients5,
+        "repeatBounceClientShare": repeat_bounce_clients5 / unique_clients if unique_clients else 0.0,
+        "activeDays": active_days,
+        "representative": client_visits >= 300 and unique_clients >= 20,
+        "technicalSegments": segment_summaries,
+        "technicalIntersections": {
+            key: segment_summaries[key] for key in INTERSECTION_SEGMENT_KEYS
+        },
+        **rates,
+    }
+    for key, value in behavior.items():
+        result[key] = int(value)
+        result[key.replace("Visits", "Share")] = int(value) / visits if visits else 0.0
+    for key, value in technical_quality.items():
+        result[key] = int(value)
+        result[key.replace("Visits", "Share")] = int(value) / visits if visits else 0.0
+    result["mobileTabletVisits"] = mobile_visits
+    result["mobileTabletShare"] = mobile_visits / visits if visits else 0.0
+    unknown_models = int(technical_quality.get("unknownModelVisits") or 0)
+    result["unknownModelShareAll"] = unknown_models / visits if visits else 0.0
+    result["unknownModelShare"] = unknown_models / mobile_visits if mobile_visits else 0.0
+    result["cookieDisabledVisits"] = int(cookie_status_visits.get("off", 0))
+    result["cookieDisabledShare"] = result["cookieDisabledVisits"] / visits if visits else 0.0
+    return result
+
+
+def build_period_payloads(
+    counter_id: int,
+    start: dt.date,
+    end: dt.date,
+    daily: dict[str, dict[str, dict]],
+    generated_at: str,
+) -> dict[str, dict]:
+    dates = date_range(start, end)
+    payloads = {
+        day.isoformat(): {
+            "version": PERIOD_VERSION, "counterId": counter_id,
+            "from": day.isoformat(), "to": end.isoformat(),
+            "generatedAt": generated_at,
+            "method": "exact-period-metrics-v4-cookie-segments",
+            "campaignFilter": list(CAMPAIGN_TOKENS),
+            "privacy": (
+                "Only aggregate cookie states, counts, shares, referrer hostnames and "
+                "non-sensitive technical labels are public; raw identifiers are not stored."
+            ),
+            "ranges": {},
+        }
+        for day in dates
+    }
+    counter_names = ("clients", "ips", "subnets", "browsers", "profiles")
+    behavior_names = (
+        "fastAnyGoal15Visits", "fastAnyGoal30Visits",
+        "fastQualityGoal15Visits", "fastQualityGoal30Visits", "multiGoalVisits",
+    )
+    technical_names = (
+        "zeroResolutionVisits", "unknownResolutionVisits",
+        "unknownBrowserVisits", "unknownOsVisits", "unknownModelVisits",
+        "missingReferrerVisits", "ipv6Visits", "mobileTabletVisits",
+        "cookieOnVisits", "cookieOffVisits", "cookieUnknownVisits",
+        "cookieDisabledVisits",
+    )
+
+    for source, source_days in sorted(daily.items()):
+        day_buckets = [source_days.get(day.isoformat()) or empty_day() for day in dates]
+        for start_index, start_day in enumerate(dates):
+            cumulative = {name: Counter() for name in counter_names}
+            heaps = {name: [] for name in counter_names}
+            cumulative_metrics = empty_stats()
+            bounce_clients = Counter()
+            cookie_status_visits = Counter()
+            cookie_clients = {status: Counter() for status in COOKIE_STATUSES}
+            technical_segments = {key: empty_stats() for key in TECH_SEGMENT_KEYS}
+            daily_shares = {key: [] for key in TECH_SEGMENT_KEYS}
+            peaks = {
+                key: {"share": 0.0, "date": None, "visits": 0, "sourceVisits": 0}
+                for key in TECH_SEGMENT_KEYS
+            }
+            repeat_bounce_clients5 = 0
+            behavior = {name: 0 for name in behavior_names}
+            technical_quality = {name: 0 for name in technical_names}
+            visits = client_visits = active_days = 0
+            payload = payloads[start_day.isoformat()]
+
+            for end_index in range(start_index, len(dates)):
+                bucket = day_buckets[end_index]
+                date_text = dates[end_index].isoformat()
+                day_visits = int(bucket.get("visits") or 0)
+                if day_visits:
+                    active_days += 1
+                visits += day_visits
+                add_stats(cumulative_metrics, bucket.get("metrics") or empty_stats())
+                for name in counter_names:
+                    update_counter_heap(
+                        cumulative[name], heaps[name], bucket.get(name) or Counter()
+                    )
+                client_visits += sum((bucket.get("clients") or Counter()).values())
+                cookie_status_visits.update(bucket.get("cookieStatusVisits") or Counter())
+                for status in COOKIE_STATUSES:
+                    cookie_clients[status].update(
+                        (bucket.get("cookieClients") or {}).get(status) or Counter()
+                    )
+                for key in TECH_SEGMENT_KEYS:
+                    day_segment = (bucket.get("technicalSegments") or {}).get(key) or empty_stats()
+                    add_stats(technical_segments[key], day_segment)
+                    if not day_visits:
+                        continue
+                    denominator = day_visits
+                    if key == "unknownMobileModel":
+                        denominator = int(
+                            ((bucket.get("technicalSegments") or {}).get("mobileTablet") or {}).get("visits")
+                            or 0
+                        )
+                    segment_visits = int(day_segment.get("visits") or 0)
+                    share = segment_visits / denominator if denominator else 0.0
+                    daily_shares[key].append(share)
+                    if segment_visits and (
+                        peaks[key]["date"] is None or share > float(peaks[key]["share"])
+                    ):
+                        peaks[key] = {
+                            "share": share, "date": date_text,
+                            "visits": segment_visits, "sourceVisits": denominator,
+                        }
+
+                for client_id, increment in (bucket.get("bounceClients") or Counter()).items():
+                    before = bounce_clients.get(client_id, 0)
+                    after = before + int(increment)
+                    bounce_clients[client_id] = after
+                    if before < 5 <= after:
+                        repeat_bounce_clients5 += 1
+                for name in behavior_names:
+                    behavior[name] += int(bucket.get(name) or 0)
+                for name in technical_names:
+                    technical_quality[name] += int(bucket.get(name) or 0)
+                if visits < MIN_SOURCE_VISITS:
+                    continue
+                summary = _range_summary_v4(
+                    visits=visits, client_visits=client_visits,
+                    cumulative=cumulative, heaps=heaps, metrics=cumulative_metrics,
+                    repeat_bounce_clients5=repeat_bounce_clients5,
+                    behavior=behavior, technical_quality=technical_quality,
+                    cookie_status_visits=cookie_status_visits,
+                    cookie_clients=cookie_clients,
+                    technical_segments=technical_segments,
+                    technical_daily_shares=daily_shares,
+                    technical_peaks=peaks, active_days=active_days,
+                )
+                payload["ranges"].setdefault(date_text, {})[source] = summary
+    return payloads
+
+
+def patch_catalog(
+    counter_id: int,
+    start: dt.date,
+    end: dt.date,
+    generated_at: str,
+    slice_months: list[str],
+) -> None:
+    catalog = read_json(CATALOG_PATH, {})
+    if not isinstance(catalog, dict):
+        raise RuntimeError("Fraud catalog is unavailable or invalid")
+    period_info = {
+        "version": PERIOD_VERSION, "from": start.isoformat(), "to": end.isoformat(),
+        "maxDays": MAX_PERIOD_DAYS,
+        "pathTemplate": f"{counter_id}/clientid-periods/{{from}}.json",
+        "method": "exact-period-metrics-v4-cookie-segments",
+    }
+    slice_info = {
+        "version": SLICE_VERSION, "from": start.isoformat(), "to": end.isoformat(),
+        "maxDays": MAX_PERIOD_DAYS,
+        "pathTemplate": f"{counter_id}/slices/{{month}}.json",
+        "method": "safe-daily-slices-v1", "months": slice_months,
+        "dimensions": list(SLICE_DIMENSIONS),
+    }
+    found = False
+    for counter in catalog.get("counters") or []:
+        if int(counter.get("id") or 0) == counter_id:
+            counter["periodMetrics"] = dict(period_info)
+            counter["clientIdPeriods"] = dict(period_info)
+            counter["sliceMetrics"] = dict(slice_info)
+            found = True
+            break
+    if not found:
+        raise RuntimeError(f"Counter {counter_id} is missing from fraud catalog")
+    catalog["periodMetricsGeneratedAt"] = generated_at
+    catalog["periodMetricsModel"] = period_info["method"]
+    catalog["clientIdPeriodsGeneratedAt"] = generated_at
+    catalog["clientIdPeriodModel"] = period_info["method"]
+    catalog["sliceMetricsGeneratedAt"] = generated_at
+    catalog["sliceMetricsModel"] = slice_info["method"]
+    write_json(CATALOG_PATH, catalog)
+
+
+def self_test() -> None:
+    start, end = dt.date(2026, 7, 1), dt.date(2026, 7, 2)
+    daily = defaultdict(dict)
+    for index in range(24):
+        day = "2026-07-01" if index < 12 else "2026-07-02"
+        if index < 12:
+            cookie, client, referrer, bounce, duration = "1", "client-on", "https://publisher.example/path", "0", "120"
+            model, width, height = "Pixel 7", "412", "892"
+        elif index < 20:
+            cookie, client, referrer, bounce, duration = "0", f"client-off-{index}", "", "1", "4"
+            model, width, height = "", "0", "0"
+        else:
+            cookie, client, referrer, bounce, duration = "", "client-unknown", "https://publisher.example/path", "0", "60"
+            model, width, height = "Pixel 7", "412", "892"
+        row = {
+            "ym:s:date": day, "ym:s:dateTimeUTC": f"{day} 10:00:00",
+            "ym:s:clientID": client,
+            "ym:s:ipAddress": "2001:db8::1" if index == 0 else "10.20.30.40",
+            "ym:s:lastUTMSource": "MTS", "ym:s:lastUTMCampaign": "level_prg_test",
+            "ym:s:referer": referrer, "ym:s:bounce": bounce,
+            "ym:s:visitDuration": duration,
+            "ym:s:pageViews": "1" if bounce == "1" else "3",
+            "ym:s:isNewUser": "1",
+            "ym:s:goalsID": "[411053186,123,456]" if index == 0 else "[]",
+            "ym:s:goalsDateTime": (
+                f'["{day} 10:00:10","{day} 10:00:11","{day} 10:00:12"]'
+                if index == 0 else "[]"
+            ),
+            "ym:s:browser": "ChromeMobile", "ym:s:browserMajorVersion": "149",
+            "ym:s:browserMinorVersion": "0", "ym:s:operatingSystem": "Android 14",
+            "ym:s:deviceCategory": "2", "ym:s:mobilePhone": "Google" if model else "",
+            "ym:s:mobilePhoneModel": model, "ym:s:screenWidth": width,
+            "ym:s:screenHeight": height, "ym:s:cookieEnabled": cookie,
+        }
+        assert process_period_row(daily, row, quality_goal_id=411053186)
+
+    assert [parse_cookie_status(value) for value in ("1", "0", "", "x")] == [
+        "on", "off", "unknown", "unknown"
+    ]
+    result = build_period_payloads(
+        53197618, start, end, daily, "test"
+    )["2026-07-01"]["ranges"]["2026-07-02"]["mts"]
+    assert result["cookieOnVisits"] == 12
+    assert result["cookieOffVisits"] == 8
+    assert result["cookieUnknownVisits"] == 4
+    assert result["clientIdByCookie"]["on"]["uniqueClientIds"] == 1
+    assert result["clientIdByCookie"]["off"]["uniqueClientIds"] == 8
+    assert result["clientIdByCookie"]["unknown"]["uniqueClientIds"] == 1
+    assert result["unknownModelVisits"] == 8
+    assert result["mobileTabletVisits"] == 24
+    assert abs(result["unknownModelShare"] - (8 / 24)) < 1e-9
+    assert result["technicalSegments"]["cookieOff"]["bounce"] == 1.0
+    assert result["technicalSegments"]["cookieOn"]["bounce"] == 0.0
+    assert result["technicalSegments"]["cookieOff"]["dailyMaxDate"] == "2026-07-02"
+    assert result["technicalIntersections"]["cookieOffMissingReferrer"]["visits"] == 8
+    assert result["technicalIntersections"]["cookieOffResolutionUnavailable"]["visits"] == 8
+    assert result["technicalIntersections"]["cookieOffUnknownMobileModel"]["visits"] == 8
+    assert result["technicalIntersections"]["cookieOffMissingReferrerResolutionUnavailable"]["visits"] == 8
+    serialized = json.dumps(result, ensure_ascii=False)
+    for sensitive in ("client-on", "client-off-12", "client-unknown", "10.20.30.40", "2001:db8::1"):
+        assert sensitive not in serialized
+    print("Cookie methodology v4 self-test passed")
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
