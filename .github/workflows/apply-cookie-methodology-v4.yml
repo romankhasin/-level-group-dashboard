@@ -1,0 +1,49 @@
+name: Apply cookie methodology v4
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply migration
+        run: python scripts/apply_cookie_methodology_v4.py
+
+      - name: Validate Python and methodology
+        run: |
+          python -m py_compile scripts/update_clientid_periods.py
+          python scripts/update_clientid_periods.py --self-test
+          grep -q "PERIOD_VERSION = 4" scripts/update_clientid_periods.py
+          grep -q "def parse_cookie_status" scripts/update_clientid_periods.py
+          grep -q '"clientIdByCookie": client_by_cookie' scripts/update_clientid_periods.py
+          grep -q '"technicalSegments": segment_summaries' scripts/update_clientid_periods.py
+          grep -q '"technicalIntersections"' scripts/update_clientid_periods.py
+          grep -q '"dailyTypicalShare"' scripts/update_clientid_periods.py
+          grep -q '"dailyMaxDate"' scripts/update_clientid_periods.py
+
+      - name: Commit final files to PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Segment cookies and technical fraud diagnostics"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
