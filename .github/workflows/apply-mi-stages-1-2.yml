@@ -1,0 +1,36 @@
+name: Apply MI antifraud stages 1 and 2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/apply_mi_stages_1_2.py"
+      - ".github/workflows/apply-mi-stages-1-2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Apply files
+        run: python scripts/apply_mi_stages_1_2.py
+      - name: Validate syntax and self-test
+        run: |
+          python -m py_compile scripts/update_clientid_periods.py
+          python scripts/update_clientid_periods.py --self-test
+      - name: Commit result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add MI baseline and drill-down data"
+          git pull --rebase origin main
+          git push origin HEAD:main
