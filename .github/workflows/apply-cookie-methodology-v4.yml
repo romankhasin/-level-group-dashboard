@@ -63,9 +63,10 @@ jobs:
           grep -q '"dailyTypicalShare"' scripts/update_clientid_periods.py
           grep -q '"dailyMaxDate"' scripts/update_clientid_periods.py
 
-      - name: Restore temporary migration files
+      - name: Restore temporary and protected workflow files
         run: |
           git checkout HEAD -- .github/workflows/apply-cookie-methodology-v4.yml
+          git checkout HEAD -- .github/workflows/validate-fraud-data.yml
           git checkout HEAD -- scripts/apply_cookie_methodology_v4.py
           git checkout HEAD -- scripts/.cookie-methodology-v4-trigger
 
