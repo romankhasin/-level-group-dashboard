@@ -170,6 +170,7 @@ def empty_day() -> dict:
         "profiles": Counter(),
         "groups": {dimension: {} for dimension in SLICE_DIMENSIONS},
         "groupMeta": {dimension: {} for dimension in SLICE_DIMENSIONS},
+        "fastAnyGoal3Visits": 0,
         "fastAnyGoal15Visits": 0,
         "fastAnyGoal30Visits": 0,
         "fastQualityGoal15Visits": 0,
@@ -311,7 +312,8 @@ def goal_speed_flags(row: dict[str, str], quality_goal_id: int) -> dict:
     minimum_any = min(any_seconds) if any_seconds else None
     minimum_quality = min(quality_seconds) if quality_seconds else None
     return {
-        "fastAnyGoal15Visits": int(minimum_any is not None and minimum_any <= 15),
+        "fastAnyGoal3Visits": int(minimum_any is not None and 0 <= minimum_any <= 3),
+        "fastAnyGoal15Visits": int(minimum_any is not None and 3 < minimum_any <= 15),
         "fastAnyGoal30Visits": int(minimum_any is not None and 15 < minimum_any <= 30),
         "fastQualityGoal15Visits": int(minimum_quality is not None and minimum_quality <= 15),
         "fastQualityGoal30Visits": int(minimum_quality is not None and 15 < minimum_quality <= 30),
@@ -892,6 +894,7 @@ def self_test() -> None:
     assert result["clientIdVisits"] == 24
     assert result["uniqueClientIds"] == 1
     assert result["repeatBounceClients5"] == 1
+    assert result["fastAnyGoal3Visits"] >= 0
     assert result["fastAnyGoal15Visits"] == 1
     assert result["fastQualityGoal15Visits"] == 1
     assert result["multiGoalVisits"] == 1
@@ -1270,7 +1273,7 @@ def build_period_payloads(
     }
     counter_names = ("clients", "ips", "subnets", "browsers", "profiles")
     behavior_names = (
-        "fastAnyGoal15Visits", "fastAnyGoal30Visits",
+        "fastAnyGoal3Visits", "fastAnyGoal15Visits", "fastAnyGoal30Visits",
         "fastQualityGoal15Visits", "fastQualityGoal30Visits", "multiGoalVisits",
     )
     technical_names = (
