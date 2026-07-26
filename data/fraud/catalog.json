@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generatedAt": "2026-07-26T00:06:14.945236Z",
+  "generatedAt": "2026-07-26T08:19:54.862176Z",
   "dataThrough": "2026-07-25",
   "refresh": "daily, previous 3 complete days",
   "campaignFilter": [
@@ -42,13 +42,21 @@
           "visits": 385373
         }
       ],
-      "clientIdPeriods": {
-        "version": 1,
+      "periodMetrics": {
+        "version": 2,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
-        "method": "exact-clientid-period-v1"
+        "method": "exact-concentration-period-v2"
+      },
+      "clientIdPeriods": {
+        "version": 2,
+        "from": "2026-05-01",
+        "to": "2026-07-25",
+        "maxDays": 90,
+        "pathTemplate": "53197618/clientid-periods/{from}.json",
+        "method": "exact-concentration-period-v2"
       }
     },
     {
@@ -58,7 +66,7 @@
       "permission": "view",
       "from": "2026-05-01",
       "to": "2026-07-25",
-      "visits": 290303,
+      "visits": 290304,
       "files": [
         {
           "month": "2026-05",
@@ -79,19 +87,29 @@
           "path": "100470605/2026-07.json",
           "from": "2026-07-01",
           "to": "2026-07-25",
-          "visits": 107191
+          "visits": 107192
         }
       ],
-      "clientIdPeriods": {
-        "version": 1,
+      "periodMetrics": {
+        "version": 2,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
-        "method": "exact-clientid-period-v1"
+        "method": "exact-concentration-period-v2"
+      },
+      "clientIdPeriods": {
+        "version": 2,
+        "from": "2026-05-01",
+        "to": "2026-07-25",
+        "maxDays": 90,
+        "pathTemplate": "100470605/clientid-periods/{from}.json",
+        "method": "exact-concentration-period-v2"
       }
     }
   ],
-  "clientIdPeriodsGeneratedAt": "2026-07-26T00:08:29.467168Z",
-  "clientIdPeriodModel": "exact-all-ranges-v1"
+  "periodMetricsGeneratedAt": "2026-07-26T08:22:13.724430Z",
+  "periodMetricsModel": "exact-all-ranges-concentration-v2",
+  "clientIdPeriodsGeneratedAt": "2026-07-26T08:22:13.724430Z",
+  "clientIdPeriodModel": "exact-all-ranges-concentration-v2"
 }

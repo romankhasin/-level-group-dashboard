@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-26T00:06:14.945236Z",
+  "generatedAt": "2026-07-26T08:19:54.862176Z",
   "period": {
     "from": "2026-05-01",
     "to": "2026-07-25"
@@ -10,10 +10,10 @@
       "status": "ok",
       "operations": [
         {
-          "requestId": 57776993,
-          "rawVisits": 106137,
+          "requestId": 57799708,
+          "rawVisits": 106139,
           "includedVisits": 51591,
-          "excludedVisits": 54546,
+          "excludedVisits": 54548,
           "campaignFilter": [
             "prg",
             "med",
@@ -31,9 +31,9 @@
       "status": "ok",
       "operations": [
         {
-          "requestId": 57777081,
-          "rawVisits": 22252,
-          "includedVisits": 18084,
+          "requestId": 57799723,
+          "rawVisits": 22253,
+          "includedVisits": 18085,
           "excludedVisits": 4168,
           "campaignFilter": [
             "prg",

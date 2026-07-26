@@ -5,7 +5,7 @@
   "month": "2026-07",
   "from": "2026-07-01",
   "to": "2026-07-25",
-  "generatedAt": "2026-07-26T00:06:14.945236Z",
+  "generatedAt": "2026-07-26T08:19:54.862176Z",
   "source": "Yandex Metrica Logs API",
   "campaignFilter": [
     "prg",
@@ -14,7 +14,7 @@
   ],
   "privacy": "Only daily aggregates are stored; raw IP, ClientID and VisitID are discarded.",
   "summary": {
-    "visits": 107191,
+    "visits": 107192,
     "dailySourceRows": 119,
     "sources": 9,
     "days": 25
@@ -9406,17 +9406,17 @@
         "primary": 0.0
       },
       "topBrowser": {
-        "key": "firefox_mobile 152.4",
+        "key": "edge 148",
         "value": 1,
         "share": 0.5
       },
       "topResolution": {
-        "key": "414x896",
+        "key": "1366x768",
         "value": 1,
         "share": 0.5
       },
       "topProfile": {
-        "key": "firefox_mobile 152.4 · ios18 · 2 · 414x896",
+        "key": "edge 148 · windows10 · 1 · 1366x768",
         "value": 1,
         "share": 0.5
       },
@@ -9892,17 +9892,17 @@
         "suspiciousVisits": 68,
         "suspiciousShare": 0.015910154422087038,
         "confidence": "Высокая",
-        "comment": "68 визитов требуют внимания: 0 высокого риска и 68 требуют проверки. Основные причины — очень короткие визиты с отказом и концентрация одного IP.",
+        "comment": "68 визитов требуют внимания: 0 высокого риска и 68 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
         "reasons": [
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 68,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 68,
             "shareOfSuspicious": 1.0
           }
@@ -10045,7 +10045,7 @@
         "share": 0.12659698025551683
       },
       "topProfile": {
-        "key": "android_browser 16 · android_16 · 2 · 384x832",
+        "key": "chromemobile 150 · android_14 · 2 · 360x800",
         "value": 13,
         "share": 0.015098722415795587
       },
@@ -10345,17 +10345,17 @@
         "suspiciousVisits": 83,
         "suspiciousShare": 0.014682469485229083,
         "confidence": "Высокая",
-        "comment": "83 визитов требуют внимания: 0 высокого риска и 83 требуют проверки. Основные причины — очень короткие визиты с отказом и концентрация одного IP.",
+        "comment": "83 визитов требуют внимания: 0 высокого риска и 83 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
         "reasons": [
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 83,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 83,
             "shareOfSuspicious": 1.0
           }
@@ -10459,78 +10459,78 @@
     {
       "source": "yandex",
       "date": "2026-07-25",
-      "visits": 934,
+      "visits": 935,
       "tech": {
-        "visits": 934,
-        "users": 844,
-        "bounce": 0.43576017130620986,
-        "time": 94.26017130620986,
-        "newShare": 0.8094218415417559,
+        "visits": 935,
+        "users": 845,
+        "bounce": 0.43636363636363634,
+        "time": 94.15935828877005,
+        "newShare": 0.8096256684491978,
         "quality": 0.0,
         "primary": 0.0
       },
       "ip": {
-        "visits": 934,
-        "users": 844,
-        "bounce": 0.43576017130620986,
-        "time": 94.26017130620986,
-        "newShare": 0.8094218415417559,
+        "visits": 935,
+        "users": 845,
+        "bounce": 0.43636363636363634,
+        "time": 94.15935828877005,
+        "newShare": 0.8096256684491978,
         "quality": 0.0,
         "primary": 0.0
       },
       "metrics": {
-        "visits": 934,
-        "users": 844,
-        "bounce": 0.43576017130620986,
-        "time": 94.26017130620986,
-        "newShare": 0.8094218415417559,
+        "visits": 935,
+        "users": 845,
+        "bounce": 0.43636363636363634,
+        "time": 94.15935828877005,
+        "newShare": 0.8096256684491978,
         "quality": 0.0,
         "primary": 0.0
       },
       "topBrowser": {
         "key": "chromemobile 150",
         "value": 267,
-        "share": 0.28586723768736616
+        "share": 0.28556149732620323
       },
       "topResolution": {
         "key": "360x800",
-        "value": 131,
-        "share": 0.14025695931477516
+        "value": 132,
+        "share": 0.1411764705882353
       },
       "topProfile": {
         "key": "android_browser 16 · android_16 · 2 · 384x832",
         "value": 18,
-        "share": 0.019271948608137045
+        "share": 0.019251336898395723
       },
       "topIp": {
         "key": "скрыто",
         "value": 8,
-        "share": 0.008565310492505354
+        "share": 0.008556149732620321
       },
       "topSubnet": {
         "key": "скрыто",
         "value": 8,
-        "share": 0.008565310492505354
+        "share": 0.008556149732620321
       },
-      "clientIdVisits": 934,
-      "uniqueClientIds": 842,
+      "clientIdVisits": 935,
+      "uniqueClientIds": 843,
       "topClientId": {
         "key": "скрыто",
         "value": 5,
-        "share": 0.0053533190578158455
+        "share": 0.0053475935828877
       },
-      "top10ClientShare": 0.032119914346895075,
-      "visitsPerClientId": 1.1092636579572446,
-      "repeatClientVisitShare": 0.09850107066381156,
+      "top10ClientShare": 0.03208556149732621,
+      "visitsPerClientId": 1.1091340450771057,
+      "repeatClientVisitShare": 0.09839572192513368,
       "clientIdCoverage": 1.0,
-      "ipv6Share": 0.21413276231263384,
+      "ipv6Share": 0.21390374331550802,
       "unknownBrowserShare": 0.0,
       "cookieEnabledShare": 1.0,
       "visitRisk": {
-        "classifiedVisits": 934,
+        "classifiedVisits": 935,
         "highRiskVisits": 0,
         "reviewVisits": 0,
-        "lowRiskVisits": 934,
+        "lowRiskVisits": 935,
         "suspiciousVisits": 0,
         "suspiciousShare": 0.0,
         "confidence": "Высокая",
