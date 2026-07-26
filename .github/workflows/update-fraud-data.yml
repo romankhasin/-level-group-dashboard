@@ -1,5 +1,6 @@
 name: Update fraud analysis data
 
+# Refresh marker: cookie methodology v4
 on:
   workflow_dispatch:
   push:
