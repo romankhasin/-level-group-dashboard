@@ -8,8 +8,6 @@ on:
       - ".github/workflows/update-fraud-data.yml"
       - "scripts/update_fraud_data.py"
       - "scripts/update_clientid_periods.py"
-      - "scripts/apply_mi_stages_1_2.py"
-      - ".github/workflows/apply-mi-stages-1-2.yml"
   schedule:
     # GitHub Actions uses UTC. 03:30 UTC = 06:30 Moscow.
     - cron: "30 3 * * *"
@@ -35,29 +33,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Apply pending MI migration
-        run: |
-          if [ -f scripts/apply_mi_stages_1_2.py ]; then
-            python scripts/apply_mi_stages_1_2.py
-          fi
-
       - name: Validate aggregation locally
         run: |
           python scripts/update_fraud_data.py --self-test
           python scripts/update_clientid_periods.py --self-test
-
-      - name: Commit applied MI code
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No pending MI code changes"
-          else
-            git commit -m "Add MI baseline and drill-down data"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
 
       - name: Download Logs API data and build safe summaries
         id: build
@@ -73,11 +52,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          if [ -d data/fraud ]; then
+            git add data/fraud
+          fi
           if git diff --cached --quiet; then
             echo "No fraud data changes"
           else
-            git commit -m "Update fraud analysis data and MI diagnostics"
+            git commit -m "Update fraud analysis data"
             git pull --rebase origin main
             git push origin HEAD:main
           fi
