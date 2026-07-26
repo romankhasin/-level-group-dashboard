@@ -43,20 +43,20 @@
         }
       ],
       "periodMetrics": {
-        "version": 3,
+        "version": 4,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
-        "method": "exact-period-metrics-v3"
+        "method": "exact-period-metrics-v4-cookie-segments"
       },
       "clientIdPeriods": {
-        "version": 3,
+        "version": 4,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
-        "method": "exact-period-metrics-v3"
+        "method": "exact-period-metrics-v4-cookie-segments"
       },
       "sliceMetrics": {
         "version": 1,
@@ -113,20 +113,20 @@
         }
       ],
       "periodMetrics": {
-        "version": 3,
+        "version": 4,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
-        "method": "exact-period-metrics-v3"
+        "method": "exact-period-metrics-v4-cookie-segments"
       },
       "clientIdPeriods": {
-        "version": 3,
+        "version": 4,
         "from": "2026-05-01",
         "to": "2026-07-25",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
-        "method": "exact-period-metrics-v3"
+        "method": "exact-period-metrics-v4-cookie-segments"
       },
       "sliceMetrics": {
         "version": 1,
@@ -152,10 +152,10 @@
       }
     }
   ],
-  "periodMetricsGeneratedAt": "2026-07-26T10:47:13.307590Z",
-  "periodMetricsModel": "exact-period-metrics-v3",
-  "clientIdPeriodsGeneratedAt": "2026-07-26T10:47:13.307590Z",
-  "clientIdPeriodModel": "exact-period-metrics-v3",
-  "sliceMetricsGeneratedAt": "2026-07-26T10:47:13.307590Z",
+  "periodMetricsGeneratedAt": "2026-07-26T16:09:01.672730Z",
+  "periodMetricsModel": "exact-period-metrics-v4-cookie-segments",
+  "clientIdPeriodsGeneratedAt": "2026-07-26T16:09:01.672730Z",
+  "clientIdPeriodModel": "exact-period-metrics-v4-cookie-segments",
+  "sliceMetricsGeneratedAt": "2026-07-26T16:09:01.672730Z",
   "sliceMetricsModel": "safe-daily-slices-v1"
 }
