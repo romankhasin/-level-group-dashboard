@@ -24,6 +24,33 @@ jobs:
       - name: Apply migration
         run: python scripts/apply_cookie_methodology_v4.py
 
+      - name: Add visit count to metric rates
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/update_clientid_periods.py')
+          text = path.read_text(encoding='utf-8')
+          block_start = text.index('# Cookie methodology v4')
+          marker = 'def _subtract_stats(total: dict, part: dict) -> dict:\n'
+          marker_index = text.index(marker, block_start)
+          override = '''def metric_rates(metrics: dict) -> dict:
+              visits = int(metrics.get("visits") or 0)
+              return {
+                  "visits": visits,
+                  "bounce": int(metrics.get("bounceVisits") or 0) / visits if visits else 0.0,
+                  "time": int(metrics.get("durationSum") or 0) / visits if visits else 0.0,
+                  "depth": int(metrics.get("pageViewsSum") or 0) / visits if visits else 0.0,
+                  "quality": int(metrics.get("qualityVisits") or 0) / visits if visits else 0.0,
+                  "newShare": int(metrics.get("newVisits") or 0) / visits if visits else 0.0,
+              }
+
+
+'''
+          if 'def metric_rates(metrics: dict) -> dict:' not in text[block_start:marker_index]:
+              text = text[:marker_index] + override + text[marker_index:]
+          path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Validate Python and methodology
         run: |
           python -m py_compile scripts/update_clientid_periods.py
