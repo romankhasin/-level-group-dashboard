@@ -9,6 +9,7 @@ on:
       - "scripts/update_fraud_data.py"
       - "scripts/update_clientid_periods.py"
       - "scripts/apply_cookie_methodology_v4.py"
+      - "scripts/.cookie-methodology-v4-trigger"
   schedule:
     # GitHub Actions uses UTC. 03:30 UTC = 06:30 Moscow.
     - cron: "30 3 * * *"
