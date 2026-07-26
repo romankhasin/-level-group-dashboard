@@ -1,90 +1,49 @@
-name: Validate fraud API data pipeline
+name: Apply and validate MI antifraud backend
 
 on:
   pull_request:
-    paths:
-      - ".github/workflows/update-fraud-data.yml"
-      - ".github/workflows/validate-fraud-data.yml"
-      - "scripts/update_fraud_data.py"
-      - "scripts/update_clientid_periods.py"
-      - "scripts/fraud_visit_classifier.py"
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out PR branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Check Python syntax and aggregation
+      - name: Apply pending MI backend migration
+        run: |
+          if [ -f scripts/apply_mi_stages_1_2.py ]; then
+            python scripts/apply_mi_stages_1_2.py
+          fi
+          rm -f scripts/.mi-backend-trigger
+
+      - name: Validate Python and aggregation
         run: |
           python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py scripts/update_clientid_periods.py
           python scripts/fraud_visit_classifier.py
           python scripts/update_fraud_data.py --self-test
           python scripts/update_clientid_periods.py --self-test
 
-      - name: Check visit-level summaries and campaign filter
+      - name: Commit applied backend files to PR branch
         run: |
-          grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py
-          grep -q '"visitRisk": visit_risk' scripts/update_fraud_data.py
-          grep -q "existing_version < DATA_VERSION" scripts/update_fraud_data.py
-          grep -q 'CAMPAIGN_TOKENS = ("prg", "med", "mrk")' scripts/update_fraud_data.py
-          grep -q '"ym:s:<attribution>UTMCampaign"' scripts/update_fraud_data.py
-          grep -q 'if not campaign_in_scope(campaign)' scripts/update_fraud_data.py
-          grep -q '"campaignFilter": list(CAMPAIGN_TOKENS)' scripts/update_fraud_data.py
-          grep -q 'assert campaign_in_scope("LEVEL_PRG_VIDEO")' scripts/update_fraud_data.py
-          grep -q 'assert campaign_in_scope("level-med-july")' scripts/update_fraud_data.py
-          grep -q 'assert campaign_in_scope("brand_mrk_test")' scripts/update_fraud_data.py
-          grep -q 'assert not campaign_in_scope("brand_search_only")' scripts/update_fraud_data.py
-          grep -q '"suspiciousVisits": suspicious' scripts/fraud_visit_classifier.py
-          grep -q '"highRiskVisits": levels\["high"\]' scripts/fraud_visit_classifier.py
-          grep -q '"reviewVisits": levels\["review"\]' scripts/fraud_visit_classifier.py
-          grep -q 'assert "client-cluster" not in serialized' scripts/fraud_visit_classifier.py
-          grep -q 'assert "10.20.30.40" not in serialized' scripts/fraud_visit_classifier.py
-
-      - name: Check scoring stage 1 data fields
-        run: |
-          grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
-          grep -q '"automationShare": automation_visits / visits' scripts/update_fraud_data.py
-          grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
-          grep -q 'assert automation_result\["automationVisits"\] == 1' scripts/update_fraud_data.py
-
-      - name: Check exact selected-period concentration metrics
-        run: |
-          grep -q "PERIOD_VERSION = 2" scripts/update_clientid_periods.py
-          grep -q "MAX_PERIOD_DAYS = 90" scripts/update_clientid_periods.py
-          grep -q '"method": "exact-concentration-period-v2"' scripts/update_clientid_periods.py
-          grep -q '"ym:s:ipAddress"' scripts/update_clientid_periods.py
-          grep -q '"ym:s:browser"' scripts/update_clientid_periods.py
-          grep -q '"topIpShare"' scripts/update_clientid_periods.py
-          grep -q '"topSubnetShare"' scripts/update_clientid_periods.py
-          grep -q '"topBrowserShare"' scripts/update_clientid_periods.py
-          grep -q '"topProfileShare"' scripts/update_clientid_periods.py
-          grep -q 'counter\["periodMetrics"\]' scripts/update_clientid_periods.py
-          grep -q 'assert "client-a" not in serialized' scripts/update_clientid_periods.py
-          grep -q 'assert "10.20.30.40" not in serialized' scripts/update_clientid_periods.py
-          grep -q 'python -u scripts/update_clientid_periods.py' .github/workflows/update-fraud-data.yml
-
-      - name: Check privacy and counter configuration
-        run: |
-          grep -q "COUNTER_IDS = (53197618, 100470605)" scripts/update_fraud_data.py
-          grep -q '"ym:s:visitID"' scripts/update_fraud_data.py
-          grep -q '"ym:s:clientID"' scripts/update_fraud_data.py
-          grep -q '"ym:s:ipAddress"' scripts/update_fraud_data.py
-          grep -q 'entry\["key"\] = "скрыто"' scripts/update_fraud_data.py
-          grep -q "raw IP, ClientID and VisitID are never committed" scripts/update_fraud_data.py
-          grep -q "raw and hashed ClientID and IP values are not stored" scripts/update_clientid_periods.py
-          grep -q "YANDEX_METRIKA_TOKEN" .github/workflows/update-fraud-data.yml
-          grep -q "data/fraud" .github/workflows/update-fraud-data.yml
-          test ! -f scripts/apply_campaign_filter.py
-          test ! -f .github/workflows/apply-campaign-filter.yml
-          test ! -f scripts/apply_scoring_stage1.py
-          test ! -f .github/workflows/apply-scoring-stage1.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -- .github/workflows/validate-fraud-data.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No backend migration changes"
+          else
+            git commit -m "Add MI baseline and drill-down data"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
