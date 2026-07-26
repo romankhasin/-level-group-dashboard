@@ -1,6 +1,5 @@
 name: Update fraud analysis data
 
-# Refresh marker: cookie methodology v4
 on:
   workflow_dispatch:
   push:
@@ -18,7 +17,7 @@ permissions:
 
 concurrency:
   group: update-fraud-analysis-data
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update:
@@ -41,14 +40,27 @@ jobs:
           python scripts/update_fraud_data.py --self-test
           python scripts/update_clientid_periods.py --self-test
 
-      - name: Download Logs API data and build safe summaries
+      - name: Refresh daily fraud summaries
         id: build
         continue-on-error: true
         env:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: python -u scripts/update_fraud_data.py
+
+      - name: Rebuild exact period metrics
+        id: period
+        continue-on-error: true
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'schedule' && format('{0}', github.event.schedule) == '30 3 * * *')
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        shell: bash
         run: |
-          python -u scripts/update_fraud_data.py
-          python -u scripts/update_clientid_periods.py
+          # Full period rebuild is expensive. Run it manually or only on Sundays.
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "$(date -u +%u)" == "7" ]]; then
+            python -u scripts/update_clientid_periods.py
+          else
+            echo "Skipping exact period rebuild on a regular daily run"
+          fi
 
       - name: Commit refreshed fraud summaries
         if: always()
@@ -66,6 +78,6 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Fail when Logs API update failed
-        if: steps.build.outcome != 'success'
+      - name: Fail when refresh failed
+        if: steps.build.outcome != 'success' || steps.period.outcome == 'failure'
         run: exit 1
