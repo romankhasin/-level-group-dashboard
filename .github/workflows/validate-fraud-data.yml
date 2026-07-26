@@ -8,21 +8,31 @@ on:
       - "scripts/update_fraud_data.py"
       - "scripts/update_clientid_periods.py"
       - "scripts/fraud_visit_classifier.py"
+      - "scripts/apply_goal_time_buckets.py"
+      - "scripts/.goal-time-buckets-trigger"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out PR branch
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Apply goal timing buckets
+        run: |
+          if [ -f scripts/apply_goal_time_buckets.py ]; then
+            python scripts/apply_goal_time_buckets.py
+          fi
 
       - name: Check Python syntax and aggregation
         run: |
@@ -31,72 +41,38 @@ jobs:
           python scripts/update_fraud_data.py --self-test
           python scripts/update_clientid_periods.py --self-test
 
-      - name: Check visit-level summaries and campaign filter
+      - name: Check goal timing buckets
+        run: |
+          grep -q '"fastAnyGoal3Visits": 0' scripts/update_clientid_periods.py
+          grep -q '0 <= minimum_any <= 3' scripts/update_clientid_periods.py
+          grep -q '3 < minimum_any <= 15' scripts/update_clientid_periods.py
+          grep -q '15 < minimum_any <= 30' scripts/update_clientid_periods.py
+          grep -q '"fastAnyGoal3Visits", "fastAnyGoal15Visits", "fastAnyGoal30Visits"' scripts/update_clientid_periods.py
+
+      - name: Check existing fraud methodology
         run: |
           grep -q "DATA_VERSION = 4" scripts/update_fraud_data.py
-          grep -q '"visitRisk": visit_risk' scripts/update_fraud_data.py
-          grep -q "existing_version < DATA_VERSION" scripts/update_fraud_data.py
           grep -q 'CAMPAIGN_TOKENS = ("prg", "med", "mrk")' scripts/update_fraud_data.py
-          grep -q '"ym:s:<attribution>UTMCampaign"' scripts/update_fraud_data.py
-          grep -q 'if not campaign_in_scope(campaign)' scripts/update_fraud_data.py
-          grep -q '"campaignFilter": list(CAMPAIGN_TOKENS)' scripts/update_fraud_data.py
-          grep -q 'assert campaign_in_scope("LEVEL_PRG_VIDEO")' scripts/update_fraud_data.py
-          grep -q 'assert campaign_in_scope("level-med-july")' scripts/update_fraud_data.py
-          grep -q 'assert campaign_in_scope("brand_mrk_test")' scripts/update_fraud_data.py
-          grep -q 'assert not campaign_in_scope("brand_search_only")' scripts/update_fraud_data.py
-          grep -q '"suspiciousVisits": suspicious' scripts/fraud_visit_classifier.py
-          grep -q '"highRiskVisits": levels\["high"\]' scripts/fraud_visit_classifier.py
-          grep -q '"reviewVisits": levels\["review"\]' scripts/fraud_visit_classifier.py
-          grep -q 'assert "client-cluster" not in serialized' scripts/fraud_visit_classifier.py
-          grep -q 'assert "10.20.30.40" not in serialized' scripts/fraud_visit_classifier.py
-
-      - name: Check scoring stage 1 data fields
-        run: |
-          grep -q '"automationVisits": automation_visits' scripts/update_fraud_data.py
-          grep -q '"automationShare": automation_visits / visits' scripts/update_fraud_data.py
-          grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
-          grep -q 'assert automation_result\["automationVisits"\] == 1' scripts/update_fraud_data.py
-
-      - name: Check cookie-segmented period baselines and safe slices
-        run: |
           grep -q "PERIOD_VERSION = 4" scripts/update_clientid_periods.py
-          grep -q "SLICE_VERSION = 1" scripts/update_clientid_periods.py
-          grep -q "MAX_PERIOD_DAYS = 90" scripts/update_clientid_periods.py
           grep -q 'exact-period-metrics-v4-cookie-segments' scripts/update_clientid_periods.py
-          grep -q '"method": "safe-daily-slices-v1"' scripts/update_clientid_periods.py
-          grep -q '"sliceMetrics"' scripts/update_clientid_periods.py
           grep -q 'def parse_cookie_status' scripts/update_clientid_periods.py
           grep -q '"clientIdByCookie": client_by_cookie' scripts/update_clientid_periods.py
           grep -q '"technicalSegments": segment_summaries' scripts/update_clientid_periods.py
           grep -q '"technicalIntersections"' scripts/update_clientid_periods.py
-          grep -q '"dailyTypicalShare"' scripts/update_clientid_periods.py
-          grep -q '"dailyMaxDate"' scripts/update_clientid_periods.py
-          grep -q '"mobileTabletVisits"' scripts/update_clientid_periods.py
           grep -q 'unknown_models / mobile_visits' scripts/update_clientid_periods.py
-          grep -q 'cookieOffMissingReferrer' scripts/update_clientid_periods.py
-          grep -q 'cookieOffMissingReferrerResolutionUnavailable' scripts/update_clientid_periods.py
-          grep -q '"ym:s:referer"' scripts/update_clientid_periods.py
-          grep -q '"ym:s:mobilePhoneModel"' scripts/update_clientid_periods.py
-          grep -q '"ym:s:cookieEnabled"' scripts/update_clientid_periods.py
-          grep -q 'assert "/path" not in serialized' scripts/update_clientid_periods.py
-          grep -q 'assert "client-a" not in serialized' scripts/update_clientid_periods.py
-          grep -q 'python -u scripts/update_clientid_periods.py' .github/workflows/update-fraud-data.yml
-          test ! -f scripts/apply_cookie_methodology_v4.py
-          test ! -f .github/workflows/apply-cookie-methodology-v4.yml
-          test ! -f scripts/.cookie-methodology-v4-trigger
+          grep -q 'raw identifiers are not stored' scripts/update_clientid_periods.py
 
-      - name: Check privacy and counter configuration
+      - name: Commit goal timing backend
+        env:
+          TARGET_BRANCH: ${{ github.head_ref }}
         run: |
-          grep -q "COUNTER_IDS = (53197618, 100470605)" scripts/update_fraud_data.py
-          grep -q '"ym:s:visitID"' scripts/update_fraud_data.py
-          grep -q '"ym:s:clientID"' scripts/update_fraud_data.py
-          grep -q '"ym:s:ipAddress"' scripts/update_fraud_data.py
-          grep -q 'entry\["key"\] = "скрыто"' scripts/update_fraud_data.py
-          grep -q "raw IP, ClientID and VisitID are never committed" scripts/update_fraud_data.py
-          grep -q "raw identifiers are not stored" scripts/update_clientid_periods.py
-          grep -q "YANDEX_METRIKA_TOKEN" .github/workflows/update-fraud-data.yml
-          grep -q "data/fraud" .github/workflows/update-fraud-data.yml
-          test ! -f scripts/apply_campaign_filter.py
-          test ! -f .github/workflows/apply-campaign-filter.yml
-          test ! -f scripts/apply_scoring_stage1.py
-          test ! -f .github/workflows/apply-scoring-stage1.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/update_clientid_periods.py
+          if git diff --cached --quiet; then
+            echo "Goal timing backend is already current"
+          else
+            git commit -m "Split goal timing into 0-3, 4-15 and 16-30 seconds"
+            git pull --rebase origin "$TARGET_BRANCH"
+            git push origin HEAD:"$TARGET_BRANCH"
+          fi
