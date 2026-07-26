@@ -70,6 +70,5 @@ jobs:
             echo "Goal timing backend is already current"
           else
             git commit -m "Split goal timing into 0-3, 4-15 and 16-30 seconds"
-            git pull --rebase origin "$TARGET_BRANCH"
             git push origin HEAD:"$TARGET_BRANCH"
           fi
