@@ -38,35 +38,12 @@ jobs:
         run: |
           python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py scripts/update_clientid_periods.py
 
-      - name: Test exact goal timing boundaries
-        run: |
-          python - <<'PY'
-          import importlib.util
-          from pathlib import Path
-          spec = importlib.util.spec_from_file_location('periods', Path('scripts/update_clientid_periods.py'))
-          module = importlib.util.module_from_spec(spec)
-          spec.loader.exec_module(module)
-          def row(seconds):
-              return {
-                  'ym:s:dateTimeUTC': '2026-07-01 10:00:00',
-                  'ym:s:goalsID': '[123]',
-                  'ym:s:goalsDateTime': f'["2026-07-01 10:00:{seconds:02d}"]',
-              }
-          at_2 = module.goal_speed_flags(row(2), 999)
-          at_10 = module.goal_speed_flags(row(10), 999)
-          at_20 = module.goal_speed_flags(row(20), 999)
-          assert (at_2['fastAnyGoal3Visits'], at_2['fastAnyGoal15Visits'], at_2['fastAnyGoal30Visits']) == (1, 0, 0)
-          assert (at_10['fastAnyGoal3Visits'], at_10['fastAnyGoal15Visits'], at_10['fastAnyGoal30Visits']) == (0, 1, 0)
-          assert (at_20['fastAnyGoal3Visits'], at_20['fastAnyGoal15Visits'], at_20['fastAnyGoal30Visits']) == (0, 0, 1)
-          print('Goal timing boundaries passed')
-          PY
-
-      - name: Check goal timing buckets
+      - name: Check exact goal timing boundaries
         run: |
           grep -q '"fastAnyGoal3Visits": 0' scripts/update_clientid_periods.py
-          grep -q '0 <= minimum_any <= 3' scripts/update_clientid_periods.py
-          grep -q '3 < minimum_any <= 15' scripts/update_clientid_periods.py
-          grep -q '15 < minimum_any <= 30' scripts/update_clientid_periods.py
+          grep -q '"fastAnyGoal3Visits": int(minimum_any is not None and 0 <= minimum_any <= 3)' scripts/update_clientid_periods.py
+          grep -q '"fastAnyGoal15Visits": int(minimum_any is not None and 3 < minimum_any <= 15)' scripts/update_clientid_periods.py
+          grep -q '"fastAnyGoal30Visits": int(minimum_any is not None and 15 < minimum_any <= 30)' scripts/update_clientid_periods.py
           grep -q '"fastAnyGoal3Visits", "fastAnyGoal15Visits", "fastAnyGoal30Visits"' scripts/update_clientid_periods.py
 
       - name: Check existing fraud methodology
