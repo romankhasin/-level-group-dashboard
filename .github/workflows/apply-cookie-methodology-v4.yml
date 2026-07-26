@@ -10,6 +10,7 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
+    timeout-minutes: 240
     steps:
       - name: Check out PR branch
         uses: actions/checkout@v4
@@ -62,6 +63,11 @@ jobs:
           grep -q '"dailyTypicalShare"' scripts/update_clientid_periods.py
           grep -q '"dailyMaxDate"' scripts/update_clientid_periods.py
 
+      - name: Refresh period cookie diagnostics
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: python -u scripts/update_clientid_periods.py
+
       - name: Restore temporary and protected workflow files
         run: |
           git checkout HEAD -- .github/workflows/apply-cookie-methodology-v4.yml
@@ -69,14 +75,14 @@ jobs:
           git checkout HEAD -- scripts/apply_cookie_methodology_v4.py
           git checkout HEAD -- scripts/.cookie-methodology-v4-trigger
 
-      - name: Commit final files to PR branch
+      - name: Commit refreshed code and data to PR branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add scripts/update_clientid_periods.py data/fraud
           if git diff --cached --quiet; then
             echo "No changes"
           else
-            git commit -m "Segment cookies and technical fraud diagnostics"
+            git commit -m "Refresh cookie-segmented fraud diagnostics"
             git push origin HEAD:${{ github.head_ref }}
           fi
