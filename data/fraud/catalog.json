@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generatedAt": "2026-07-25T22:58:12.648244Z",
+  "generatedAt": "2026-07-26T00:06:14.945236Z",
   "dataThrough": "2026-07-25",
   "refresh": "daily, previous 3 complete days",
   "campaignFilter": [
@@ -41,7 +41,15 @@
           "to": "2026-07-25",
           "visits": 385373
         }
-      ]
+      ],
+      "clientIdPeriods": {
+        "version": 1,
+        "from": "2026-05-01",
+        "to": "2026-07-25",
+        "maxDays": 90,
+        "pathTemplate": "53197618/clientid-periods/{from}.json",
+        "method": "exact-clientid-period-v1"
+      }
     },
     {
       "id": 100470605,
@@ -73,7 +81,17 @@
           "to": "2026-07-25",
           "visits": 107191
         }
-      ]
+      ],
+      "clientIdPeriods": {
+        "version": 1,
+        "from": "2026-05-01",
+        "to": "2026-07-25",
+        "maxDays": 90,
+        "pathTemplate": "100470605/clientid-periods/{from}.json",
+        "method": "exact-clientid-period-v1"
+      }
     }
-  ]
+  ],
+  "clientIdPeriodsGeneratedAt": "2026-07-26T00:08:29.467168Z",
+  "clientIdPeriodModel": "exact-all-ranges-v1"
 }
