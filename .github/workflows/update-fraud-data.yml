@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/update-fraud-data.yml"
       - "scripts/update_fraud_data.py"
+      - "scripts/update_clientid_periods.py"
   schedule:
     # GitHub Actions uses UTC. 03:30 UTC = 06:30 Moscow.
     - cron: "30 3 * * *"
@@ -21,7 +22,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
 
     steps:
       - name: Check out repository
@@ -33,14 +34,18 @@ jobs:
           python-version: "3.12"
 
       - name: Validate aggregation locally
-        run: python scripts/update_fraud_data.py --self-test
+        run: |
+          python scripts/update_fraud_data.py --self-test
+          python scripts/update_clientid_periods.py --self-test
 
       - name: Download Logs API data and build safe summaries
         id: build
         continue-on-error: true
         env:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
-        run: python -u scripts/update_fraud_data.py
+        run: |
+          python -u scripts/update_fraud_data.py
+          python -u scripts/update_clientid_periods.py
 
       - name: Commit refreshed fraud summaries
         if: always()
