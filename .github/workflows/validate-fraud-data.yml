@@ -57,24 +57,33 @@ jobs:
           grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
           grep -q 'assert automation_result\["automationVisits"\] == 1' scripts/update_fraud_data.py
 
-      - name: Check exact period baselines and safe slices
+      - name: Check cookie-segmented period baselines and safe slices
         run: |
-          grep -q "PERIOD_VERSION = 3" scripts/update_clientid_periods.py
+          grep -q "PERIOD_VERSION = 4" scripts/update_clientid_periods.py
           grep -q "SLICE_VERSION = 1" scripts/update_clientid_periods.py
           grep -q "MAX_PERIOD_DAYS = 90" scripts/update_clientid_periods.py
-          grep -q '"method": "exact-period-metrics-v3"' scripts/update_clientid_periods.py
+          grep -q 'exact-period-metrics-v4-cookie-segments' scripts/update_clientid_periods.py
           grep -q '"method": "safe-daily-slices-v1"' scripts/update_clientid_periods.py
           grep -q '"sliceMetrics"' scripts/update_clientid_periods.py
+          grep -q 'def parse_cookie_status' scripts/update_clientid_periods.py
+          grep -q '"clientIdByCookie": client_by_cookie' scripts/update_clientid_periods.py
+          grep -q '"technicalSegments": segment_summaries' scripts/update_clientid_periods.py
+          grep -q '"technicalIntersections"' scripts/update_clientid_periods.py
+          grep -q '"dailyTypicalShare"' scripts/update_clientid_periods.py
+          grep -q '"dailyMaxDate"' scripts/update_clientid_periods.py
+          grep -q '"mobileTabletVisits"' scripts/update_clientid_periods.py
+          grep -q 'unknown_models / mobile_visits' scripts/update_clientid_periods.py
+          grep -q 'cookieOffMissingReferrer' scripts/update_clientid_periods.py
+          grep -q 'cookieOffMissingReferrerResolutionUnavailable' scripts/update_clientid_periods.py
           grep -q '"ym:s:referer"' scripts/update_clientid_periods.py
           grep -q '"ym:s:mobilePhoneModel"' scripts/update_clientid_periods.py
-          grep -q '"ym:s:pageViews"' scripts/update_clientid_periods.py
-          grep -q '"ym:s:goalsDateTime"' scripts/update_clientid_periods.py
-          grep -q '"repeatBounceClients5"' scripts/update_clientid_periods.py
-          grep -q '"fastAnyGoal15Visits"' scripts/update_clientid_periods.py
-          grep -q '"zeroResolutionVisits"' scripts/update_clientid_periods.py
+          grep -q '"ym:s:cookieEnabled"' scripts/update_clientid_periods.py
           grep -q 'assert "/path" not in serialized' scripts/update_clientid_periods.py
           grep -q 'assert "client-a" not in serialized' scripts/update_clientid_periods.py
           grep -q 'python -u scripts/update_clientid_periods.py' .github/workflows/update-fraud-data.yml
+          test ! -f scripts/apply_cookie_methodology_v4.py
+          test ! -f .github/workflows/apply-cookie-methodology-v4.yml
+          test ! -f scripts/.cookie-methodology-v4-trigger
 
       - name: Check privacy and counter configuration
         run: |
@@ -84,7 +93,7 @@ jobs:
           grep -q '"ym:s:ipAddress"' scripts/update_fraud_data.py
           grep -q 'entry\["key"\] = "скрыто"' scripts/update_fraud_data.py
           grep -q "raw IP, ClientID and VisitID are never committed" scripts/update_fraud_data.py
-          grep -q "raw and hashed ClientID and IP values are not stored" scripts/update_clientid_periods.py
+          grep -q "raw identifiers are not stored" scripts/update_clientid_periods.py
           grep -q "YANDEX_METRIKA_TOKEN" .github/workflows/update-fraud-data.yml
           grep -q "data/fraud" .github/workflows/update-fraud-data.yml
           test ! -f scripts/apply_campaign_filter.py
