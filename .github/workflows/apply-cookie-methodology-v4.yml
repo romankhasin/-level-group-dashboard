@@ -1,0 +1,83 @@
+name: Apply cookie methodology v4
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply migration
+        run: python scripts/apply_cookie_methodology_v4.py
+
+      - name: Add visit count to metric rates
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/update_clientid_periods.py')
+          text = path.read_text(encoding='utf-8')
+          block_start = text.index('# Cookie methodology v4')
+          marker = 'def _subtract_stats(total: dict, part: dict) -> dict:\n'
+          marker_index = text.index(marker, block_start)
+          override = '''def metric_rates(metrics: dict) -> dict:
+              visits = int(metrics.get("visits") or 0)
+              return {
+                  "visits": visits,
+                  "bounce": int(metrics.get("bounceVisits") or 0) / visits if visits else 0.0,
+                  "time": int(metrics.get("durationSum") or 0) / visits if visits else 0.0,
+                  "depth": int(metrics.get("pageViewsSum") or 0) / visits if visits else 0.0,
+                  "quality": int(metrics.get("qualityVisits") or 0) / visits if visits else 0.0,
+                  "newShare": int(metrics.get("newVisits") or 0) / visits if visits else 0.0,
+              }
+
+
+'''
+          if 'def metric_rates(metrics: dict) -> dict:' not in text[block_start:marker_index]:
+              text = text[:marker_index] + override + text[marker_index:]
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Validate Python and methodology
+        run: |
+          python -m py_compile scripts/update_clientid_periods.py
+          python scripts/update_clientid_periods.py --self-test
+          grep -q "PERIOD_VERSION = 4" scripts/update_clientid_periods.py
+          grep -q "def parse_cookie_status" scripts/update_clientid_periods.py
+          grep -q '"clientIdByCookie": client_by_cookie' scripts/update_clientid_periods.py
+          grep -q '"technicalSegments": segment_summaries' scripts/update_clientid_periods.py
+          grep -q '"technicalIntersections"' scripts/update_clientid_periods.py
+          grep -q '"dailyTypicalShare"' scripts/update_clientid_periods.py
+          grep -q '"dailyMaxDate"' scripts/update_clientid_periods.py
+
+      - name: Restore temporary and protected workflow files
+        run: |
+          git checkout HEAD -- .github/workflows/apply-cookie-methodology-v4.yml
+          git checkout HEAD -- .github/workflows/validate-fraud-data.yml
+          git checkout HEAD -- scripts/apply_cookie_methodology_v4.py
+          git checkout HEAD -- scripts/.cookie-methodology-v4-trigger
+
+      - name: Commit final files to PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Segment cookies and technical fraud diagnostics"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
