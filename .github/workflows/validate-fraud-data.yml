@@ -6,6 +6,7 @@ on:
       - ".github/workflows/update-fraud-data.yml"
       - ".github/workflows/validate-fraud-data.yml"
       - "scripts/update_fraud_data.py"
+      - "scripts/update_clientid_periods.py"
       - "scripts/fraud_visit_classifier.py"
 
 permissions:
@@ -25,9 +26,10 @@ jobs:
 
       - name: Check Python syntax and aggregation
         run: |
-          python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py
+          python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py scripts/update_clientid_periods.py
           python scripts/fraud_visit_classifier.py
           python scripts/update_fraud_data.py --self-test
+          python scripts/update_clientid_periods.py --self-test
 
       - name: Check visit-level summaries and campaign filter
         run: |
@@ -55,6 +57,16 @@ jobs:
           grep -q 'directional-volume-multisignal-stage1' scripts/update_fraud_data.py
           grep -q 'assert automation_result\["automationVisits"\] == 1' scripts/update_fraud_data.py
 
+      - name: Check exact ClientID period summaries
+        run: |
+          grep -q "MAX_PERIOD_DAYS = 90" scripts/update_clientid_periods.py
+          grep -q '"method": "exact-clientid-period-v1"' scripts/update_clientid_periods.py
+          grep -q '"pathTemplate"' scripts/update_clientid_periods.py
+          grep -q '"top1Share"' scripts/update_clientid_periods.py
+          grep -q '"top10Share"' scripts/update_clientid_periods.py
+          grep -q 'assert "client-a" not in serialized' scripts/update_clientid_periods.py
+          grep -q 'python -u scripts/update_clientid_periods.py' .github/workflows/update-fraud-data.yml
+
       - name: Check privacy and counter configuration
         run: |
           grep -q "COUNTER_IDS = (53197618, 100470605)" scripts/update_fraud_data.py
@@ -63,6 +75,7 @@ jobs:
           grep -q '"ym:s:ipAddress"' scripts/update_fraud_data.py
           grep -q 'entry\["key"\] = "скрыто"' scripts/update_fraud_data.py
           grep -q "raw IP, ClientID and VisitID are never committed" scripts/update_fraud_data.py
+          grep -q "raw and hashed ClientID values are not stored" scripts/update_clientid_periods.py
           grep -q "YANDEX_METRIKA_TOKEN" .github/workflows/update-fraud-data.yml
           grep -q "data/fraud" .github/workflows/update-fraud-data.yml
           test ! -f scripts/apply_campaign_filter.py
