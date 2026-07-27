@@ -7123,11 +7123,30 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       );
     }
 
+    function combineGoogleMediaWithTargetAdsFraud(googleRow, targetAdsRow) {
+      return {
+        ...googleRow,
+        givt: parseNumber(targetAdsRow.givt),
+        fraud_impressions: parseNumber(targetAdsRow.fraud_impressions)
+      };
+    }
+
+    function targetAdsFraudOnlyForGoogleOwnedCampaign(row) {
+      if (!isYandexMtsPrgVerifierRow(row)) return row;
+      return {
+        ...row,
+        impressions: 0,
+        clicks: 0,
+        cost: 0,
+        has_actual_cost: false
+      };
+    }
+
     function rebuildVerifierRowsFromSources() {
       const targetAdsRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
-      ];
+      ].map(targetAdsFraudOnlyForGoogleOwnedCampaign);
 
       const merged = new Map();
       targetAdsRows.forEach((row, index) => {
@@ -7135,13 +7154,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         merged.set(key, row);
       });
 
-      // For Yandex/MTS PRG, a non-zero Google row wins for the exact
-      // date + technical_mark. A zero Google row falls back to Target Ads.
-      // The Map keeps only one row per date + campaign, so sources never sum.
       (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `google||${index}`;
         const googleHasMediaFacts = googleVerifierRowHasMediaFacts(row);
-        if ((isYandexMtsPrgVerifierRow(row) && googleHasMediaFacts) || !merged.has(key)) {
+        if (isYandexMtsPrgVerifierRow(row) && googleHasMediaFacts) {
+          const targetAdsRow = merged.get(key);
+          merged.set(key, targetAdsRow ? combineGoogleMediaWithTargetAdsFraud(row, targetAdsRow) : row);
+        } else if (!merged.has(key)) {
           merged.set(key, row);
         }
       });
