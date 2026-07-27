@@ -28,6 +28,8 @@ GOOGLE_ARCHIVE_PATH = DATA_DIR / "google_archive.json"
 JOURNAL_PATH = ROOT / "journal.html"
 
 START_DATE = dt.date(2026, 5, 1)
+VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
+VOLGA_PROJECT_TOKEN = "lvol"
 COUNTER_IDS = (53197618, 100470605)
 METRIKA_QUALITY_CALL_GOAL_IDS = {
     53197618: 411053186,
@@ -216,6 +218,16 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             fetch_from = START_DATE
         else:
             fetch_from = max(counter_dates) + dt.timedelta(days=1)
+        # Add the new Волга object from the beginning of July once.  The
+        # regular incremental refresh cannot otherwise retrieve historical
+        # July rows after the object mapping is introduced.
+        has_volga_rows = any(
+            key[0] == counter_id
+            and str(row.get("UTM Campaign") or "").lower().startswith(VOLGA_PROJECT_TOKEN)
+            for key, row in keyed.items()
+        )
+        if not has_volga_rows:
+            fetch_from = min(fetch_from, VOLGA_FACTS_START_DATE)
         ranges[str(counter_id)] = {
             "from": fetch_from.isoformat(),
             "to": yesterday.isoformat(),
