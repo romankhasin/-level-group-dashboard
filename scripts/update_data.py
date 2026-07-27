@@ -434,7 +434,7 @@ def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
 
 def is_yandex_mts_prg_campaign(campaign: str) -> bool:
     tokens = [token for token in campaign.strip().lower().split("_") if token]
-    return bool(tokens) and tokens[-1] == "prg" and any(
+    return "prg" in tokens and any(
         platform in tokens for platform in ("yandex", "mts")
     )
 
@@ -443,15 +443,43 @@ def google_row_has_media_facts(row: dict) -> bool:
     return any(number(row.get(metric)) != 0 for metric in ("impressions", "clicks", "cost"))
 
 
-def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
-    """Merge media facts without duplicating Google and Target Ads.
+def combine_google_media_with_targetads_fraud(google_row: dict, targetads_row: dict) -> dict:
+    """Keep Google media facts and attach fraud facts reported by Target Ads."""
+    combined = dict(google_row)
+    combined["givt"] = number(targetads_row.get("givt"))
+    combined["fraud_impressions"] = number(targetads_row.get("fraud_impressions"))
+    return combined
 
-    For Yandex/MTS PRG, a matching Google row wins only when it contains
-    non-zero media facts. When Google is zero or absent, Target Ads remains
-    the fallback. Every date + campaign key produces exactly one row.
+
+def targetads_fraud_only_for_google_owned_campaign(row: dict) -> dict:
+    """Prevent Target Ads media facts from being counted for Google-owned PRG."""
+    campaign = str(row.get("placement_nm") or "")
+    if not is_yandex_mts_prg_campaign(campaign):
+        return row
+    fraud_only = dict(row)
+    fraud_only.update(
+        {
+            "impressions": 0.0,
+            "clicks": 0.0,
+            "cost": 0.0,
+            "has_actual_cost": False,
+        }
+    )
+    return fraud_only
+
+
+def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
+    """Merge media and fraud facts without duplicating Google and Target Ads.
+
+    For Yandex/MTS PRG, Google is always canonical for impressions, clicks
+    and cost. Target Ads supplies GIVT/SIVT only. This applies even when the
+    two source files spell a campaign differently, so Target Ads cannot fall
+    back to its media facts and double count them. Every date + campaign key
+    produces exactly one row.
     """
     merged: dict[tuple[str, str], dict] = {}
-    for row in targetads_rows:
+    for source_row in targetads_rows:
+        row = targetads_fraud_only_for_google_owned_campaign(source_row)
         campaign = str(row.get("placement_nm") or "")
         report_date = str(row.get("interaction_dt") or "")
         if not report_date or not campaign:
@@ -465,7 +493,14 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
         if not report_date or not campaign:
             continue
         key = (report_date, campaign.lower())
-        if (is_yandex_mts_prg_campaign(campaign) and google_row_has_media_facts(row)) or key not in merged:
+        targetads_row = merged.get(key)
+        if is_yandex_mts_prg_campaign(campaign) and google_row_has_media_facts(row):
+            merged[key] = (
+                combine_google_media_with_targetads_fraud(row, targetads_row)
+                if targetads_row
+                else row
+            )
+        elif key not in merged:
             merged[key] = row
 
     return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
