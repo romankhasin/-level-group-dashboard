@@ -7104,7 +7104,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
     function isGoogleVerifierSource(row) {
       const source = String((row || {}).metric_source || "").trim().toLowerCase();
-      return source === "yandex" || source === "mts";
+      return source === "yandex" || source === "mts" || source === "google_avito";
     }
 
     function isYandexMtsPrgVerifierRow(row) {
@@ -7112,6 +7112,14 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       if (!campaign || campaignChannel(campaign) !== "prg") return false;
       const platformCode = String(parseCampaign(campaign).platformCode || "").trim().toLowerCase();
       return platformCode === "yandex" || platformCode === "mts";
+    }
+
+    function isGoogleAvitoMedMrkVerifierRow(row) {
+      const campaign = String((row || {}).placement_nm || "").trim();
+      const source = String((row || {}).metric_source || "").trim().toLowerCase();
+      if (!campaign || source !== "google_avito") return false;
+      if (campaignChannel(campaign) !== "med" && campaignChannel(campaign) !== "mrk") return false;
+      return String(parseCampaign(campaign).platformCode || "").trim().toLowerCase() === "avito-ads";
     }
 
     function verifierSourceRowKey(row) {
@@ -7171,6 +7179,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         if (isYandexMtsPrgVerifierRow(row) && googleHasMediaFacts) {
           const targetAdsRow = merged.get(key);
           merged.set(key, targetAdsRow ? combineGoogleMediaWithTargetAdsFraud(row, targetAdsRow) : row);
+        } else if (isGoogleAvitoMedMrkVerifierRow(row)) {
+          // The Google media workbook is authoritative for Avito actuals.
+          // Target Ads remains a fallback only when this Google row is absent.
+          merged.set(key, row);
         } else if (!merged.has(key)) {
           merged.set(key, row);
         }
