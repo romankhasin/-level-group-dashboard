@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T06:58:59.942478Z",
+  "generatedAt": "2026-07-28T07:51:34.472445Z",
   "metrika": {
     "new_rows": 1890,
     "total_rows": 71347,
@@ -19,7 +19,7 @@
     }
   },
   "google": {
-    "metric_rows": 13592,
+    "metric_rows": 14478,
     "journal_rows": 360,
     "journal_platforms": [
       "AdsHeads",
@@ -39,7 +39,11 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 6189
+    "live_rows": 6315,
+    "avito": {
+      "source_rows": 760,
+      "metric_rows": 760
+    }
   },
   "targetads": {
     "enabled": true,
