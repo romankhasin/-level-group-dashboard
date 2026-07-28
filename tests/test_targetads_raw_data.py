@@ -7,12 +7,12 @@ from scripts import update_data
 
 
 class TargetAdsRawDataTests(unittest.TestCase):
-    def test_aggregates_gzip_csv_by_date_and_placement(self):
+    def test_aggregates_gzip_csv_by_date_creative_and_placement(self):
         source = (
-            "InteractionDate,InteractionPlacementId\n"
-            "2026-07-01,42\n"
-            "2026-07-01,42\n"
-            "2026-07-02,99\n"
+            "InteractionDate,InteractionPlacementId,InteractionCreativeId\n"
+            "2026-07-01,42,creative-1\n"
+            "2026-07-01,42,creative-1\n"
+            "2026-07-02,99,creative-2\n"
         ).encode()
         compressed = io.BytesIO()
         with gzip.GzipFile(fileobj=compressed, mode="wb") as archive:
@@ -24,8 +24,8 @@ class TargetAdsRawDataTests(unittest.TestCase):
         self.assertEqual(
             result,
             {
-                ("2026-07-01", "42"): 2,
-                ("2026-07-02", "99"): 1,
+                ("2026-07-01", "creative-1", "42"): 2,
+                ("2026-07-02", "creative-2", "99"): 1,
             },
         )
 

@@ -49,7 +49,11 @@ AVITO_GOOGLE_WORKBOOK_URL = (
 )
 DEFAULT_TARGETADS_PROJECT_ID = 12787
 TARGETADS_API_URL = "https://api.targetads.io"
-TARGETADS_RAW_FIELDS = ["InteractionDate", "InteractionPlacementId"]
+TARGETADS_RAW_FIELDS = [
+    "InteractionDate",
+    "InteractionPlacementId",
+    "InteractionCreativeId",
+]
 TARGETADS_POLL_INTERVAL_SECONDS = 5
 TARGETADS_JOB_TIMEOUT_SECONDS = 20 * 60
 GOOGLE_ACTUAL_COST_VAT_MULTIPLIER = 1.22
@@ -500,12 +504,12 @@ def validate_targetads_token(token: str, project_id: int) -> dict:
     return {"valid": True}
 
 
-def fetch_targetads_placements(token: str, project_id: int) -> dict[str, str]:
+def fetch_targetads_metadata(token: str, project_id: int) -> tuple[dict[str, str], dict[str, str]]:
     payload = ensure_targetads_response(
         request_json(
             targetads_url("/v1/meta/campaigns", project_id)
             + "&"
-            + urllib.parse.urlencode({"active": "false"}),
+            + urllib.parse.urlencode({"active": "false", "include_creative": "true"}),
             headers={"Authorization": f"Bearer {token}"},
         ),
         "loading placement metadata",
@@ -517,6 +521,7 @@ def fetch_targetads_placements(token: str, project_id: int) -> dict[str, str]:
             f"keys={sorted(payload.keys())}"
         )
     placements: dict[str, str] = {}
+    creatives: dict[str, str] = {}
     for item in metadata:
         if not isinstance(item, dict):
             continue
@@ -524,7 +529,14 @@ def fetch_targetads_placements(token: str, project_id: int) -> dict[str, str]:
         placement_name = str(item.get("placement_name") or "").strip()
         if placement_id:
             placements[placement_id] = placement_name or f"Placement {placement_id}"
-    return placements
+        for creative in item.get("creatives") or []:
+            if not isinstance(creative, dict):
+                continue
+            creative_id = str(creative.get("creative_id") or "").strip()
+            creative_name = str(creative.get("creative_name") or "").strip()
+            if creative_id:
+                creatives[creative_id] = creative_name or f"Creative {creative_id}"
+    return placements, creatives
 
 
 def create_targetads_raw_job(
@@ -581,16 +593,20 @@ def wait_for_targetads_raw_job(token: str, project_id: int, job_id: str) -> dict
         time.sleep(TARGETADS_POLL_INTERVAL_SECONDS)
 
 
-def aggregate_targetads_csv(download_url: str, interaction_type: str) -> dict[tuple[str, str], int]:
+def aggregate_targetads_csv(download_url: str, interaction_type: str) -> dict[tuple[str, str, str], int]:
     """Count a gzip-compressed Raw Data CSV without storing individual events."""
-    aggregated: dict[tuple[str, str], int] = {}
+    aggregated: dict[tuple[str, str, str], int] = {}
     request = urllib.request.Request(download_url, headers={"User-Agent": "LevelGroupDashboard/1.0"})
     try:
         with urllib.request.urlopen(request, timeout=300) as response:
             with gzip.GzipFile(fileobj=response) as compressed:
                 with io.TextIOWrapper(compressed, encoding="utf-8-sig", newline="") as text_stream:
                     reader = csv.DictReader(text_stream)
-                    required = {"InteractionDate", "InteractionPlacementId"}
+                    required = {
+                        "InteractionDate",
+                        "InteractionPlacementId",
+                        "InteractionCreativeId",
+                    }
                     if not reader.fieldnames or not required.issubset(reader.fieldnames):
                         raise RuntimeError(
                             "Target Ads raw CSV has unexpected columns: "
@@ -599,8 +615,9 @@ def aggregate_targetads_csv(download_url: str, interaction_type: str) -> dict[tu
                     for item in reader:
                         report_date = str(item.get("InteractionDate") or "").strip()
                         placement_id = str(item.get("InteractionPlacementId") or "").strip()
-                        if cell_date(report_date) and placement_id:
-                            key = (report_date, placement_id)
+                        creative_id = str(item.get("InteractionCreativeId") or "").strip()
+                        if cell_date(report_date) and placement_id and creative_id:
+                            key = (report_date, creative_id, placement_id)
                             aggregated[key] = aggregated.get(key, 0) + 1
     except (OSError, UnicodeError, urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as error:
         raise RuntimeError(f"Could not download or read Target Ads {interaction_type} raw CSV: {error}") from error
@@ -611,10 +628,11 @@ def fetch_targetads_period(
     token: str,
     project_id: int,
     placements: dict[str, str],
+    creatives: dict[str, str],
     start: dt.date,
     end: dt.date,
 ) -> tuple[list[dict], dict]:
-    metrics: dict[tuple[str, str], dict[str, int]] = {}
+    metrics: dict[tuple[str, str], dict] = {}
     jobs: list[dict[str, object]] = []
     for interaction_type, metric in (("Impression", "impressions"), ("Click", "clicks")):
         job_id = create_targetads_raw_job(token, project_id, interaction_type, start, end)
@@ -629,15 +647,27 @@ def fetch_targetads_period(
                 "aggregated_events": sum(counts.values()),
             }
         )
-        for key, count in counts.items():
-            metrics.setdefault(key, {"impressions": 0, "clicks": 0})[metric] += count
+        for (report_date, creative_id, placement_id), count in counts.items():
+            values = metrics.setdefault(
+                (report_date, creative_id),
+                {"impressions": 0, "clicks": 0, "placement_ids": set()},
+            )
+            values[metric] += count
+            values["placement_ids"].add(placement_id)
 
     rows = []
-    for (report_date, placement_id), values in metrics.items():
+    for (report_date, creative_id), values in metrics.items():
+        placement_ids = sorted(values["placement_ids"])
+        fallback_placement = placements.get(placement_ids[0], "") if placement_ids else ""
         rows.append(
             {
-                "placement_id": placement_id,
-                "placement_nm": placements.get(placement_id, f"Placement {placement_id}"),
+                "creative_id": creative_id,
+                "placement_id": ",".join(placement_ids),
+                # Creative names are the dashboard's technical campaign keys.
+                "placement_nm": creatives.get(
+                    creative_id,
+                    fallback_placement or f"Creative {creative_id}",
+                ),
                 "interaction_dt": report_date,
                 "impressions": values["impressions"],
                 "clicks": values["clicks"],
@@ -655,31 +685,41 @@ def fetch_targetads_period(
 
 def targetads_row_key(row: dict) -> tuple[str, str]:
     report_date = str(row.get("interaction_dt") or "")
+    creative_id = str(row.get("creative_id") or "").strip()
     placement_id = str(row.get("placement_id") or "").strip()
     placement_name = str(row.get("placement_nm") or "").strip().lower()
-    return report_date, placement_id or placement_name
+    return report_date, creative_id or placement_id or placement_name
 
 
 def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     project_id = targetads_project_id()
     validate_targetads_token(token, project_id)
-    placements = fetch_targetads_placements(token, project_id)
+    placements, creatives = fetch_targetads_metadata(token, project_id)
     existing = read_json_rows(TARGETADS_HISTORY_PATH)
+    needs_creative_backfill = any(
+        not str(row.get("creative_id") or "").strip() for row in existing
+    )
     keyed = {
         targetads_row_key(row): row
         for row in existing
         if row.get("interaction_dt") and row.get("placement_nm")
     }
+    if needs_creative_backfill:
+        keyed = {}
     existing_dates = [dt.date.fromisoformat(key[0]) for key in keyed if key[0]]
     api_min_date = yesterday - dt.timedelta(days=89)
-    desired_fetch_from = max(existing_dates) + dt.timedelta(days=1) if existing_dates else START_DATE
+    desired_fetch_from = (
+        START_DATE
+        if needs_creative_backfill
+        else max(existing_dates) + dt.timedelta(days=1) if existing_dates else START_DATE
+    )
     fetch_from = max(desired_fetch_from, api_min_date)
     fetched_count = 0
     completed_jobs: list[dict] = []
     if fetch_from <= yesterday:
         for chunk_start, chunk_end in date_chunks(fetch_from, yesterday, days=3):
             new_rows, period_status = fetch_targetads_period(
-                token, project_id, placements, chunk_start, chunk_end
+                token, project_id, placements, creatives, chunk_start, chunk_end
             )
             for row in new_rows:
                 keyed[targetads_row_key(row)] = row
@@ -691,6 +731,8 @@ def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     warning = None
     if not placements:
         warning = "Token is valid but Meta API returned no accessible placements"
+    elif not creatives:
+        warning = "Meta API returned no creative names; dashboard keys will use placement names"
     elif desired_fetch_from < api_min_date:
         warning = (
             "Raw Data API v2 only retains 90 days; "
@@ -703,6 +745,9 @@ def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
         "project_id": project_id,
         "token_valid": True,
         "campaigns_available": len(placements),
+        "creatives_available": len(creatives),
+        "identity_field": "creative_name",
+        "creative_backfill": needs_creative_backfill,
         "new_rows": fetched_count,
         "total_rows": len(rows),
         "from": fetch_from.isoformat(),
