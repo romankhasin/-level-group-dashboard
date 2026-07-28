@@ -55,5 +55,16 @@ jobs:
             echo "No data changes"
           else
             git commit -m "Update dashboard data"
-            git push
+            # The data update can run for more than an hour. During that time
+            # other dashboard changes may land on main, so retry the push on
+            # top of the current branch instead of losing the fresh export.
+            for attempt in 1 2 3; do
+              if git push; then
+                exit 0
+              fi
+              echo "main changed while data was updating; rebasing (attempt ${attempt})"
+              git pull --rebase origin main
+            done
+            echo "Could not publish refreshed data after three attempts"
+            exit 1
           fi
