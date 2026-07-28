@@ -3433,7 +3433,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       "lwnizh-rmsk": "Нижегородская Коммерция",
       "lwnizh": "Нижегородская Коммерция",
       "lmech-rspb": "Мечникова",
+      "ak": "Академический",
       "lvol": "Волга",
+      "lvol-rnn": "Волга",
       "lg_prem": "Премиум",
       "lg_reg": "Регионы",
       "last": "Остатки",
@@ -4185,6 +4187,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         const value = String(code || "").toLowerCase();
         if (value === "lmech-rspb") return "lmech";
         if (value === "lwnizh-rmsk") return "lwnizh";
+        if (value === "lvol") return "lvol-rnn";
         return value;
       }
 
@@ -4557,8 +4560,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       "Work Воронцовская": ["vr", "Коммерция Воронцовская"],
       "Work Нижегородская": ["lwnizh", "Нижегородская Коммерция"],
       "Work Свободы": ["lwsv", "Свободы Коммерция"],
+      "Академический": ["ak", "Академический"],
       "Войковская": ["lv", "Войковская"],
-      "Волга": ["lvol", "Волга"],
+      "Волга": ["lvol-rnn", "Волга"],
       "Звенигородская": ["zv", "Звенигородская"],
       "Лесной": ["gvl", "Лесной"],
       "Мечникова": ["lmech", "Мечникова"],
