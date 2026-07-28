@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import datetime as dt
+import gzip
 import html
+import io
 import json
 import os
 from pathlib import Path
@@ -44,7 +47,11 @@ AVITO_GOOGLE_WORKBOOK_URL = (
     "https://docs.google.com/spreadsheets/d/"
     "15lJoU_ylnP10SCyWpg6LV0zwXGV5SIxy/export?format=xlsx"
 )
-TARGETADS_PROJECT_ID = 12787
+DEFAULT_TARGETADS_PROJECT_ID = 12787
+TARGETADS_API_URL = "https://api.targetads.io"
+TARGETADS_RAW_FIELDS = ["InteractionDate", "InteractionPlacementId"]
+TARGETADS_POLL_INTERVAL_SECONDS = 5
+TARGETADS_JOB_TIMEOUT_SECONDS = 20 * 60
 GOOGLE_ACTUAL_COST_VAT_MULTIPLIER = 1.22
 
 
@@ -70,6 +77,32 @@ def request_json(
         try:
             with urllib.request.urlopen(request, timeout=180) as response:
                 return json.load(response)
+        except urllib.error.HTTPError as error:
+            details = error.read().decode("utf-8", errors="replace")[:1000]
+            if error.code not in {429, 500, 502, 503, 504} or attempt == attempts:
+                raise RuntimeError(f"HTTP {error.code} for {url}: {details}") from error
+        except (urllib.error.URLError, TimeoutError) as error:
+            if attempt == attempts:
+                raise RuntimeError(f"Request failed for {url}: {error}") from error
+        time.sleep(min(2**attempt, 15))
+
+    raise RuntimeError(f"Request failed for {url}")
+
+
+def request_success(
+    url: str,
+    *,
+    headers: dict[str, str] | None = None,
+    attempts: int = 4,
+) -> None:
+    """Make a request whose successful response may intentionally be empty."""
+    request_headers = {"Accept": "application/json", **(headers or {})}
+    for attempt in range(1, attempts + 1):
+        request = urllib.request.Request(url, headers=request_headers)
+        try:
+            with urllib.request.urlopen(request, timeout=180) as response:
+                response.read()
+            return
         except urllib.error.HTTPError as error:
             details = error.read().decode("utf-8", errors="replace")[:1000]
             if error.code not in {429, 500, 502, 503, 504} or attempt == attempts:
@@ -434,71 +467,252 @@ def read_avito_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], dic
     return rows, {"source_rows": source_rows_count, "metric_rows": len(rows)}
 
 
-def fetch_targetads_period(token: str, start: dt.date, end: dt.date) -> list[dict]:
-    url = (
-        "https://api.targetads.io/v1/reports/agg_report?"
-        + urllib.parse.urlencode({"project_id": TARGETADS_PROJECT_ID})
+def targetads_project_id() -> int:
+    value = os.environ.get("TARGETADS_PROJECT_ID", "").strip() or str(DEFAULT_TARGETADS_PROJECT_ID)
+    try:
+        project_id = int(value)
+    except ValueError as error:
+        raise RuntimeError("TARGETADS_PROJECT_ID must be a positive integer") from error
+    if project_id <= 0:
+        raise RuntimeError("TARGETADS_PROJECT_ID must be a positive integer")
+    return project_id
+
+
+def targetads_url(path: str, project_id: int) -> str:
+    return f"{TARGETADS_API_URL}{path}?" + urllib.parse.urlencode({"project_id": project_id})
+
+
+def ensure_targetads_response(payload: object, action: str) -> dict:
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"Unexpected Target Ads response while {action}: not a JSON object")
+    if payload.get("ErrorCode"):
+        message = str(payload.get("ErrorMessage") or "no error message")
+        raise RuntimeError(f"Target Ads API error while {action}: {payload['ErrorCode']}: {message}")
+    return payload
+
+
+def validate_targetads_token(token: str, project_id: int) -> dict:
+    # The documented successful response is HTTP 200 and may have no body.
+    request_success(
+        targetads_url("/v1/meta/token_validate", project_id),
+        headers={"Authorization": f"Bearer {token}"},
     )
-    body = {
-        "ResponseType": "JSON",
-        "Fields": ["EventDate", "MediaCampaign"],
-        "MediaMetrics": ["Impressions", "Clicks", "GIVT", "SIVT"],
-        "InteractionFilter": {"DateFrom": start.isoformat(), "DateTo": end.isoformat()},
-        "AttributionModel": "mli",
-        "AttributionWindow": "30",
-        "DateGrouping": "day",
-    }
-    payload = request_json(url, headers={"Authorization": f"Bearer {token}"}, body=body)
-    source_rows = payload.get("data") or payload.get("Rows") or payload.get("rows") or []
-    rows = []
-    for item in source_rows:
+    return {"valid": True}
+
+
+def fetch_targetads_placements(token: str, project_id: int) -> dict[str, str]:
+    payload = ensure_targetads_response(
+        request_json(
+            targetads_url("/v1/meta/campaigns", project_id)
+            + "&"
+            + urllib.parse.urlencode({"active": "false"}),
+            headers={"Authorization": f"Bearer {token}"},
+        ),
+        "loading placement metadata",
+    )
+    metadata = payload.get("meta")
+    if not isinstance(metadata, list):
+        raise RuntimeError(
+            "Unexpected Target Ads placement metadata response: "
+            f"keys={sorted(payload.keys())}"
+        )
+    placements: dict[str, str] = {}
+    for item in metadata:
         if not isinstance(item, dict):
             continue
-        campaign = str(item.get("MediaCampaign") or "").strip()
-        report_date = cell_date(item.get("EventDate"))
-        if not campaign or not report_date:
-            continue
-        rows.append(
+        placement_id = str(item.get("placement_id") or "").strip()
+        placement_name = str(item.get("placement_name") or "").strip()
+        if placement_id:
+            placements[placement_id] = placement_name or f"Placement {placement_id}"
+    return placements
+
+
+def create_targetads_raw_job(
+    token: str,
+    project_id: int,
+    interaction_type: str,
+    start: dt.date,
+    end: dt.date,
+) -> str:
+    payload = ensure_targetads_response(
+        request_json(
+            targetads_url("/v2/reports/raw_reports", project_id),
+            headers={"Authorization": f"Bearer {token}"},
+            body={
+                "Fields": TARGETADS_RAW_FIELDS,
+                "DateFrom": start.isoformat(),
+                "DateTo": end.isoformat(),
+                "InteractionType": interaction_type,
+            },
+        ),
+        f"creating {interaction_type} raw-data job for {start}..{end}",
+    )
+    job_id = str(payload.get("job_id") or "").strip()
+    if not job_id:
+        raise RuntimeError(
+            "Target Ads did not return job_id while creating raw-data job: "
+            f"keys={sorted(payload.keys())}"
+        )
+    return job_id
+
+
+def wait_for_targetads_raw_job(token: str, project_id: int, job_id: str) -> dict:
+    deadline = time.monotonic() + TARGETADS_JOB_TIMEOUT_SECONDS
+    while True:
+        payload = ensure_targetads_response(
+            request_json(
+                targetads_url(f"/v2/jobs/{urllib.parse.quote(job_id, safe='')}", project_id),
+                headers={"Authorization": f"Bearer {token}"},
+            ),
+            f"checking raw-data job {job_id}",
+        )
+        status = str(payload.get("status") or "").upper()
+        if status == "DONE":
+            if not payload.get("download_url"):
+                raise RuntimeError(f"Target Ads job {job_id} is DONE without download_url")
+            return payload
+        if status in {"FAILED", "CANCELLED", "EXPIRED"}:
+            message = str(payload.get("error_message") or "no error message")
+            raise RuntimeError(f"Target Ads job {job_id} ended as {status}: {message}")
+        if status not in {"CREATED", "PROCESSING"}:
+            raise RuntimeError(f"Target Ads job {job_id} returned unknown status {status!r}")
+        if time.monotonic() >= deadline:
+            raise RuntimeError(f"Timed out waiting for Target Ads job {job_id}")
+        time.sleep(TARGETADS_POLL_INTERVAL_SECONDS)
+
+
+def aggregate_targetads_csv(download_url: str, interaction_type: str) -> dict[tuple[str, str], int]:
+    """Count a gzip-compressed Raw Data CSV without storing individual events."""
+    aggregated: dict[tuple[str, str], int] = {}
+    request = urllib.request.Request(download_url, headers={"User-Agent": "LevelGroupDashboard/1.0"})
+    try:
+        with urllib.request.urlopen(request, timeout=300) as response:
+            with gzip.GzipFile(fileobj=response) as compressed:
+                with io.TextIOWrapper(compressed, encoding="utf-8-sig", newline="") as text_stream:
+                    reader = csv.DictReader(text_stream)
+                    required = {"InteractionDate", "InteractionPlacementId"}
+                    if not reader.fieldnames or not required.issubset(reader.fieldnames):
+                        raise RuntimeError(
+                            "Target Ads raw CSV has unexpected columns: "
+                            f"{reader.fieldnames or []}"
+                        )
+                    for item in reader:
+                        report_date = str(item.get("InteractionDate") or "").strip()
+                        placement_id = str(item.get("InteractionPlacementId") or "").strip()
+                        if cell_date(report_date) and placement_id:
+                            key = (report_date, placement_id)
+                            aggregated[key] = aggregated.get(key, 0) + 1
+    except (OSError, UnicodeError, urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as error:
+        raise RuntimeError(f"Could not download or read Target Ads {interaction_type} raw CSV: {error}") from error
+    return aggregated
+
+
+def fetch_targetads_period(
+    token: str,
+    project_id: int,
+    placements: dict[str, str],
+    start: dt.date,
+    end: dt.date,
+) -> tuple[list[dict], dict]:
+    metrics: dict[tuple[str, str], dict[str, int]] = {}
+    jobs: list[dict[str, object]] = []
+    for interaction_type, metric in (("Impression", "impressions"), ("Click", "clicks")):
+        job_id = create_targetads_raw_job(token, project_id, interaction_type, start, end)
+        job = wait_for_targetads_raw_job(token, project_id, job_id)
+        counts = aggregate_targetads_csv(str(job["download_url"]), interaction_type)
+        jobs.append(
             {
-                "placement_nm": campaign,
-                "interaction_dt": report_date.isoformat(),
-                "impressions": number(item.get("Impressions")),
-                "clicks": number(item.get("Clicks")),
-                "givt": number(item.get("GIVT")),
-                "fraud_impressions": number(item.get("SIVT")),
-                "cost": 0.0,
-                "has_actual_cost": False,
-                "metric_source": "targetads",
+                "id": job_id,
+                "type": interaction_type,
+                "status": "DONE",
+                "api_row_count": int(job.get("row_count") or 0),
+                "aggregated_events": sum(counts.values()),
             }
         )
-    return rows
+        for key, count in counts.items():
+            metrics.setdefault(key, {"impressions": 0, "clicks": 0})[metric] += count
+
+    rows = []
+    for (report_date, placement_id), values in metrics.items():
+        rows.append(
+            {
+                "placement_id": placement_id,
+                "placement_nm": placements.get(placement_id, f"Placement {placement_id}"),
+                "interaction_dt": report_date,
+                "impressions": values["impressions"],
+                "clicks": values["clicks"],
+                # Raw Data API v2 does not provide GIVT or SIVT. Keep the
+                # existing dashboard schema until Fraud Reports API is added.
+                "givt": 0.0,
+                "fraud_impressions": 0.0,
+                "cost": 0.0,
+                "has_actual_cost": False,
+                "metric_source": "targetads_raw_v2",
+            }
+        )
+    return rows, {"from": start.isoformat(), "to": end.isoformat(), "jobs": jobs}
+
+
+def targetads_row_key(row: dict) -> tuple[str, str]:
+    report_date = str(row.get("interaction_dt") or "")
+    placement_id = str(row.get("placement_id") or "").strip()
+    placement_name = str(row.get("placement_nm") or "").strip().lower()
+    return report_date, placement_id or placement_name
 
 
 def update_targetads(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
+    project_id = targetads_project_id()
+    validate_targetads_token(token, project_id)
+    placements = fetch_targetads_placements(token, project_id)
     existing = read_json_rows(TARGETADS_HISTORY_PATH)
     keyed = {
-        (str(row.get("interaction_dt") or ""), str(row.get("placement_nm") or "").lower()): row
+        targetads_row_key(row): row
         for row in existing
         if row.get("interaction_dt") and row.get("placement_nm")
     }
-    existing_dates = [dt.date.fromisoformat(key[0]) for key in keyed]
-    fetch_from = max(existing_dates) + dt.timedelta(days=1) if existing_dates else START_DATE
+    existing_dates = [dt.date.fromisoformat(key[0]) for key in keyed if key[0]]
+    api_min_date = yesterday - dt.timedelta(days=89)
+    desired_fetch_from = max(existing_dates) + dt.timedelta(days=1) if existing_dates else START_DATE
+    fetch_from = max(desired_fetch_from, api_min_date)
     fetched_count = 0
+    completed_jobs: list[dict] = []
     if fetch_from <= yesterday:
-        for chunk_start, chunk_end in date_chunks(fetch_from, yesterday, days=31):
-            new_rows = fetch_targetads_period(token, chunk_start, chunk_end)
+        for chunk_start, chunk_end in date_chunks(fetch_from, yesterday, days=3):
+            new_rows, period_status = fetch_targetads_period(
+                token, project_id, placements, chunk_start, chunk_end
+            )
             for row in new_rows:
-                keyed[(row["interaction_dt"], row["placement_nm"].lower())] = row
+                keyed[targetads_row_key(row)] = row
             fetched_count += len(new_rows)
+            completed_jobs.extend(period_status["jobs"])
 
     rows = sorted(keyed.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
     write_json(TARGETADS_HISTORY_PATH, {"rows": rows})
+    warning = None
+    if not placements:
+        warning = "Token is valid but Meta API returned no accessible placements"
+    elif desired_fetch_from < api_min_date:
+        warning = (
+            "Raw Data API v2 only retains 90 days; "
+            f"the requested history before {api_min_date.isoformat()} could not be loaded"
+        )
     return rows, {
         "enabled": True,
+        "configured": True,
+        "api": "raw_data_v2",
+        "project_id": project_id,
+        "token_valid": True,
+        "campaigns_available": len(placements),
         "new_rows": fetched_count,
         "total_rows": len(rows),
         "from": fetch_from.isoformat(),
         "to": yesterday.isoformat(),
+        "jobs_completed": len(completed_jobs),
+        "events_aggregated": sum(
+            int(job["aggregated_events"]) for job in completed_jobs
+        ),
+        "job_details": completed_jobs,
+        "warning": warning,
     }
 
 
