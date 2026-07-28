@@ -40,6 +40,10 @@ GOOGLE_WORKBOOK_URL = (
     "https://docs.google.com/spreadsheets/d/"
     "1chd_Rr_pZPZM83xfI2vx6gziNdLGRmdS/export?format=xlsx"
 )
+AVITO_GOOGLE_WORKBOOK_URL = (
+    "https://docs.google.com/spreadsheets/d/"
+    "15lJoU_ylnP10SCyWpg6LV0zwXGV5SIxy/export?format=xlsx"
+)
 TARGETADS_PROJECT_ID = 12787
 GOOGLE_ACTUAL_COST_VAT_MULTIPLIER = 1.22
 
@@ -376,6 +380,60 @@ def read_google_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], li
     )
 
 
+def is_avito_med_mrk_campaign(campaign: str) -> bool:
+    tokens = [token for token in campaign.strip().lower().split("_") if token]
+    return "avito-ads" in tokens and any(channel in tokens for channel in ("med", "mrk"))
+
+
+def read_avito_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], dict]:
+    """Read Avito MED/MRK actuals from the shared media workbook's Data sheet."""
+    workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    if "Данные" not in workbook.sheetnames:
+        raise RuntimeError("Avito workbook is missing sheet: Данные")
+
+    headers, source_rows = workbook_rows(workbook["Данные"])
+    column_index = {name: index for index, name in enumerate(headers)}
+    required_headers = {"Дата", "utm_campaign", "Показы", "Клики", "Бюджет без НДС"}
+    missing_headers = required_headers.difference(column_index)
+    if missing_headers:
+        raise RuntimeError(f"Avito Данные is missing columns: {sorted(missing_headers)}")
+
+    aggregated: dict[tuple[str, str], dict] = {}
+    source_rows_count = 0
+    for row in source_rows:
+        report_date = cell_date(row[column_index["Дата"]])
+        campaign = str(row[column_index["utm_campaign"]] or "").strip()
+        if (
+            not report_date
+            or report_date < START_DATE
+            or report_date > yesterday
+            or not is_avito_med_mrk_campaign(campaign)
+        ):
+            continue
+        source_rows_count += 1
+        key = (report_date.isoformat(), campaign.lower())
+        if key not in aggregated:
+            aggregated[key] = {
+                "placement_nm": campaign,
+                "interaction_dt": report_date.isoformat(),
+                "impressions": 0.0,
+                "clicks": 0.0,
+                "givt": 0.0,
+                "fraud_impressions": 0.0,
+                "cost": 0.0,
+                "has_actual_cost": True,
+                "metric_source": "google_avito",
+            }
+        item = aggregated[key]
+        item["impressions"] += number(row[column_index["Показы"]])
+        item["clicks"] += number(row[column_index["Клики"]])
+        item["cost"] += number(row[column_index["Бюджет без НДС"]]) * GOOGLE_ACTUAL_COST_VAT_MULTIPLIER
+
+    workbook.close()
+    rows = sorted(aggregated.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
+    return rows, {"source_rows": source_rows_count, "metric_rows": len(rows)}
+
+
 def fetch_targetads_period(token: str, start: dt.date, end: dt.date) -> list[dict]:
     url = (
         "https://api.targetads.io/v1/reports/agg_report?"
@@ -451,6 +509,13 @@ def is_yandex_mts_prg_campaign(campaign: str) -> bool:
     )
 
 
+def is_google_avito_med_mrk_row(row: dict) -> bool:
+    return (
+        str(row.get("metric_source") or "").strip().lower() == "google_avito"
+        and is_avito_med_mrk_campaign(str(row.get("placement_nm") or ""))
+    )
+
+
 def google_row_has_media_facts(row: dict) -> bool:
     return any(number(row.get(metric)) != 0 for metric in ("impressions", "clicks", "cost"))
 
@@ -512,6 +577,10 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
                 if targetads_row
                 else row
             )
+        elif is_google_avito_med_mrk_row(row):
+            # Google contains the complete Avito actuals, including zeroes.
+            # Do not merge Target Ads fraud or media facts for this position.
+            merged[key] = row
         elif key not in merged:
             merged[key] = row
 
@@ -674,12 +743,16 @@ def main() -> None:
     if args.workbook is None:
         download_file(GOOGLE_WORKBOOK_URL, workbook_path)
     live_google_rows, journal_rows, google_status = read_google_workbook(workbook_path, yesterday)
+    avito_workbook_path = ROOT / ".cache" / "avito_media_report.xlsx"
+    download_file(AVITO_GOOGLE_WORKBOOK_URL, avito_workbook_path)
+    avito_google_rows, avito_status = read_avito_workbook(avito_workbook_path, yesterday)
     archived_google_rows = read_json_rows(GOOGLE_ARCHIVE_PATH)
-    google_rows = merge_google_rows(archived_google_rows, live_google_rows)
+    google_rows = merge_google_rows(archived_google_rows, [*live_google_rows, *avito_google_rows])
     google_status.update(
         {
             "archive_rows": len(archived_google_rows),
             "live_rows": len(live_google_rows),
+            "avito": avito_status,
             "metric_rows": len(google_rows),
         }
     )
@@ -704,7 +777,7 @@ def main() -> None:
         "rawRows": metrika_rows,
         "verifierRows": verifier_rows,
         "sourceFile": "Автоматическая выгрузка Яндекс Метрики",
-        "verifierFile": "Google Данные_метрика + фиксированный архив июня"
+        "verifierFile": "Google Данные_метрика + Avito Данные + фиксированный архив июня"
         + (" + Target Ads" if targetads_token else ""),
         "status": {
             "metrika": metrika_status,
