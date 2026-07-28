@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-07-28T13:17:40.432148Z",
+  "generatedAt": "2026-07-28T21:48:06.557917Z",
   "metrika": {
-    "new_rows": 1890,
-    "total_rows": 71347,
+    "new_rows": 2635,
+    "total_rows": 72092,
     "ranges": {
       "53197618": {
         "from": "2026-07-28",
-        "to": "2026-07-27",
-        "new_rows": 0,
+        "to": "2026-07-28",
+        "new_rows": 676,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-07-27",
-        "new_rows": 1890,
+        "to": "2026-07-28",
+        "new_rows": 1959,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 14478,
-    "journal_rows": 360,
+    "metric_rows": 14493,
+    "journal_rows": 361,
     "journal_platforms": [
       "AdsHeads",
       "Adsepctor",
@@ -39,7 +39,7 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 6315,
+    "live_rows": 6330,
     "avito": {
       "source_rows": 760,
       "metric_rows": 760
@@ -52,13 +52,437 @@
     "project_id": 12787,
     "token_valid": true,
     "campaigns_available": 675,
-    "new_rows": 0,
-    "total_rows": 15766,
-    "from": "2026-07-28",
-    "to": "2026-07-27",
-    "jobs_completed": 0,
-    "events_aggregated": 0,
-    "job_details": [],
+    "creatives_available": 6288,
+    "identity_field": "creative_name",
+    "creative_backfill": true,
+    "new_rows": 99858,
+    "total_rows": 99858,
+    "from": "2026-05-01",
+    "to": "2026-07-28",
+    "jobs_completed": 60,
+    "events_aggregated": 426220852,
+    "job_details": [
+      {
+        "id": "2fbec731-985d-47e2-a873-92e9cdd33d98",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 6484438,
+        "aggregated_events": 6484438
+      },
+      {
+        "id": "35234e8c-04c7-4039-93c2-6881adf175a9",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 51803,
+        "aggregated_events": 51803
+      },
+      {
+        "id": "e56cea3c-dd59-45ee-a5e6-cb3ffafdd3a2",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 9430522,
+        "aggregated_events": 9430522
+      },
+      {
+        "id": "53b15086-d0cc-4209-a50d-b4f1b65d3239",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 62251,
+        "aggregated_events": 62251
+      },
+      {
+        "id": "069f7de9-210c-49d1-a06a-e9c5b3a7e449",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 11794498,
+        "aggregated_events": 11794498
+      },
+      {
+        "id": "c2c2f2d6-fc9e-43ef-85fd-63bc1afd1c76",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 88259,
+        "aggregated_events": 88259
+      },
+      {
+        "id": "79ca345e-b252-4886-8f8c-f445d6c0718b",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13256213,
+        "aggregated_events": 13256213
+      },
+      {
+        "id": "0ae85b75-3849-4aca-bd64-b38216334e64",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 84201,
+        "aggregated_events": 84201
+      },
+      {
+        "id": "2ee89dd4-07b2-47b9-ab02-4e759c0e7939",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13572693,
+        "aggregated_events": 13572693
+      },
+      {
+        "id": "c7f4b474-b26c-4423-a5d4-232d4b5b2010",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 80197,
+        "aggregated_events": 80197
+      },
+      {
+        "id": "d44187eb-a089-4803-a0f0-20a6fab87b21",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13900387,
+        "aggregated_events": 13900387
+      },
+      {
+        "id": "a6978b44-79b6-44c4-8190-4d2f446a90eb",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 66165,
+        "aggregated_events": 66165
+      },
+      {
+        "id": "edf8205c-8890-467b-9677-a602b3274735",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 15449051,
+        "aggregated_events": 15449051
+      },
+      {
+        "id": "7d8b986a-daf4-4819-af9e-1cf128316c5e",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 184600,
+        "aggregated_events": 184600
+      },
+      {
+        "id": "4c1997b0-b522-4968-bc32-51ea1f4e07ba",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 14373500,
+        "aggregated_events": 14373500
+      },
+      {
+        "id": "7edfe730-301c-407e-8caa-bc06064c2408",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 396277,
+        "aggregated_events": 396277
+      },
+      {
+        "id": "3aa709e4-4e78-4a5a-8799-e496a448ee63",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 16540907,
+        "aggregated_events": 16540907
+      },
+      {
+        "id": "1e26bd8f-deff-409e-bb76-d00799bc3a9f",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 234802,
+        "aggregated_events": 234802
+      },
+      {
+        "id": "e63d5faf-9150-4566-92fd-704c8cc3b56a",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 16850311,
+        "aggregated_events": 16850311
+      },
+      {
+        "id": "aff3b3f9-5fb5-45f2-9918-dacc9145a620",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 71768,
+        "aggregated_events": 71768
+      },
+      {
+        "id": "6f88c4e2-a589-412f-a404-db589fb3acf8",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 10814014,
+        "aggregated_events": 10814014
+      },
+      {
+        "id": "323e2cd2-b7f9-474d-bc62-d106a7170eb5",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 59590,
+        "aggregated_events": 59590
+      },
+      {
+        "id": "567c038d-03e5-4142-8f3a-ccc52b8e71ff",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 9958807,
+        "aggregated_events": 9958807
+      },
+      {
+        "id": "00bc3529-0621-488f-8f8d-8b21d6b9d1f6",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 66842,
+        "aggregated_events": 66842
+      },
+      {
+        "id": "a62d51b9-84cb-4dd4-a9c9-2f5a5a0e3764",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 9684860,
+        "aggregated_events": 9684860
+      },
+      {
+        "id": "b2d4db99-dab0-408c-a427-5ce3d9f36a78",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 72703,
+        "aggregated_events": 72703
+      },
+      {
+        "id": "6502f120-3100-4e9d-8afa-947cd238bbe3",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 10020071,
+        "aggregated_events": 10020071
+      },
+      {
+        "id": "1cfb70b1-8e18-445e-8600-0c1136cf6829",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 73507,
+        "aggregated_events": 73507
+      },
+      {
+        "id": "daa9c438-7cd4-43ab-b6c7-1b7171841ecb",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 9702536,
+        "aggregated_events": 9702536
+      },
+      {
+        "id": "b5107b29-4909-4a88-92f1-2db5ab421a4f",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 74072,
+        "aggregated_events": 74072
+      },
+      {
+        "id": "464fbf71-1a8b-4201-b08c-b1dd60d32cd3",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 12717260,
+        "aggregated_events": 12717260
+      },
+      {
+        "id": "1aeada4f-9408-4970-a7c1-e6d03667cffb",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 88682,
+        "aggregated_events": 88682
+      },
+      {
+        "id": "a3a68f43-bd41-432b-9127-2b9bfc0c3e43",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 17983532,
+        "aggregated_events": 17983532
+      },
+      {
+        "id": "87faa22d-6281-43ae-a4ad-c25c2bc97467",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 131337,
+        "aggregated_events": 131337
+      },
+      {
+        "id": "e787abeb-b019-4e6b-8c48-cc6e2e233633",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 25101491,
+        "aggregated_events": 25101491
+      },
+      {
+        "id": "1e043efe-5d86-4535-a9aa-7612521efe5a",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 187063,
+        "aggregated_events": 187063
+      },
+      {
+        "id": "fc8bf665-024e-46a6-b14d-8e09b51782a2",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 24610339,
+        "aggregated_events": 24610339
+      },
+      {
+        "id": "d7147bc0-950f-48fb-b7d6-7c975ce060ed",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 219901,
+        "aggregated_events": 219901
+      },
+      {
+        "id": "69ec78e7-2662-4adc-82b6-1b4640208d1e",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 22558375,
+        "aggregated_events": 22558375
+      },
+      {
+        "id": "810582ac-25be-4651-938b-1990c2154a8c",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 209175,
+        "aggregated_events": 209175
+      },
+      {
+        "id": "7d9841b0-169f-4ffe-a889-0ff796981e61",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13128818,
+        "aggregated_events": 13128818
+      },
+      {
+        "id": "e4c27f07-55bc-4bc9-be65-d0322811d485",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 122359,
+        "aggregated_events": 122359
+      },
+      {
+        "id": "dd15fdc5-f10b-4c58-b659-34fc4ed3f0ce",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 11205118,
+        "aggregated_events": 11205118
+      },
+      {
+        "id": "19a96563-7770-4b89-9025-edd31fd98f9c",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 90006,
+        "aggregated_events": 90006
+      },
+      {
+        "id": "79a27ee1-e764-4268-8249-2b4512737cb5",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13120272,
+        "aggregated_events": 13120272
+      },
+      {
+        "id": "e5b19c6e-07e6-4665-a315-39c9f5f42677",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 84423,
+        "aggregated_events": 84423
+      },
+      {
+        "id": "2636d0b4-3f5d-465a-bc98-e1b4742c0141",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 12474990,
+        "aggregated_events": 12474990
+      },
+      {
+        "id": "8fe85d59-348c-4b58-8f30-ffb90b96a4e5",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 89267,
+        "aggregated_events": 89267
+      },
+      {
+        "id": "11f1573f-2248-4d2b-a8ee-125029ac1f00",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 12891333,
+        "aggregated_events": 12891333
+      },
+      {
+        "id": "88614962-9af0-4e6a-ad0e-9c79bccf83a7",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 101166,
+        "aggregated_events": 101166
+      },
+      {
+        "id": "8ba88e57-08c0-405c-b07f-a83cc350354f",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13764412,
+        "aggregated_events": 13764412
+      },
+      {
+        "id": "9f5e5bbc-7c53-49a6-b4d8-d2c9c8d1374c",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 100056,
+        "aggregated_events": 100056
+      },
+      {
+        "id": "9739bab4-817b-4bc4-a7cd-7504a667c45d",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13334695,
+        "aggregated_events": 13334695
+      },
+      {
+        "id": "5f48ae6f-73c2-4b15-bef9-ea4c76934058",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 98745,
+        "aggregated_events": 98745
+      },
+      {
+        "id": "1b0f927f-3e17-43e2-a63b-a920264f76d8",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 17381571,
+        "aggregated_events": 17381571
+      },
+      {
+        "id": "1c9c3b96-1d98-4851-b9c1-1fe6b53ade1a",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 113041,
+        "aggregated_events": 113041
+      },
+      {
+        "id": "69ddea3b-53e4-4dc6-b38a-dd8afbd975a2",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 17341637,
+        "aggregated_events": 17341637
+      },
+      {
+        "id": "89ba0b46-011c-49e0-b795-09ced9753345",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 156587,
+        "aggregated_events": 156587
+      },
+      {
+        "id": "0653c0d4-8664-4d41-90ce-36ff4e0d913c",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 13239054,
+        "aggregated_events": 13239054
+      },
+      {
+        "id": "116440a4-7c45-457c-a274-335729a924de",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 76302,
+        "aggregated_events": 76302
+      }
+    ],
     "warning": null
   }
 }
