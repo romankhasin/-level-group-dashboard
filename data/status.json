@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-07-27T17:45:34.099454Z",
+  "generatedAt": "2026-07-28T06:39:03.618838Z",
   "metrika": {
-    "new_rows": 1820,
-    "total_rows": 70578,
+    "new_rows": 2589,
+    "total_rows": 71347,
     "ranges": {
       "53197618": {
         "from": "2026-07-27",
-        "to": "2026-07-26",
-        "new_rows": 0,
+        "to": "2026-07-27",
+        "new_rows": 699,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-07-26",
-        "new_rows": 1820,
+        "to": "2026-07-27",
+        "new_rows": 1890,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 13578,
+    "metric_rows": 13592,
     "journal_rows": 360,
     "journal_platforms": [
       "AdsHeads",
@@ -39,13 +39,13 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 6175
+    "live_rows": 6189
   },
   "targetads": {
     "enabled": true,
     "new_rows": 0,
     "total_rows": 0,
     "from": "2026-05-01",
-    "to": "2026-07-26"
+    "to": "2026-07-27"
   }
 }
