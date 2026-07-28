@@ -22,7 +22,9 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    # Raw Data API v2 creates and processes jobs asynchronously. Initial
+    # backfills can contain several three-day windows.
+    timeout-minutes: 90
 
     steps:
       - name: Check out repository
@@ -41,6 +43,7 @@ jobs:
         env:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
           TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
+          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
         run: python scripts/update_data.py
 
       - name: Commit refreshed files
