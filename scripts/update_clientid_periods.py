@@ -171,6 +171,7 @@ def empty_day() -> dict:
         "groups": {dimension: {} for dimension in SLICE_DIMENSIONS},
         "groupMeta": {dimension: {} for dimension in SLICE_DIMENSIONS},
         "fastAnyGoal3Visits": 0,
+        "fastAnyGoal3Visits": 0,
         "fastAnyGoal15Visits": 0,
         "fastAnyGoal30Visits": 0,
         "fastQualityGoal15Visits": 0,
@@ -894,6 +895,7 @@ def self_test() -> None:
     assert result["clientIdVisits"] == 24
     assert result["uniqueClientIds"] == 1
     assert result["repeatBounceClients5"] == 1
+    assert result["fastAnyGoal3Visits"] >= 0
     assert result["fastAnyGoal3Visits"] >= 0
     assert result["fastAnyGoal15Visits"] == 1
     assert result["fastQualityGoal15Visits"] == 1
