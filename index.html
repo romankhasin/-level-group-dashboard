@@ -248,18 +248,13 @@
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 22px;
     }
 
     .kpi-grid .kpi {
-      grid-column: span 2;
-    }
-
-    .kpi-grid .kpi:nth-child(4),
-    .kpi-grid .kpi:nth-child(5) {
-      grid-column: span 3;
+      grid-column: span 1;
     }
 
     .kpi {
@@ -3266,6 +3261,26 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           <div class="kpi-label">Всего визитов</div>
           <div class="kpi-value" id="totalVisits">—</div>
           <div class="kpi-note">по выбранному режиму</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Показы</div>
+          <div class="kpi-value" id="totalImpressions">—</div>
+          <div class="kpi-note">по выбранному режиму</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Клики</div>
+          <div class="kpi-value" id="totalClicks">—</div>
+          <div class="kpi-note">по выбранному режиму</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Средний CPM</div>
+          <div class="kpi-value" id="totalCpm">—</div>
+          <div class="kpi-note">фактическая стоимость за 1 000 показов</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Средний CPC</div>
+          <div class="kpi-value" id="totalCpc">—</div>
+          <div class="kpi-note">фактическая стоимость клика</div>
         </div>
         <div class="kpi">
           <div class="kpi-label">Объекты ЖК</div>
@@ -6873,6 +6888,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     function renderSummary() {
       if (!DATA) {
         document.getElementById("totalVisits").textContent = "—";
+        document.getElementById("totalImpressions").textContent = "—";
+        document.getElementById("totalClicks").textContent = "—";
+        document.getElementById("totalCpm").textContent = "—";
+        document.getElementById("totalCpc").textContent = "—";
         document.getElementById("totalProjects").textContent = "—";
         document.getElementById("totalBounce").textContent = "—";
         document.getElementById("totalTime").textContent = "—";
@@ -6886,6 +6905,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       }
 
       document.getElementById("totalVisits").textContent = formatNumber(DATA.total.visits);
+      document.getElementById("totalImpressions").textContent = formatNumber(DATA.total.impressions);
+      document.getElementById("totalClicks").textContent = formatNumber(DATA.total.clicks);
+      document.getElementById("totalCpm").textContent = formatCost(DATA.total.factCpm);
+      document.getElementById("totalCpc").textContent = formatCost(DATA.total.factCpc);
       document.getElementById("totalProjects").textContent = formatNumber(DATA.projects.length);
       document.getElementById("totalBounce").textContent = formatPercent(DATA.total.bounce);
       document.getElementById("totalTime").textContent = formatTime(DATA.total.timeSec);
