@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T11:36:27.612730Z",
+  "generatedAt": "2026-07-29T11:52:49.914768Z",
   "metrika": {
     "new_rows": 1959,
     "total_rows": 72092,
@@ -20,7 +20,7 @@
   },
   "google": {
     "metric_rows": 14689,
-    "journal_rows": 374,
+    "journal_rows": 375,
     "journal_platforms": [
       "AdsHeads",
       "Adsepctor",
