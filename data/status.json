@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-07-29T11:52:49.914768Z",
+  "generatedAt": "2026-07-30T09:09:41.736427Z",
   "metrika": {
-    "new_rows": 1959,
-    "total_rows": 72092,
+    "new_rows": 2735,
+    "total_rows": 72868,
     "ranges": {
       "53197618": {
         "from": "2026-07-29",
-        "to": "2026-07-28",
-        "new_rows": 0,
+        "to": "2026-07-29",
+        "new_rows": 707,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-07-28",
-        "new_rows": 1959,
+        "to": "2026-07-29",
+        "new_rows": 2028,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 14689,
-    "journal_rows": 375,
+    "metric_rows": 14910,
+    "journal_rows": 376,
     "journal_platforms": [
       "AdsHeads",
       "Adsepctor",
@@ -39,7 +39,7 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 6526,
+    "live_rows": 6747,
     "avito": {
       "source_rows": 760,
       "metric_rows": 760
@@ -52,16 +52,31 @@
     "project_id": 12787,
     "token_valid": true,
     "campaigns_available": 676,
-    "creatives_available": 6289,
+    "creatives_available": 6293,
     "identity_field": "creative_name",
     "creative_backfill": false,
-    "new_rows": 0,
-    "total_rows": 99858,
+    "new_rows": 1056,
+    "total_rows": 100914,
     "from": "2026-07-29",
-    "to": "2026-07-28",
-    "jobs_completed": 0,
-    "events_aggregated": 0,
-    "job_details": [],
+    "to": "2026-07-29",
+    "jobs_completed": 2,
+    "events_aggregated": 7529068,
+    "job_details": [
+      {
+        "id": "b496446d-7066-4e94-93c3-d5a072ee80c1",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 7488806,
+        "aggregated_events": 7488806
+      },
+      {
+        "id": "e9a5a250-dec2-465d-8f8a-baa41f2af80c",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 40262,
+        "aggregated_events": 40262
+      }
+    ],
     "warning": null
   }
 }
