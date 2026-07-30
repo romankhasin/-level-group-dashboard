@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-07-30T09:09:41.736427Z",
+  "generatedAt": "2026-07-30T10:54:33.631730Z",
   "metrika": {
-    "new_rows": 2735,
+    "new_rows": 2028,
     "total_rows": 72868,
     "ranges": {
       "53197618": {
-        "from": "2026-07-29",
+        "from": "2026-07-30",
         "to": "2026-07-29",
-        "new_rows": 707,
+        "new_rows": 0,
         "quality_calls_backfill": false
       },
       "100470605": {
@@ -55,28 +55,13 @@
     "creatives_available": 6293,
     "identity_field": "creative_name",
     "creative_backfill": false,
-    "new_rows": 1056,
+    "new_rows": 0,
     "total_rows": 100914,
-    "from": "2026-07-29",
+    "from": "2026-07-30",
     "to": "2026-07-29",
-    "jobs_completed": 2,
-    "events_aggregated": 7529068,
-    "job_details": [
-      {
-        "id": "b496446d-7066-4e94-93c3-d5a072ee80c1",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 7488806,
-        "aggregated_events": 7488806
-      },
-      {
-        "id": "e9a5a250-dec2-465d-8f8a-baa41f2af80c",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 40262,
-        "aggregated_events": 40262
-      }
-    ],
+    "jobs_completed": 0,
+    "events_aggregated": 0,
+    "job_details": [],
     "warning": null
   }
 }
