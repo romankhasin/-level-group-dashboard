@@ -784,7 +784,7 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 58.7%;
+      bottom: var(--benchmark-position, 58.7%);
       border-top: 1px dashed rgba(139,45,58,0.40);
       pointer-events: none;
     }
@@ -799,7 +799,7 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 40%;
+      bottom: var(--benchmark-position, 50%);
       border-top: 1px dashed rgba(200,107,45,0.46);
       pointer-events: none;
     }
@@ -821,7 +821,7 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 58.7%;
+      bottom: var(--benchmark-position, 58.7%);
       border-top: 1px dashed rgba(139,45,58,0.38);
       pointer-events: none;
     }
@@ -836,7 +836,7 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 40%;
+      bottom: var(--benchmark-position, 50%);
       border-top: 1px dashed rgba(200,107,45,0.44);
       pointer-events: none;
     }
@@ -6026,6 +6026,15 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           ? Math.max(0.08, ...clean, 0.04)
           : Math.max(...clean, 1);
 
+      const benchmark = type === "bounce"
+        ? DASHBOARD_CONFIG.thresholds.bounce.goodMax
+        : type === "ivt"
+          ? DASHBOARD_CONFIG.thresholds.ivt.goodMax
+          : null;
+      const benchmarkPosition = benchmark === null
+        ? ""
+        : ` style="--benchmark-position:${Math.min(100, Math.max(0, benchmark / max * 100)).toFixed(3)}%"`;
+
       const bars = clean.map((value) => {
         const minHeight = type === "ivt" && value > 0 ? 14 : 8;
         const height = Math.max(minHeight, Math.min(100, Math.round((value / max) * 100)));
@@ -6038,7 +6047,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         return `<span class="${barClass}" title="${title}" style="height:${height}%"></span>`;
       }).join("");
 
-      return `<div class="bar-spark ${className}" aria-hidden="true">${bars}</div>`;
+      return `<div class="bar-spark ${className}" aria-hidden="true"${benchmarkPosition}>${bars}</div>`;
     }
 
     function projectCard(project) {
@@ -7594,6 +7603,67 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         </tr>`).join("");
     }
 
+    // Источник: вкладка «Топ_статей_Дзен» в файле ПромоСтраницы_Отчет_Level_MI.
+    // Вкладка содержит готовый июльский срез на уровне статей.
+    const DZEN_TOP_ARTICLES_JULY = [
+      { title: "Маленькая квартира – большое счастье: почему я её купил", budget: 61300.598301, impressions: 499613, reach: 439629, views: 6562, ctr: 0.016260585693326633, clicks: 8124, reads: 2766, readRate: 0.42151782992989945, costPerRead: 22.162183044468545 },
+      { title: "Как мы в 50+ лет нашли идеальную квартиру в Москве", budget: 39846.607026, impressions: 354717, reach: 314702, views: 4280, ctr: 0.015341807694584698, clicks: 5442, reads: 1465, readRate: 0.3422897196261682, costPerRead: 27.19904916450512 },
+      { title: "Показываем крутые школы и детсады", budget: 22967.525898, impressions: 208207, reach: 191328, views: 1971, ctr: 0.012477966638969872, clicks: 2598, reads: 782, readRate: 0.3967529173008625, costPerRead: 29.37023772122762 },
+      { title: "Где купить квартиру с террасой и видом на Москву-реку", budget: 2250.849858, impressions: 30721, reach: 29088, views: 189, ctr: 0.008691123335828912, clicks: 267, reads: 64, readRate: 0.3386243386243386, costPerRead: 35.16952903125 },
+      { title: "Брать ипотеку во II половине 2026 года?", budget: 10281.326679, impressions: 103770, reach: 94685, views: 732, ctr: 0.009443962609617423, clicks: 980, reads: 239, readRate: 0.32650273224043713, costPerRead: 43.01810325941422 },
+      { title: "Каждый день классный — моя жизнь в новой квартире", budget: 5443.037991, impressions: 52738, reach: 48683, views: 500, ctr: 0.012325078690887026, clicks: 650, reads: 124, readRate: 0.248, costPerRead: 43.89546766935483 },
+      { title: "5 причин, почему я купила квартиру в новостройке", budget: 9443.66742, impressions: 96185, reach: 89690, views: 752, ctr: 0.010833290014035452, clicks: 1042, reads: 165, readRate: 0.21941489361702127, costPerRead: 57.23434799999999 }
+    ];
+
+    function artclMonthIsSelected(month) {
+      const start = `${month}-01`;
+      const end = `${month}-31`;
+      return (!PERIOD_FILTER.from || PERIOD_FILTER.from <= end) && (!PERIOD_FILTER.to || PERIOD_FILTER.to >= start);
+    }
+
+    function artclTopDzenArticlesCard() {
+      const totals = DZEN_TOP_ARTICLES_JULY.reduce((sum, item) => {
+        ["budget", "impressions", "reach", "views", "clicks", "reads"].forEach(key => sum[key] += item[key]);
+        return sum;
+      }, { budget: 0, impressions: 0, reach: 0, views: 0, clicks: 0, reads: 0 });
+      const ctr = totals.impressions ? totals.clicks / totals.impressions : null;
+      const readRate = totals.views ? totals.reads / totals.views : null;
+      const costPerRead = totals.reads ? totals.budget / totals.reads : null;
+      const rows = DZEN_TOP_ARTICLES_JULY.map((item, index) => `
+        <tr>
+          <td>${index + 1}. ${artclEscape(item.title)}<span class="artcl-table-sub">Level Group · июль 2026</span></td>
+          <td>${formatNumber(item.impressions)}</td>
+          <td>${formatNumber(item.reach)}</td>
+          <td>${formatNumber(item.views)}</td>
+          <td>${formatNumber(item.clicks)}</td>
+          <td>${formatOptionalPercent(item.ctr)}</td>
+          <td>${formatNumber(item.reads)}</td>
+          <td>${formatOptionalPercent(item.readRate)}</td>
+          <td>${formatCost(item.costPerRead)}</td>
+          <td>${formatMoney(item.budget)}</td>
+        </tr>`).join("");
+
+      return `
+        <details class="artcl-platform" open>
+          <summary>
+            <div><div class="artcl-platform-name">Топ статей Дзена</div><div class="artcl-platform-note">Июль 2026 · ${DZEN_TOP_ARTICLES_JULY.length} статей</div></div>
+            <div class="artcl-platform-metrics">
+              ${artclMini("Показы", formatNumber(totals.impressions))}
+              ${artclMini("Клики", formatNumber(totals.clicks))}
+              ${artclMini("CTR", formatOptionalPercent(ctr))}
+              ${artclMini("Дочитывания", formatNumber(totals.reads))}
+              ${artclMini("Стоимость дочит.", formatCost(costPerRead))}
+              ${artclMini("Бюджет", formatMoney(totals.budget))}
+            </div>
+          </summary>
+          <div class="artcl-body">
+            <div class="artcl-body-head"><div class="artcl-body-title">Топ статей по расходу</div><div class="artcl-body-note">по данным вкладки «Топ_статей_Дзен»</div></div>
+            <div class="artcl-table-wrap"><table class="artcl-table"><thead><tr><th>Статья</th><th>Показы</th><th>Охват</th><th>Просмотры</th><th>Клики</th><th>CTR</th><th>Дочитывания</th><th>Доля дочит.</th><th>Стоимость дочит.</th><th>Бюджет</th></tr></thead><tbody>${rows}</tbody></table></div>
+            <div class="artcl-data-note">Расход включает НДС и АК — как в исходной вкладке. Постклик-метрики в этом срезе не представлены.</div>
+          </div>
+        </details>`;
+    }
+
     function artclDzenRows(items) {
       return items.map(item => `
         <tr>
@@ -7696,6 +7766,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         </div>
         <div class="artcl-section-head"><div><div class="artcl-eyebrow">Площадка 02</div><h3 class="artcl-section-title">Дзен</h3></div><div class="artcl-body-note">Статьи и подписчики разделены</div></div>
         <div class="artcl-platforms">
+          ${artclMonthIsSelected("2026-07") ? artclTopDzenArticlesCard() : ""}
           ${artclPlatformCard("dzen", state.dzenArticles, state.dzenArticleMaterials)}
           ${artclPlatformCard("dzen", state.dzenSubscribers, state.dzenSubscriberMaterials)}
         </div>`;
@@ -8199,6 +8270,22 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       };
     }
 
+    // Порог применяется после агрегации за выбранный период: один дневной
+    // срез может быть меньше 5, но в сумме за период быть релевантным.
+    const MIN_TARGETING_VISITS = 5;
+
+    function hasEnoughTargetingVisits(node) {
+      return (node && node.metrics && node.metrics.visits || 0) >= MIN_TARGETING_VISITS;
+    }
+
+    function hasVisibleTargetingNode(node) {
+      if (!hasEnoughTargetingVisits(node)) return false;
+      const childList = ["platforms", "formats", "audiences", "creatives"]
+        .map(key => node && node[key])
+        .find(Array.isArray);
+      return !childList || childList.length > 0;
+    }
+
     function addTargetingMetrika(metric, row) {
       const visits = Math.round(row.visits || 0);
       metric.visits += visits;
@@ -8372,6 +8459,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
               if (childKey === "audiences") return mapNode(child, "creatives", "creatives");
               return mapNode(child);
             })
+            .filter(hasVisibleTargetingNode)
             .sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0));
         }
 
@@ -8380,6 +8468,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       return Object.values(store)
         .map(project => mapNode(project, "platforms", "platforms"))
+        .filter(hasVisibleTargetingNode)
         .sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0));
     }
 
@@ -8522,9 +8611,15 @@ body.all-mode .artcl-hero { margin-top: 10px; }
             code: creative.code,
             name: creative.name,
             metrics: finalizeTargetingMetric(creative.metric)
-          })).sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0))
-        })).sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0))
-      })).sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0));
+          }))
+            .filter(hasEnoughTargetingVisits)
+            .sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0))
+        }))
+          .filter(format => format.creatives.length && hasEnoughTargetingVisits(format))
+          .sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0))
+      }))
+        .filter(project => project.formats.length && hasEnoughTargetingVisits(project))
+        .sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0));
     }
 
     function creativeEfficiencyNodeHtml(node, level) {
