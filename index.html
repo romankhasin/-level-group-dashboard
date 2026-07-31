@@ -3599,6 +3599,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       if (value.includes("_move_")) return false;
       const parts = value.split("_").filter(Boolean);
       if (parts.includes("dzen")) return false;
+      if (parts.includes("streamingads") || parts.includes("streaming_ads")) return false;
       return ["prg","med","mrk"].includes(campaignChannel(value));
     }
 
@@ -4418,6 +4419,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       const parts = value.split("_").filter(Boolean);
       if (parts.includes("dzen")) return false;
+      if (parts.includes("streamingads") || parts.includes("streaming_ads")) return false;
 
       return channelMatchesMode(campaignChannel(value));
     }
