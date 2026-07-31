@@ -3477,6 +3477,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       "yandexgo": "Яндекс Go",
       "yandexmarket": "Яндекс Маркет",
       "avito-ads": "Авито Ads",
+      "da": "Digital Alliance",
       "streamingads": "StreamingAds",
       "buzzoola": "Buzzoola",
       "roxot": "Roxot",
@@ -3598,7 +3599,6 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       if (value.includes("_move_")) return false;
       const parts = value.split("_").filter(Boolean);
       if (parts.includes("dzen")) return false;
-      if (parts.includes("streamingads") || parts.includes("streaming_ads")) return false;
       return ["prg","med","mrk"].includes(campaignChannel(value));
     }
 
@@ -4418,7 +4418,6 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       const parts = value.split("_").filter(Boolean);
       if (parts.includes("dzen")) return false;
-      if (parts.includes("streamingads") || parts.includes("streaming_ads")) return false;
 
       return channelMatchesMode(campaignChannel(value));
     }
@@ -4502,7 +4501,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       rows.forEach(row => {
         const campaign = String(row[campaignColumn] || "");
 
-        if (!shouldKeepCampaign(campaign)) return;
+        // Keep only the campaign cycle that matches the reporting date. This
+        // applies the aug26 rule to Target Ads and Google fact rows too, so
+        // late delivery from previous placements cannot inflate August.
+        if (!shouldKeepCampaign(campaign) || !campaignMatchesReportingMonth(campaign, row[dateColumn])) return;
 
         const parsed = parseCampaign(campaign);
 
