@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-07-31T11:37:09.662561Z",
+  "generatedAt": "2026-08-01T08:50:19.446035Z",
   "metrika": {
-    "new_rows": 2088,
-    "total_rows": 73621,
+    "new_rows": 2892,
+    "total_rows": 74425,
     "ranges": {
       "53197618": {
         "from": "2026-07-31",
-        "to": "2026-07-30",
-        "new_rows": 0,
+        "to": "2026-07-31",
+        "new_rows": 727,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-07-30",
-        "new_rows": 2088,
+        "to": "2026-07-31",
+        "new_rows": 2165,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 15061,
+    "metric_rows": 15075,
     "journal_rows": 376,
     "journal_platforms": [
       "AdsHeads",
@@ -39,7 +39,7 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 6898,
+    "live_rows": 6912,
     "avito": {
       "source_rows": 760,
       "metric_rows": 760
@@ -52,16 +52,31 @@
     "project_id": 12787,
     "token_valid": true,
     "campaigns_available": 769,
-    "creatives_available": 6711,
+    "creatives_available": 6723,
     "identity_field": "creative_name",
     "creative_backfill": false,
-    "new_rows": 0,
-    "total_rows": 101988,
+    "new_rows": 1107,
+    "total_rows": 103095,
     "from": "2026-07-31",
-    "to": "2026-07-30",
-    "jobs_completed": 0,
-    "events_aggregated": 0,
-    "job_details": [],
+    "to": "2026-07-31",
+    "jobs_completed": 2,
+    "events_aggregated": 6915077,
+    "job_details": [
+      {
+        "id": "6ce00db3-53fa-4c6a-8d8c-34bc3f9b0b6d",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 6869857,
+        "aggregated_events": 6869857
+      },
+      {
+        "id": "fd7d62d8-342b-46a6-a8f3-9a4ec59cb3c8",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 45220,
+        "aggregated_events": 45220
+      }
+    ],
     "warning": null
   }
 }
