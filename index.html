@@ -4438,6 +4438,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         planImpressions: 0,
         planClicks: 0,
         ivtCount: 0,
+        ivtImpressions: 0,
         days: {}
       };
     }
@@ -4448,11 +4449,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       if (!metric.days[row.dateKey]) {
         metric.days[row.dateKey] = {
           impressions: 0,
+          ivtImpressions: 0,
           ivtCount: 0
         };
       }
 
       metric.days[row.dateKey].impressions += row.impressions;
+      metric.days[row.dateKey].ivtImpressions += row.ivtImpressions;
       metric.days[row.dateKey].ivtCount += row.givt + row.sivt;
     }
 
@@ -4465,6 +4468,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       else store[key].impressionsWithoutActualCost += row.impressions || 0;
       store[key].hasActualCost = store[key].hasActualCost || Boolean(row.hasActualCost);
       store[key].ivtCount += row.givt + row.sivt;
+      store[key].ivtImpressions += row.ivtImpressions;
       addVerifierDaily(store[key], row);
     }
 
@@ -4517,7 +4521,12 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           cost: costColumn ? parseNumber(row[costColumn]) : 0,
           hasActualCost: verifierRowHasActualCost(row),
           givt: parseNumber(row[givtColumn]),
-          sivt: parseNumber(row[sivtColumn])
+          sivt: parseNumber(row[sivtColumn]),
+          // Yandex/MTS media facts can come from Google, while manual Target
+          // Ads supplies fraud. Keep its own denominator for IVT separately.
+          ivtImpressions: Object.prototype.hasOwnProperty.call(row, "ivt_impressions")
+            ? parseNumber(row.ivt_impressions)
+            : parseNumber(row[impressionsColumn])
         };
 
         empty.total.impressions += item.impressions;
@@ -4526,6 +4535,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         else empty.total.impressionsWithoutActualCost += item.impressions;
         empty.total.hasActualCost = empty.total.hasActualCost || item.hasActualCost;
         empty.total.ivtCount += item.givt + item.sivt;
+        empty.total.ivtImpressions += item.ivtImpressions;
         addVerifierDaily(empty.total, item);
 
         addVerifierMetric(empty.projects, verifierKey([parsed.projectCode]), item);
@@ -4545,18 +4555,19 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       metrics.hasActualCost = Boolean(data.hasActualCost);
       metrics.impressionsWithoutActualCost = data.impressionsWithoutActualCost || 0;
       metrics.ctr = data.impressions ? data.clicks / data.impressions : null;
-      metrics.ivt = data.impressions ? data.ivtCount / data.impressions : null;
+      metrics.ivtImpressions = data.ivtImpressions || 0;
+      metrics.ivt = data.ivtImpressions ? data.ivtCount / data.ivtImpressions : null;
       metrics.ivtDays = dates.map(date => {
         const key = dateKey(date);
         const item = data.days && data.days[key];
 
-        return item && item.impressions ? item.ivtCount / item.impressions : 0;
+        return item && item.ivtImpressions ? item.ivtCount / item.ivtImpressions : 0;
       });
       metrics.ivtDaysImpressions = dates.map(date => {
         const key = dateKey(date);
         const item = data.days && data.days[key];
 
-        return item && item.impressions ? item.impressions : 0;
+        return item && item.ivtImpressions ? item.ivtImpressions : 0;
       });
 
       return metrics;
@@ -5343,6 +5354,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         hasActualCost: false,
         impressionsWithoutActualCost: 0,
         ivtCount: 0,
+        ivtImpressions: 0,
         days: DATA ? DATA.dates.map(() => 0) : [],
         bounceDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
         bounceDaysVisits: DATA ? DATA.dates.map(() => 0) : [],
@@ -5368,7 +5380,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       target.actualCost += metrics.actualCost || 0;
       target.hasActualCost = target.hasActualCost || Boolean(metrics.hasActualCost);
       target.impressionsWithoutActualCost += metrics.impressionsWithoutActualCost || 0;
-      target.ivtCount += impressions * (metrics.ivt || 0);
+      const ivtImpressions = metrics.ivtImpressions || 0;
+      target.ivtCount += ivtImpressions * (metrics.ivt || 0);
+      target.ivtImpressions += ivtImpressions;
 
       (metrics.ivtDays || []).forEach((value, index) => {
         const dayImpressions = (metrics.ivtDaysImpressions || [])[index] || 0;
@@ -5396,7 +5410,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         visits,
         bounce: visits ? metric.bounceWeighted / visits : 0,
         timeSec: visits ? metric.timeWeighted / visits : 0,
-        ivt: metric.impressions ? metric.ivtCount / metric.impressions : null,
+        ivt: metric.ivtImpressions ? metric.ivtCount / metric.ivtImpressions : null,
         actualCost: metric.actualCost || 0,
         hasActualCost: Boolean(metric.hasActualCost),
         impressionsWithoutActualCost: metric.impressionsWithoutActualCost || 0,
@@ -7188,14 +7202,19 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return {
         ...googleRow,
         givt: parseNumber(targetAdsRow.givt),
-        fraud_impressions: parseNumber(targetAdsRow.fraud_impressions)
+        fraud_impressions: parseNumber(targetAdsRow.fraud_impressions),
+        ivt_impressions: parseNumber(targetAdsRow.ivt_impressions)
       };
     }
 
     function targetAdsFraudOnlyForGoogleOwnedCampaign(row) {
       if (!isYandexMtsPrgVerifierRow(row)) return row;
+      const isRawDataV2 = String(row.metric_source || "").trim().toLowerCase() === "targetads_raw_v2";
       return {
         ...row,
+        // Do not count Target Ads media alongside Google facts, but retain
+        // the manual Target Ads denominator required for IVT calculation.
+        ivt_impressions: isRawDataV2 ? 0 : parseNumber(row.impressions),
         impressions: 0,
         clicks: 0,
         cost: 0,
