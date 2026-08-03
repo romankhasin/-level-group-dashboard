@@ -7223,10 +7223,18 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     }
 
     function rebuildVerifierRowsFromSources() {
+      const googleCoverage = googleVerifierCoverageKeys();
       const targetAdsRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
-      ].map(targetAdsFraudOnlyForGoogleOwnedCampaign);
+      ].map(row => {
+        const key = verifierSourceRowKey(row);
+        // Target Ads is the fallback media source. Strip its media facts only
+        // where Google has actuals for the same day and creative.
+        return key && googleCoverage.has(key)
+          ? targetAdsFraudOnlyForGoogleOwnedCampaign(row)
+          : row;
+      });
 
       const merged = new Map();
       targetAdsRows.forEach((row, index) => {
@@ -7240,9 +7248,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         if (isYandexMtsPrgVerifierRow(row) && googleHasMediaFacts) {
           const targetAdsRow = merged.get(key);
           merged.set(key, targetAdsRow ? combineGoogleMediaWithTargetAdsFraud(row, targetAdsRow) : row);
-        } else if (isGoogleAvitoMedMrkVerifierRow(row)) {
-          // The Google media workbook is authoritative for Avito actuals.
-          // Target Ads remains a fallback only when this Google row is absent.
+        } else if (isGoogleAvitoMedMrkVerifierRow(row) && googleHasMediaFacts) {
+          // Google is authoritative for Avito actuals when it has facts.
+          // Otherwise retain the Target Ads fallback already indexed.
           merged.set(key, row);
         } else if (!merged.has(key)) {
           merged.set(key, row);
