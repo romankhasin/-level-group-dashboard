@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-03T06:41:27.263275Z",
+  "generatedAt": "2026-08-03T09:52:33.961925Z",
   "metrika": {
-    "new_rows": 2979,
+    "new_rows": 2300,
     "total_rows": 75934,
     "ranges": {
       "53197618": {
-        "from": "2026-08-02",
+        "from": "2026-08-03",
         "to": "2026-08-02",
-        "new_rows": 679,
+        "new_rows": 0,
         "quality_calls_backfill": false
       },
       "100470605": {
@@ -19,8 +19,8 @@
     }
   },
   "google": {
-    "metric_rows": 15075,
-    "journal_rows": 376,
+    "metric_rows": 15255,
+    "journal_rows": 378,
     "journal_platforms": [
       "AdsHeads",
       "Adsepctor",
@@ -39,7 +39,7 @@
       "Яндекс"
     ],
     "archive_rows": 7403,
-    "live_rows": 6912,
+    "live_rows": 7092,
     "avito": {
       "source_rows": 760,
       "metric_rows": 760
@@ -55,28 +55,13 @@
     "creatives_available": 6723,
     "identity_field": "creative_name",
     "creative_backfill": false,
-    "new_rows": 1100,
+    "new_rows": 0,
     "total_rows": 105349,
-    "from": "2026-08-02",
+    "from": "2026-08-03",
     "to": "2026-08-02",
-    "jobs_completed": 2,
-    "events_aggregated": 3909763,
-    "job_details": [
-      {
-        "id": "60c9e736-f375-4940-951d-7fa3349d1e23",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 3882395,
-        "aggregated_events": 3882395
-      },
-      {
-        "id": "84fba607-9a50-478a-adc2-587ece3af495",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 27368,
-        "aggregated_events": 27368
-      }
-    ],
+    "jobs_completed": 0,
+    "events_aggregated": 0,
+    "job_details": [],
     "warning": null
   }
 }
