@@ -787,35 +787,17 @@ def combine_google_media_with_targetads_fraud(google_row: dict, targetads_row: d
     return combined
 
 
-def targetads_fraud_only_for_google_owned_campaign(row: dict) -> dict:
-    """Prevent Target Ads media facts from being counted for Google-owned PRG."""
-    campaign = str(row.get("placement_nm") or "")
-    if not is_yandex_mts_prg_campaign(campaign):
-        return row
-    fraud_only = dict(row)
-    fraud_only.update(
-        {
-            "impressions": 0.0,
-            "clicks": 0.0,
-            "cost": 0.0,
-            "has_actual_cost": False,
-        }
-    )
-    return fraud_only
-
-
 def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
     """Merge media and fraud facts without duplicating Google and Target Ads.
 
-    For Yandex/MTS PRG, Google is always canonical for impressions, clicks
-    and cost. Target Ads supplies GIVT/SIVT only. This applies even when the
-    two source files spell a campaign differently, so Target Ads cannot fall
-    back to its media facts and double count them. Every date + campaign key
-    produces exactly one row.
+    For Yandex/MTS PRG, Google is canonical when it has actual media facts.
+    Otherwise Target Ads remains the media fallback. If both sources contain
+    a date + campaign, Google supplies impressions, clicks and cost while
+    Target Ads supplies fraud facts. Every key produces exactly one row.
     """
     merged: dict[tuple[str, str], dict] = {}
     for source_row in targetads_rows:
-        row = targetads_fraud_only_for_google_owned_campaign(source_row)
+        row = dict(source_row)
         campaign = str(row.get("placement_nm") or "")
         report_date = str(row.get("interaction_dt") or "")
         if not report_date or not campaign:
@@ -836,9 +818,9 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
                 if targetads_row
                 else row
             )
-        elif is_google_avito_med_mrk_row(row):
-            # Google contains the complete Avito actuals, including zeroes.
-            # Do not merge Target Ads fraud or media facts for this position.
+        elif is_google_avito_med_mrk_row(row) and google_row_has_media_facts(row):
+            # Google is authoritative for Avito actuals when the report has
+            # facts; otherwise keep the Target Ads fallback already indexed.
             merged[key] = row
         elif key not in merged:
             merged[key] = row
