@@ -1,26 +1,26 @@
 {
-  "generatedAt": "2026-08-03T13:31:00.923682Z",
+  "generatedAt": "2026-08-04T07:20:43.171753Z",
   "metrika": {
-    "new_rows": 2300,
-    "total_rows": 75934,
+    "new_rows": 3135,
+    "total_rows": 76769,
     "ranges": {
       "53197618": {
         "from": "2026-08-03",
-        "to": "2026-08-02",
-        "new_rows": 0,
+        "to": "2026-08-03",
+        "new_rows": 763,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-02",
-        "new_rows": 2300,
+        "to": "2026-08-03",
+        "new_rows": 2372,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
     "metric_rows": 15255,
-    "journal_rows": 378,
+    "journal_rows": 387,
     "journal_platforms": [
       "AdsHeads",
       "Adsepctor",
@@ -55,13 +55,28 @@
     "creatives_available": 6724,
     "identity_field": "creative_name",
     "creative_backfill": false,
-    "new_rows": 0,
-    "total_rows": 105349,
+    "new_rows": 1144,
+    "total_rows": 106493,
     "from": "2026-08-03",
-    "to": "2026-08-02",
-    "jobs_completed": 0,
-    "events_aggregated": 0,
-    "job_details": [],
+    "to": "2026-08-03",
+    "jobs_completed": 2,
+    "events_aggregated": 4290993,
+    "job_details": [
+      {
+        "id": "4e65dfab-2435-4f7a-8a12-01d2249b2702",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 4264874,
+        "aggregated_events": 4264874
+      },
+      {
+        "id": "a5e23b69-f162-4bf6-a4b8-60cc65f99756",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 26119,
+        "aggregated_events": 26119
+      }
+    ],
     "warning": null
   }
 }
