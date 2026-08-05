@@ -7191,10 +7191,6 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return isYandexMtsPrgVerifierRow(row) || isAvitoMedMrkVerifierCampaign(campaign);
     }
 
-    function isJuly2026VerifierRow(row) {
-      return dateKey((row || {}).interaction_dt || "").startsWith("2026-07");
-    }
-
     function isGoogleAvitoMedMrkVerifierRow(row) {
       const source = String((row || {}).metric_source || "").trim().toLowerCase();
       return source === "google_avito" && isAvitoMedMrkVerifierCampaign(row && row.placement_nm);
@@ -7220,21 +7216,6 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       };
     }
 
-    function targetAdsFraudOnlyForGoogleOwnedCampaign(row) {
-      if (!isJuly2026VerifierRow(row) || !isGoogleOwnedVerifierRow(row)) return row;
-      const isRawDataV2 = String(row.metric_source || "").trim().toLowerCase() === "targetads_raw_v2";
-      return {
-        ...row,
-        // Do not count Target Ads media alongside Google facts, but retain
-        // the manual Target Ads denominator required for IVT calculation.
-        ivt_impressions: isRawDataV2 ? 0 : parseNumber(row.impressions),
-        impressions: 0,
-        clicks: 0,
-        cost: 0,
-        has_actual_cost: false
-      };
-    }
-
     function manualTargetAdsFraudOnly(row) {
       const isRawDataV2 = String(row.metric_source || "").trim().toLowerCase() === "targetads_raw_v2";
       return {
@@ -7250,8 +7231,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     }
 
     function rebuildVerifierRowsFromSources() {
-      const automaticTargetAdsRows = automaticTargetAdsVerifierRows()
-        .map(targetAdsFraudOnlyForGoogleOwnedCampaign);
+      const automaticTargetAdsRows = automaticTargetAdsVerifierRows();
       const manualFraudRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
@@ -7263,8 +7243,19 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         merged.set(key, row);
       });
 
+      const manualFraudByKey = new Map();
       manualFraudRows.forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `manual-fraud||${index}`;
+        const previous = manualFraudByKey.get(key);
+        manualFraudByKey.set(key, previous ? {
+          ...previous,
+          givt: parseNumber(previous.givt) + parseNumber(row.givt),
+          fraud_impressions: parseNumber(previous.fraud_impressions) + parseNumber(row.fraud_impressions),
+          ivt_impressions: parseNumber(previous.ivt_impressions) + parseNumber(row.ivt_impressions)
+        } : row);
+      });
+
+      manualFraudByKey.forEach((row, key) => {
         const automaticRow = merged.get(key);
         merged.set(key, automaticRow ? {
           ...automaticRow,
@@ -7279,7 +7270,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         const googleOwned = isYandexMtsPrgVerifierRow(row) || isGoogleAvitoMedMrkVerifierRow(row);
         const googleHasMediaFacts = ["impressions", "clicks", "cost"]
           .some(field => parseNumber((row || {})[field]) !== 0);
-        if (googleOwned && (isJuly2026VerifierRow(row) || googleHasMediaFacts)) {
+        if (googleOwned && googleHasMediaFacts) {
           const targetAdsRow = merged.get(key);
           merged.set(key, targetAdsRow ? combineGoogleMediaWithTargetAdsFraud(row, targetAdsRow) : row);
         } else if (!merged.has(key)) {
