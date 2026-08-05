@@ -787,22 +787,55 @@ def combine_google_media_with_targetads_fraud(google_row: dict, targetads_row: d
     return combined
 
 
+def is_google_owned_campaign(campaign: str) -> bool:
+    """Campaigns whose media facts are always sourced from Google."""
+    return is_yandex_mts_prg_campaign(campaign) or is_avito_med_mrk_campaign(campaign)
+
+
+def is_july_2026_row(row: dict) -> bool:
+    return str(row.get("interaction_dt") or "").startswith("2026-07")
+
+
+def targetads_fraud_only_for_google_owned_campaign(row: dict) -> dict:
+    """For July Google campaigns, keep Target Ads fraud but not media facts."""
+    if not (
+        is_july_2026_row(row)
+        and is_google_owned_campaign(str(row.get("placement_nm") or ""))
+    ):
+        return row
+    fraud_only = dict(row)
+    fraud_only.update(
+        {
+            "impressions": 0.0,
+            "clicks": 0.0,
+            "cost": 0.0,
+            "has_actual_cost": False,
+        }
+    )
+    return fraud_only
+
+
+def verifier_campaign_key(campaign: str) -> str:
+    """Normalize harmless extra separators before joining source rows."""
+    return "_".join(token for token in campaign.strip().lower().split("_") if token)
+
+
 def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
     """Merge media and fraud facts without duplicating Google and Target Ads.
 
-    For Yandex/MTS PRG, Google is canonical when it has actual media facts.
-    Otherwise Target Ads remains the media fallback. If both sources contain
-    a date + campaign, Google supplies impressions, clicks and cost while
-    Target Ads supplies fraud facts. Every key produces exactly one row.
+    In July, Google is the sole media source for Yandex/MTS PRG and Avito
+    MED/MRK; Target Ads provides fraud facts for them. In later months, Google
+    has priority when it contains media facts and Target Ads remains fallback.
+    All other campaigns receive media facts from Target Ads.
     """
     merged: dict[tuple[str, str], dict] = {}
     for source_row in targetads_rows:
-        row = dict(source_row)
+        row = targetads_fraud_only_for_google_owned_campaign(source_row)
         campaign = str(row.get("placement_nm") or "")
         report_date = str(row.get("interaction_dt") or "")
         if not report_date or not campaign:
             continue
-        key = (report_date, campaign.lower())
+        key = (report_date, verifier_campaign_key(campaign))
         merged[key] = row
 
     for row in google_rows:
@@ -810,18 +843,15 @@ def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> 
         campaign = str(row.get("placement_nm") or "")
         if not report_date or not campaign:
             continue
-        key = (report_date, campaign.lower())
+        key = (report_date, verifier_campaign_key(campaign))
         targetads_row = merged.get(key)
-        if is_yandex_mts_prg_campaign(campaign) and google_row_has_media_facts(row):
+        google_owned = is_yandex_mts_prg_campaign(campaign) or is_google_avito_med_mrk_row(row)
+        if google_owned and (is_july_2026_row(row) or google_row_has_media_facts(row)):
             merged[key] = (
                 combine_google_media_with_targetads_fraud(row, targetads_row)
                 if targetads_row
                 else row
             )
-        elif is_google_avito_med_mrk_row(row) and google_row_has_media_facts(row):
-            # Google is authoritative for Avito actuals when the report has
-            # facts; otherwise keep the Target Ads fallback already indexed.
-            merged[key] = row
         elif key not in merged:
             merged[key] = row
 
