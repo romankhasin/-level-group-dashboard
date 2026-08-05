@@ -3566,6 +3566,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     let VERIFIER_ROWS = null;
     let CURRENT_VERIFIER_ROWS = null;
     let AUTOMATIC_GOOGLE_VERIFIER_ROWS = [];
+    let AUTOMATIC_TARGETADS_VERIFIER_ROWS = [];
     let ARCHIVE_METRIKA_FILES = [];
     let ARCHIVE_VERIFIER_FILES = [];
     const ARCHIVE_STORAGE_KEY = "level_group_unified_archive_v1";
@@ -7153,7 +7154,15 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     function currentVerifierRows() {
       return normalizeVerifierRows(CURRENT_VERIFIER_ROWS || []).map(row => ({
         ...row,
-        __sourceFile: VERIFIER_FILE || "Target Ads",
+        __sourceFile: VERIFIER_FILE || "Ручной fraud Target Ads",
+        __archive: false
+      }));
+    }
+
+    function automaticTargetAdsVerifierRows() {
+      return normalizeVerifierRows(AUTOMATIC_TARGETADS_VERIFIER_ROWS || []).map(row => ({
+        ...row,
+        __sourceFile: "Автоматический Target Ads API",
         __archive: false
       }));
     }
@@ -7170,32 +7179,36 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return platformCode === "yandex" || platformCode === "mts";
     }
 
-    function isGoogleAvitoMedMrkVerifierRow(row) {
-      const campaign = String((row || {}).placement_nm || "").trim();
-      const source = String((row || {}).metric_source || "").trim().toLowerCase();
-      if (!campaign || source !== "google_avito") return false;
+    function isAvitoMedMrkVerifierCampaign(campaign) {
+      const value = String(campaign || "").trim();
+      if (!value) return false;
       if (campaignChannel(campaign) !== "med" && campaignChannel(campaign) !== "mrk") return false;
       return String(parseCampaign(campaign).platformCode || "").trim().toLowerCase() === "avito-ads";
     }
 
+    function isGoogleOwnedVerifierRow(row) {
+      const campaign = String((row || {}).placement_nm || "").trim();
+      return isYandexMtsPrgVerifierRow(row) || isAvitoMedMrkVerifierCampaign(campaign);
+    }
+
+    function isJuly2026VerifierRow(row) {
+      return dateKey((row || {}).interaction_dt || "").startsWith("2026-07");
+    }
+
+    function isGoogleAvitoMedMrkVerifierRow(row) {
+      const source = String((row || {}).metric_source || "").trim().toLowerCase();
+      return source === "google_avito" && isAvitoMedMrkVerifierCampaign(row && row.placement_nm);
+    }
+
     function verifierSourceRowKey(row) {
-      const campaign = String((row || {}).placement_nm || "").trim().toLowerCase();
+      const campaign = String((row || {}).placement_nm || "")
+        .trim()
+        .toLowerCase()
+        .split("_")
+        .filter(Boolean)
+        .join("_");
       const interactionDate = dateKey((row || {}).interaction_dt || "");
       return interactionDate && campaign ? `${interactionDate}||${campaign}` : "";
-    }
-
-    function googleVerifierRowHasMediaFacts(row) {
-      return ["impressions", "clicks", "cost"]
-        .some(field => parseNumber((row || {})[field]) !== 0);
-    }
-
-    function googleVerifierCoverageKeys() {
-      return new Set(
-        (AUTOMATIC_GOOGLE_VERIFIER_ROWS || [])
-          .filter(row => isYandexMtsPrgVerifierRow(row) && googleVerifierRowHasMediaFacts(row))
-          .map(verifierSourceRowKey)
-          .filter(Boolean)
-      );
     }
 
     function combineGoogleMediaWithTargetAdsFraud(googleRow, targetAdsRow) {
@@ -7208,7 +7221,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     }
 
     function targetAdsFraudOnlyForGoogleOwnedCampaign(row) {
-      if (!isYandexMtsPrgVerifierRow(row)) return row;
+      if (!isJuly2026VerifierRow(row) || !isGoogleOwnedVerifierRow(row)) return row;
       const isRawDataV2 = String(row.metric_source || "").trim().toLowerCase() === "targetads_raw_v2";
       return {
         ...row,
@@ -7222,36 +7235,53 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       };
     }
 
+    function manualTargetAdsFraudOnly(row) {
+      const isRawDataV2 = String(row.metric_source || "").trim().toLowerCase() === "targetads_raw_v2";
+      return {
+        ...row,
+        // Manual Target Ads uploads supplement fraud only. Media facts always
+        // stay with the automatic API or the Google source.
+        ivt_impressions: isRawDataV2 ? 0 : parseNumber(row.impressions),
+        impressions: 0,
+        clicks: 0,
+        cost: 0,
+        has_actual_cost: false
+      };
+    }
+
     function rebuildVerifierRowsFromSources() {
-      const googleCoverage = googleVerifierCoverageKeys();
-      const targetAdsRows = [
+      const automaticTargetAdsRows = automaticTargetAdsVerifierRows()
+        .map(targetAdsFraudOnlyForGoogleOwnedCampaign);
+      const manualFraudRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
-      ].map(row => {
-        const key = verifierSourceRowKey(row);
-        // Target Ads is the fallback media source. Strip its media facts only
-        // where Google has actuals for the same day and creative.
-        return key && googleCoverage.has(key)
-          ? targetAdsFraudOnlyForGoogleOwnedCampaign(row)
-          : row;
-      });
+      ].map(manualTargetAdsFraudOnly);
 
       const merged = new Map();
-      targetAdsRows.forEach((row, index) => {
+      automaticTargetAdsRows.forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `targetads||${index}`;
         merged.set(key, row);
       });
 
+      manualFraudRows.forEach((row, index) => {
+        const key = verifierSourceRowKey(row) || `manual-fraud||${index}`;
+        const automaticRow = merged.get(key);
+        merged.set(key, automaticRow ? {
+          ...automaticRow,
+          givt: parseNumber(row.givt),
+          fraud_impressions: parseNumber(row.fraud_impressions),
+          ivt_impressions: parseNumber(row.ivt_impressions)
+        } : row);
+      });
+
       (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `google||${index}`;
-        const googleHasMediaFacts = googleVerifierRowHasMediaFacts(row);
-        if (isYandexMtsPrgVerifierRow(row) && googleHasMediaFacts) {
+        const googleOwned = isYandexMtsPrgVerifierRow(row) || isGoogleAvitoMedMrkVerifierRow(row);
+        const googleHasMediaFacts = ["impressions", "clicks", "cost"]
+          .some(field => parseNumber((row || {})[field]) !== 0);
+        if (googleOwned && (isJuly2026VerifierRow(row) || googleHasMediaFacts)) {
           const targetAdsRow = merged.get(key);
           merged.set(key, targetAdsRow ? combineGoogleMediaWithTargetAdsFraud(row, targetAdsRow) : row);
-        } else if (isGoogleAvitoMedMrkVerifierRow(row) && googleHasMediaFacts) {
-          // Google is authoritative for Avito actuals when it has facts.
-          // Otherwise retain the Target Ads fallback already indexed.
-          merged.set(key, row);
         } else if (!merged.has(key)) {
           merged.set(key, row);
         }
@@ -8002,19 +8032,12 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         const text = await readFileAsText(file);
         const parsedRows = parseCSV(text);
         CURRENT_VERIFIER_ROWS = normalizeVerifierRows(parsedRows);
-        const googleCoverage = googleVerifierCoverageKeys();
-        const googleOverrideRows = CURRENT_VERIFIER_ROWS.filter(row => {
-          return isYandexMtsPrgVerifierRow(row) && googleCoverage.has(verifierSourceRowKey(row));
-        }).length;
-        const targetAdsFallbackRows = CURRENT_VERIFIER_ROWS.filter(row => {
-          return isYandexMtsPrgVerifierRow(row) && !googleCoverage.has(verifierSourceRowKey(row));
-        }).length;
+        const fraudOnlyRows = CURRENT_VERIFIER_ROWS.filter(isGoogleOwnedVerifierRow).length;
         VERIFIER_FILE = file.name;
         rebuildVerifierRowsFromSources();
 
-        status.textContent = `Готово: ${file.name} · строк Target Ads: ${CURRENT_VERIFIER_ROWS.length - googleOverrideRows}`
-          + `${googleOverrideRows ? ` · Yandex/MTS из Google: ${googleOverrideRows}` : ""}`
-          + `${targetAdsFallbackRows ? ` · резерв Yandex/MTS из Target Ads: ${targetAdsFallbackRows}` : ""}`
+        status.textContent = `Готово: ${file.name} · fraud-строк: ${CURRENT_VERIFIER_ROWS.length}`
+          + `${fraudOnlyRows ? ` · для Google-площадок: ${fraudOnlyRows}` : ""}`
           + `${ARCHIVE_VERIFIER_FILES.length ? ` · архив Target Ads: ${ARCHIVE_VERIFIER_FILES.length}` : ""}`;
         status.style.color = "var(--muted)";
 
@@ -9387,7 +9410,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       METRIKA_FILES = [];
       VERIFIER_ROWS = EMBEDDED_REPORT_DATA.verifierRows || null;
       AUTOMATIC_GOOGLE_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(isGoogleVerifierSource);
-      CURRENT_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
+      AUTOMATIC_TARGETADS_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
+      CURRENT_VERIFIER_ROWS = [];
       SOURCE_FILE = EMBEDDED_REPORT_DATA.sourceFile || "Встроенная Метрика";
       VERIFIER_FILE = EMBEDDED_REPORT_DATA.verifierFile || "Встроенный Target Ads";
       PERIOD_FILTER = EMBEDDED_REPORT_DATA.periodFilter || { from: "", to: "" };
@@ -9411,7 +9435,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         RAW_ROWS = payload.rawRows;
         VERIFIER_ROWS = Array.isArray(payload.verifierRows) ? payload.verifierRows : null;
         AUTOMATIC_GOOGLE_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(isGoogleVerifierSource);
-        CURRENT_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
+        AUTOMATIC_TARGETADS_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
+        CURRENT_VERIFIER_ROWS = [];
         METRIKA_FILES = [];
         ARCHIVE_METRIKA_FILES = [];
         ARCHIVE_VERIFIER_FILES = [];
