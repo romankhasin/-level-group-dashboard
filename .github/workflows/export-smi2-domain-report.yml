@@ -1,0 +1,63 @@
+name: Export SMI2 domain report
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Query Yandex Metrika
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: |
+          python - <<'PY'
+          import csv, json, os, urllib.parse, urllib.request
+          from collections import defaultdict
+          from urllib.parse import urlparse
+
+          params = {
+              "ids": "100470605",
+              "date1": "2026-08-01",
+              "date2": "2026-08-05",
+              "dimensions": "ym:s:date,ym:s:referer",
+              "metrics": "ym:s:visits,ym:s:bounceRate,ym:s:avgVisitDurationSeconds",
+              "filters": "ym:s:lastsignUTMCampaign=='lwsv_smi2_banner_msk_aug26_sklad_none_med'",
+              "accuracy": "full",
+              "limit": "100000",
+          }
+          request = urllib.request.Request(
+              "https://api-metrika.yandex.net/stat/v1/data?" + urllib.parse.urlencode(params),
+              headers={"Authorization": "OAuth " + os.environ["YANDEX_METRIKA_TOKEN"]},
+          )
+          with urllib.request.urlopen(request, timeout=180) as response:
+              payload = json.load(response)
+
+          grouped = defaultdict(lambda: [0, 0.0, 0.0])
+          for row in payload.get("data", []):
+              dimensions, metrics = row.get("dimensions", []), row.get("metrics", [])
+              if len(dimensions) != 2 or len(metrics) != 3:
+                  continue
+              day = str(dimensions[0].get("name") or dimensions[0].get("id") or "")
+              referer = str(dimensions[1].get("name") or dimensions[1].get("id") or "")
+              domain = urlparse(referer).hostname or "Без реферера"
+              visits = int(round(float(metrics[0] or 0)))
+              grouped[(day, domain)][0] += visits
+              grouped[(day, domain)][1] += visits * float(metrics[1] or 0)
+              grouped[(day, domain)][2] += visits * float(metrics[2] or 0)
+
+          with open("smi2_2026-08-01_2026-08-05_by_day_domain.csv", "w", newline="", encoding="utf-8-sig") as out:
+              writer = csv.writer(out)
+              writer.writerow(["Дата", "Домен", "Визиты", "Отказы, %", "Время на сайте, сек."])
+              for (day, domain), (visits, bounces, duration) in sorted(grouped.items()):
+                  writer.writerow([day, domain, visits, round(bounces / visits, 2), round(duration / visits, 2)])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: smi2-domain-report
+          path: smi2_2026-08-01_2026-08-05_by_day_domain.csv
+          if-no-files-found: error
