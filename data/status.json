@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-08-05T14:08:59.012791Z",
+  "generatedAt": "2026-08-06T07:44:38.283207Z",
   "metrika": {
-    "new_rows": 2449,
-    "total_rows": 77574,
+    "new_rows": 3306,
+    "total_rows": 78431,
     "ranges": {
       "53197618": {
         "from": "2026-08-05",
-        "to": "2026-08-04",
-        "new_rows": 0,
+        "to": "2026-08-05",
+        "new_rows": 776,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-04",
-        "new_rows": 2449,
+        "to": "2026-08-05",
+        "new_rows": 2530,
         "quality_calls_backfill": false
       }
     }
@@ -52,16 +52,31 @@
     "project_id": 12787,
     "token_valid": true,
     "campaigns_available": 771,
-    "creatives_available": 6765,
+    "creatives_available": 6788,
     "identity_field": "creative_name",
     "creative_backfill": false,
-    "new_rows": 0,
-    "total_rows": 107614,
+    "new_rows": 1110,
+    "total_rows": 108724,
     "from": "2026-08-05",
-    "to": "2026-08-04",
-    "jobs_completed": 0,
-    "events_aggregated": 0,
-    "job_details": [],
+    "to": "2026-08-05",
+    "jobs_completed": 2,
+    "events_aggregated": 4742527,
+    "job_details": [
+      {
+        "id": "423192be-9ab7-4ab3-8187-8cd74fa765fb",
+        "type": "Impression",
+        "status": "DONE",
+        "api_row_count": 4714239,
+        "aggregated_events": 4714238
+      },
+      {
+        "id": "6e17857c-6269-47d6-b2b4-925181cbd0f4",
+        "type": "Click",
+        "status": "DONE",
+        "api_row_count": 28289,
+        "aggregated_events": 28289
+      }
+    ],
     "warning": null
   }
 }
