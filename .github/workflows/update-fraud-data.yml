@@ -34,12 +34,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Apply goal timing buckets
-        run: |
-          if [ -f scripts/apply_goal_time_buckets.py ]; then
-            python scripts/apply_goal_time_buckets.py
-          fi
-
       - name: Validate aggregation locally
         run: |
           python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py scripts/update_clientid_periods.py
@@ -48,19 +42,6 @@ jobs:
           python scripts/update_clientid_periods.py --self-test
           grep -q '"fastAnyGoal3Visits"' scripts/update_clientid_periods.py
           grep -q '3 < minimum_any <= 15' scripts/update_clientid_periods.py
-
-      - name: Commit goal timing code
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add scripts/update_clientid_periods.py
-          if git diff --cached --quiet; then
-            echo "Goal timing code is already current"
-          else
-            git commit -m "Split goal timing into 0-3, 4-15 and 16-30 seconds"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
 
       - name: Refresh daily fraud summaries
         id: build
