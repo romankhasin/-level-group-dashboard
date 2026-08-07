@@ -959,7 +959,7 @@ def empty_day() -> dict:
         "cookieStatusVisits": Counter(),
         "cookieClients": {status: Counter() for status in COOKIE_STATUSES},
         "technicalSegments": {key: empty_stats() for key in TECH_SEGMENT_KEYS},
-        "fastAnyGoal15Visits": 0, "fastAnyGoal30Visits": 0,
+        "fastAnyGoal3Visits": 0, "fastAnyGoal15Visits": 0, "fastAnyGoal30Visits": 0,
         "fastQualityGoal15Visits": 0, "fastQualityGoal30Visits": 0,
         "multiGoalVisits": 0, "zeroResolutionVisits": 0,
         "unknownResolutionVisits": 0, "unknownBrowserVisits": 0,
