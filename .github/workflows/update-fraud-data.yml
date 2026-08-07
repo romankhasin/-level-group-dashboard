@@ -24,6 +24,11 @@ jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 240
+    env:
+      # The repository currently contains legacy tracked __pycache__ files.
+      # Keep all bytecode out of the checkout so the data commit can rebase.
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONPYCACHEPREFIX: ${{ runner.temp }}/pycache
 
     steps:
       - name: Check out repository
