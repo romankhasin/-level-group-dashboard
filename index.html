@@ -7245,26 +7245,24 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       };
     }
 
-    function manualTargetAdsFraudOnly(row) {
-      const isRawDataV2 = String(row.metric_source || "").trim().toLowerCase() === "targetads_raw_v2";
+    function manualTargetAdsRow(row) {
       return {
         ...row,
-        // Manual Target Ads uploads supplement fraud only. Media facts always
-        // stay with the automatic API or the Google source.
-        ivt_impressions: isRawDataV2 ? 0 : parseNumber(row.impressions),
-        impressions: 0,
-        clicks: 0,
-        cost: 0,
-        has_actual_cost: false
+        // Target Ads API is disabled, so a manual Target Ads report supplies
+        // the full media fact set. Google still wins for the Google-owned
+        // rows below when it contains non-zero actual media facts.
+        ivt_impressions: Object.prototype.hasOwnProperty.call(row, "ivt_impressions")
+          ? parseNumber(row.ivt_impressions)
+          : parseNumber(row.impressions)
       };
     }
 
     function rebuildVerifierRowsFromSources() {
       const automaticTargetAdsRows = automaticTargetAdsVerifierRows();
-      const manualFraudRows = [
+      const manualTargetAdsRows = [
         ...verifierRowsFromFiles(ARCHIVE_VERIFIER_FILES),
         ...currentVerifierRows()
-      ].map(manualTargetAdsFraudOnly);
+      ].map(manualTargetAdsRow);
 
       const merged = new Map();
       automaticTargetAdsRows.forEach((row, index) => {
@@ -7272,19 +7270,23 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         merged.set(key, row);
       });
 
-      const manualFraudByKey = new Map();
-      manualFraudRows.forEach((row, index) => {
-        const key = verifierSourceRowKey(row) || `manual-fraud||${index}`;
-        const previous = manualFraudByKey.get(key);
-        manualFraudByKey.set(key, previous ? {
+      const manualTargetAdsByKey = new Map();
+      manualTargetAdsRows.forEach((row, index) => {
+        const key = verifierSourceRowKey(row) || `manual-targetads||${index}`;
+        const previous = manualTargetAdsByKey.get(key);
+        manualTargetAdsByKey.set(key, previous ? {
           ...previous,
+          impressions: parseNumber(previous.impressions) + parseNumber(row.impressions),
+          clicks: parseNumber(previous.clicks) + parseNumber(row.clicks),
+          cost: parseNumber(previous.cost) + parseNumber(row.cost),
+          has_actual_cost: Boolean(previous.has_actual_cost || row.has_actual_cost),
           givt: parseNumber(previous.givt) + parseNumber(row.givt),
           fraud_impressions: parseNumber(previous.fraud_impressions) + parseNumber(row.fraud_impressions),
           ivt_impressions: parseNumber(previous.ivt_impressions) + parseNumber(row.ivt_impressions)
         } : row);
       });
 
-      manualFraudByKey.forEach((row, key) => {
+      manualTargetAdsByKey.forEach((row, key) => {
         const automaticRow = merged.get(key);
         merged.set(key, automaticRow ? {
           ...automaticRow,
