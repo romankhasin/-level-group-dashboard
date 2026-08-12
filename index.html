@@ -7198,7 +7198,8 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
     function isGoogleVerifierSource(row) {
       const source = String((row || {}).metric_source || "").trim().toLowerCase();
-      return source === "yandex" || source === "mts" || source === "google_avito";
+      return source === "yandex" || source === "mts" || source === "google_avito"
+        || source === "google_prg_august";
     }
 
     function isYandexMtsPrgVerifierRow(row) {
@@ -7206,6 +7207,14 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       if (!campaign || campaignChannel(campaign) !== "prg") return false;
       const platformCode = String(parseCampaign(campaign).platformCode || "").trim().toLowerCase();
       return platformCode === "yandex" || platformCode === "mts";
+    }
+
+    function isAugustPrgGoogleMediaRow(row) {
+      const campaign = String((row || {}).placement_nm || "").trim();
+      const reportDate = dateKey((row || {}).interaction_dt || "");
+      if (!campaign || !reportDate.startsWith("2026-08") || campaignChannel(campaign) !== "prg") return false;
+      const platformCode = String(parseCampaign(campaign).platformCode || "").trim().toLowerCase();
+      return ["yandex", "mts", "buzzoola", "roxot"].includes(platformCode);
     }
 
     function isAvitoMedMrkVerifierCampaign(campaign) {
@@ -7217,7 +7226,8 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
     function isGoogleOwnedVerifierRow(row) {
       const campaign = String((row || {}).placement_nm || "").trim();
-      return isYandexMtsPrgVerifierRow(row) || isAvitoMedMrkVerifierCampaign(campaign);
+      return isYandexMtsPrgVerifierRow(row) || isAugustPrgGoogleMediaRow(row)
+        || isAvitoMedMrkVerifierCampaign(campaign);
     }
 
     function isGoogleAvitoMedMrkVerifierRow(row) {
@@ -7298,7 +7308,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       (AUTOMATIC_GOOGLE_VERIFIER_ROWS || []).forEach((row, index) => {
         const key = verifierSourceRowKey(row) || `google||${index}`;
-        const googleOwned = isYandexMtsPrgVerifierRow(row) || isGoogleAvitoMedMrkVerifierRow(row);
+        const googleOwned = isYandexMtsPrgVerifierRow(row)
+          || isAugustPrgGoogleMediaRow(row)
+          || isGoogleAvitoMedMrkVerifierRow(row);
         const googleHasMediaFacts = ["impressions", "clicks", "cost"]
           .some(field => parseNumber((row || {})[field]) !== 0);
         if (googleOwned && googleHasMediaFacts) {
