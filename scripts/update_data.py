@@ -1011,16 +1011,16 @@ def main() -> None:
         }
     )
 
-    targetads_token = os.environ.get("TARGETADS_TOKEN", "").strip()
-    if targetads_token:
-        targetads_rows, targetads_status = update_targetads(targetads_token, yesterday)
-    else:
-        targetads_rows = read_json_rows(TARGETADS_HISTORY_PATH)
-        targetads_status = {
-            "enabled": False,
-            "message": "TARGETADS_TOKEN is not configured",
-            "total_rows": len(targetads_rows),
-        }
+    # Target Ads is deliberately manual-only for now. Do not invoke Raw Data
+    # API v2 and do not carry the last automatic API snapshot into latest.json:
+    # the dashboard merges a manually uploaded Target Ads file in the browser.
+    targetads_rows: list[dict] = []
+    targetads_status = {
+        "enabled": False,
+        "mode": "manual_upload_only",
+        "message": "Target Ads API update is disabled; upload the Target Ads report manually in the dashboard",
+        "total_rows": 0,
+    }
 
     verifier_rows = merge_verifier_rows(targetads_rows, google_rows)
     generated_at = now_utc.isoformat().replace("+00:00", "Z")
@@ -1031,8 +1031,7 @@ def main() -> None:
         "rawRows": metrika_rows,
         "verifierRows": verifier_rows,
         "sourceFile": "Автоматическая выгрузка Яндекс Метрики",
-        "verifierFile": "Google Данные_метрика + Avito Данные + фиксированный архив июня"
-        + (" + Target Ads" if targetads_token else ""),
+        "verifierFile": "Google Данные_метрика + Avito Данные + фиксированный архив июня",
         "status": {
             "metrika": metrika_status,
             "google": google_status,
@@ -1050,7 +1049,8 @@ def main() -> None:
                 "metrikaRows": len(metrika_rows),
                 "verifierRows": len(verifier_rows),
                 "journalRows": len(journal_rows),
-                "targetAdsEnabled": bool(targetads_token),
+                "targetAdsEnabled": False,
+                "targetAdsMode": "manual_upload_only",
             },
             ensure_ascii=False,
         )
