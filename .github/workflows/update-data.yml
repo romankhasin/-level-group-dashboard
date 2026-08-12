@@ -42,8 +42,6 @@ jobs:
       - name: Download and update dashboard data
         env:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
-          TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
-          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
         run: python scripts/update_data.py
 
       - name: Commit refreshed files
