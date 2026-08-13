@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-12T15:14:47.871139Z",
+  "generatedAt": "2026-08-13T08:05:53.854932Z",
   "metrika": {
-    "new_rows": 2987,
-    "total_rows": 83140,
+    "new_rows": 3777,
+    "total_rows": 83930,
     "ranges": {
       "53197618": {
         "from": "2026-08-12",
-        "to": "2026-08-11",
-        "new_rows": 0,
+        "to": "2026-08-12",
+        "new_rows": 721,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-11",
-        "new_rows": 2987,
+        "to": "2026-08-12",
+        "new_rows": 3056,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 15904,
+    "metric_rows": 16026,
     "journal_rows": 391,
     "journal_platforms": [
       "AdsHeads",
@@ -46,8 +46,8 @@
     },
     "august_prg": {
       "sheet": "Данные_метрика",
-      "source_rows": 1270,
-      "metric_rows": 649,
+      "source_rows": 1510,
+      "metric_rows": 771,
       "platforms": [
         "buzzoola",
         "mts",
