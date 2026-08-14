@@ -1,0 +1,420 @@
+{
+  "counterId": 100470605,
+  "period": {
+    "from": "2026-05-01",
+    "to": "2026-05-31"
+  },
+  "filter": {
+    "campaignContains": "may26",
+    "source": "adspector"
+  },
+  "privacy": "No raw IP, ClientID, VisitID or full referrer URLs are stored.",
+  "source": "Yandex Metrica Logs API",
+  "scannedVisits": 138542,
+  "summary": {
+    "visits": 9375,
+    "bounceRate": 0.2641,
+    "avgDurationSeconds": 85.3,
+    "qualityConversions": 0,
+    "conversionRate": 0.0,
+    "suspiciousVisits": 666,
+    "suspiciousShare": 0.071
+  },
+  "riskSignals": {
+    "short_bounce": 2422,
+    "repeated_ip": 6076,
+    "repeated_client": 35
+  },
+  "daily": [
+    {
+      "date": "2026-05-06",
+      "visits": 96,
+      "bounceRate": 0.6354,
+      "avgDurationSeconds": 48.4,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 4,
+      "suspiciousShare": 0.0417
+    },
+    {
+      "date": "2026-05-07",
+      "visits": 68,
+      "bounceRate": 0.4118,
+      "avgDurationSeconds": 92.4,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 1,
+      "suspiciousShare": 0.0147
+    },
+    {
+      "date": "2026-05-08",
+      "visits": 65,
+      "bounceRate": 0.3692,
+      "avgDurationSeconds": 102.3,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 2,
+      "suspiciousShare": 0.0308
+    },
+    {
+      "date": "2026-05-09",
+      "visits": 67,
+      "bounceRate": 0.2985,
+      "avgDurationSeconds": 121.2,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 2,
+      "suspiciousShare": 0.0299
+    },
+    {
+      "date": "2026-05-10",
+      "visits": 77,
+      "bounceRate": 0.2857,
+      "avgDurationSeconds": 97.9,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 5,
+      "suspiciousShare": 0.0649
+    },
+    {
+      "date": "2026-05-11",
+      "visits": 86,
+      "bounceRate": 0.5233,
+      "avgDurationSeconds": 66.4,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 4,
+      "suspiciousShare": 0.0465
+    },
+    {
+      "date": "2026-05-12",
+      "visits": 42,
+      "bounceRate": 0.1905,
+      "avgDurationSeconds": 125.0,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 4,
+      "suspiciousShare": 0.0952
+    },
+    {
+      "date": "2026-05-13",
+      "visits": 474,
+      "bounceRate": 0.1983,
+      "avgDurationSeconds": 81.4,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 16,
+      "suspiciousShare": 0.0338
+    },
+    {
+      "date": "2026-05-14",
+      "visits": 269,
+      "bounceRate": 0.2937,
+      "avgDurationSeconds": 63.0,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 15,
+      "suspiciousShare": 0.0558
+    },
+    {
+      "date": "2026-05-15",
+      "visits": 130,
+      "bounceRate": 0.3385,
+      "avgDurationSeconds": 59.8,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 7,
+      "suspiciousShare": 0.0538
+    },
+    {
+      "date": "2026-05-16",
+      "visits": 166,
+      "bounceRate": 0.1566,
+      "avgDurationSeconds": 91.9,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 6,
+      "suspiciousShare": 0.0361
+    },
+    {
+      "date": "2026-05-17",
+      "visits": 151,
+      "bounceRate": 0.1325,
+      "avgDurationSeconds": 95.8,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 3,
+      "suspiciousShare": 0.0199
+    },
+    {
+      "date": "2026-05-18",
+      "visits": 537,
+      "bounceRate": 0.2644,
+      "avgDurationSeconds": 80.9,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 32,
+      "suspiciousShare": 0.0596
+    },
+    {
+      "date": "2026-05-19",
+      "visits": 709,
+      "bounceRate": 0.1622,
+      "avgDurationSeconds": 94.0,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 36,
+      "suspiciousShare": 0.0508
+    },
+    {
+      "date": "2026-05-20",
+      "visits": 631,
+      "bounceRate": 0.1569,
+      "avgDurationSeconds": 93.8,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 28,
+      "suspiciousShare": 0.0444
+    },
+    {
+      "date": "2026-05-21",
+      "visits": 499,
+      "bounceRate": 0.1964,
+      "avgDurationSeconds": 82.2,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 36,
+      "suspiciousShare": 0.0721
+    },
+    {
+      "date": "2026-05-22",
+      "visits": 751,
+      "bounceRate": 0.1598,
+      "avgDurationSeconds": 89.9,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 46,
+      "suspiciousShare": 0.0613
+    },
+    {
+      "date": "2026-05-23",
+      "visits": 410,
+      "bounceRate": 0.3098,
+      "avgDurationSeconds": 78.8,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 46,
+      "suspiciousShare": 0.1122
+    },
+    {
+      "date": "2026-05-24",
+      "visits": 596,
+      "bounceRate": 0.2114,
+      "avgDurationSeconds": 87.0,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 41,
+      "suspiciousShare": 0.0688
+    },
+    {
+      "date": "2026-05-25",
+      "visits": 702,
+      "bounceRate": 0.1781,
+      "avgDurationSeconds": 105.2,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 39,
+      "suspiciousShare": 0.0556
+    },
+    {
+      "date": "2026-05-26",
+      "visits": 592,
+      "bounceRate": 0.2939,
+      "avgDurationSeconds": 86.8,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 37,
+      "suspiciousShare": 0.0625
+    },
+    {
+      "date": "2026-05-27",
+      "visits": 557,
+      "bounceRate": 0.2496,
+      "avgDurationSeconds": 109.8,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 36,
+      "suspiciousShare": 0.0646
+    },
+    {
+      "date": "2026-05-28",
+      "visits": 481,
+      "bounceRate": 0.368,
+      "avgDurationSeconds": 93.9,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 53,
+      "suspiciousShare": 0.1102
+    },
+    {
+      "date": "2026-05-29",
+      "visits": 324,
+      "bounceRate": 0.4815,
+      "avgDurationSeconds": 47.3,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 52,
+      "suspiciousShare": 0.1605
+    },
+    {
+      "date": "2026-05-30",
+      "visits": 304,
+      "bounceRate": 0.4145,
+      "avgDurationSeconds": 50.4,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 50,
+      "suspiciousShare": 0.1645
+    },
+    {
+      "date": "2026-05-31",
+      "visits": 591,
+      "bounceRate": 0.4755,
+      "avgDurationSeconds": 65.4,
+      "qualityConversions": 0,
+      "conversionRate": 0.0,
+      "suspiciousVisits": 65,
+      "suspiciousShare": 0.11
+    }
+  ],
+  "topReferrerHosts": [
+    {
+      "host": "coredumped.ru",
+      "visits": 3171,
+      "share": 0.3382
+    },
+    {
+      "host": "yastatic.net",
+      "visits": 917,
+      "share": 0.0978
+    },
+    {
+      "host": "direct_or_unknown",
+      "visits": 697,
+      "share": 0.0743
+    },
+    {
+      "host": "true-woman.ru",
+      "visits": 632,
+      "share": 0.0674
+    },
+    {
+      "host": "avr.i-trailer.ru",
+      "visits": 580,
+      "share": 0.0619
+    },
+    {
+      "host": "ssp-rtb-eu.sape.ru",
+      "visits": 180,
+      "share": 0.0192
+    },
+    {
+      "host": "ssp-rtb-ru.sape.ru",
+      "visits": 152,
+      "share": 0.0162
+    },
+    {
+      "host": "watt-pad.ru",
+      "visits": 79,
+      "share": 0.0084
+    },
+    {
+      "host": "drive2.ru",
+      "visits": 66,
+      "share": 0.007
+    },
+    {
+      "host": "reshutka.ru",
+      "visits": 64,
+      "share": 0.0068
+    },
+    {
+      "host": "s3.mds.yandex.net",
+      "visits": 64,
+      "share": 0.0068
+    },
+    {
+      "host": "fotostrana.ru",
+      "visits": 62,
+      "share": 0.0066
+    },
+    {
+      "host": "pub-eu.p.otm-r.com",
+      "visits": 60,
+      "share": 0.0064
+    },
+    {
+      "host": "all-make.su",
+      "visits": 58,
+      "share": 0.0062
+    },
+    {
+      "host": "policeyski.ru",
+      "visits": 56,
+      "share": 0.006
+    },
+    {
+      "host": "turkseason.org",
+      "visits": 49,
+      "share": 0.0052
+    },
+    {
+      "host": "ontvtime.tv",
+      "visits": 47,
+      "share": 0.005
+    },
+    {
+      "host": "topliba.com",
+      "visits": 46,
+      "share": 0.0049
+    },
+    {
+      "host": "yapolitic.net",
+      "visits": 45,
+      "share": 0.0048
+    },
+    {
+      "host": "televizorus.com",
+      "visits": 36,
+      "share": 0.0038
+    }
+  ],
+  "devices": [
+    {
+      "device": "1",
+      "visits": 4733,
+      "share": 0.5049
+    },
+    {
+      "device": "2",
+      "visits": 4226,
+      "share": 0.4508
+    },
+    {
+      "device": "3",
+      "visits": 347,
+      "share": 0.037
+    },
+    {
+      "device": "4",
+      "visits": 69,
+      "share": 0.0074
+    }
+  ],
+  "concentration": {
+    "topIpShare": 0.1188,
+    "topClientShare": 0.0034,
+    "repeatedIpVisits": 6076,
+    "repeatedClientVisits": 35
+  }
+}
