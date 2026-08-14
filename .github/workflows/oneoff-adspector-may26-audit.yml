@@ -1,0 +1,113 @@
+name: One-off Adspector May26 audit
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Query and aggregate Metrica Logs
+        env:
+          YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+        run: |
+          python - <<'PY'
+          import base64, collections, csv, io, json, os, re, time
+          from datetime import date
+          from urllib.parse import urlencode, urlparse
+          from urllib.request import Request, urlopen
+
+          COUNTER = 100470605
+          GOAL = 411053614
+          API = "https://api-metrika.yandex.net"
+          FIELDS = [
+              "ym:s:visitID", "ym:s:date", "ym:s:clientID", "ym:s:ipAddress",
+              "ym:s:<attribution>UTMSource", "ym:s:<attribution>UTMCampaign",
+              "ym:s:bounce", "ym:s:visitDuration", "ym:s:goalsID",
+              "ym:s:browser", "ym:s:browserMajorVersion", "ym:s:operatingSystem",
+              "ym:s:deviceCategory", "ym:s:referer"
+          ]
+          def call(url, method="GET"):
+              req = Request(url, data=b"" if method == "POST" else None, method=method,
+                            headers={"Authorization": "OAuth " + os.environ["YANDEX_METRIKA_TOKEN"],
+                                     "Accept": "application/json", "User-Agent": "OneOffAdspectorAudit/1.0"})
+              with urlopen(req, timeout=600) as r: return json.load(r)
+          params = {"date1":"2026-05-01","date2":"2026-05-31","source":"visits",
+                    "fields": ",".join(FIELDS), "attribution":"LAST"}
+          created = call(f"{API}/management/v1/counter/{COUNTER}/logrequests?"+urlencode(params), "POST")
+          rid = int(created["log_request"]["request_id"])
+          try:
+              deadline = time.time() + 4800
+              while time.time() < deadline:
+                  lr = call(f"{API}/management/v1/counter/{COUNTER}/logrequest/{rid}")["log_request"]
+                  if lr.get("status") == "processed": break
+                  if lr.get("status") in {"processing_failed","canceled","cleaned_by_user","cleaned_automatically_as_too_old"}:
+                      raise RuntimeError("Logs API status: " + str(lr.get("status")))
+                  time.sleep(10)
+              else: raise RuntimeError("Logs API timeout")
+              visits = []
+              scanned = 0
+              for part in lr.get("parts") or []:
+                  p = int(part["part_number"])
+                  req = Request(f"{API}/management/v1/counter/{COUNTER}/logrequest/{rid}/part/{p}/download",
+                      headers={"Authorization":"OAuth "+os.environ["YANDEX_METRIKA_TOKEN"],"Accept":"text/tab-separated-values"})
+                  with urlopen(req, timeout=900) as response:
+                      for r in csv.DictReader(io.TextIOWrapper(response, encoding="utf-8-sig"), delimiter="\t"):
+                          scanned += 1
+                          campaign = (r.get("ym:s:<attribution>UTMCampaign") or "").lower()
+                          source = (r.get("ym:s:<attribution>UTMSource") or "").lower()
+                          if "may26" not in campaign or source != "adspector": continue
+                          referer = r.get("ym:s:referer") or ""
+                          visits.append({"date":r.get("ym:s:date") or "", "ip":r.get("ym:s:ipAddress") or "",
+                              "client":r.get("ym:s:clientID") or "", "bounce":int(float(r.get("ym:s:bounce") or 0)),
+                              "duration":max(0,int(float(r.get("ym:s:visitDuration") or 0))),
+                              "goal":str(GOAL) in re.findall(r"\d+", r.get("ym:s:goalsID") or ""),
+                              "browser":(r.get("ym:s:browser") or "").lower(),
+                              "device":(r.get("ym:s:deviceCategory") or "unknown").lower(),
+                              "referrer":urlparse(referer).hostname or "direct_or_unknown"})
+              ips = collections.Counter(v["ip"] for v in visits if v["ip"])
+              clients = collections.Counter(v["client"] for v in visits if v["client"])
+              reasons = collections.Counter(); daily = collections.defaultdict(list)
+              referrers = collections.Counter(); devices = collections.Counter()
+              for v in visits:
+                  flags=[]
+                  if v["bounce"] and v["duration"] <= 10: flags.append("short_bounce")
+                  if v["ip"] and ips[v["ip"]] >= 4: flags.append("repeated_ip")
+                  if v["client"] and clients[v["client"]] >= 3: flags.append("repeated_client")
+                  if re.search(r"headless|phantom|selenium|webdriver|playwright|puppeteer",v["browser"]): flags.append("automation_ua")
+                  v["suspicious"] = len(flags) >= 2 or "automation_ua" in flags
+                  for f in flags: reasons[f] += 1
+                  daily[v["date"]].append(v); referrers[v["referrer"]] += 1; devices[v["device"]] += 1
+              def summary(rows):
+                  n=len(rows)
+                  return {"visits":n, "bounceRate":round(sum(v["bounce"] for v in rows)/n,4) if n else 0,
+                    "avgDurationSeconds":round(sum(v["duration"] for v in rows)/n,1) if n else 0,
+                    "qualityConversions":sum(v["goal"] for v in rows), "conversionRate":round(sum(v["goal"] for v in rows)/n,4) if n else 0,
+                    "suspiciousVisits":sum(v["suspicious"] for v in rows), "suspiciousShare":round(sum(v["suspicious"] for v in rows)/n,4) if n else 0}
+              output={"counterId":COUNTER,"period":{"from":"2026-05-01","to":"2026-05-31"},
+                "filter":{"campaignContains":"may26","source":"adspector"},"privacy":"No raw IP, ClientID, VisitID or full referrer URLs are stored.",
+                "source":"Yandex Metrica Logs API","scannedVisits":scanned,"summary":summary(visits),
+                "riskSignals":dict(reasons),"daily":[{"date":d,**summary(x)} for d,x in sorted(daily.items())],
+                "topReferrerHosts":[{"host":h,"visits":n,"share":round(n/len(visits),4)} for h,n in referrers.most_common(20)],
+                "devices":[{"device":d,"visits":n,"share":round(n/len(visits),4)} for d,n in devices.most_common()],
+                "concentration":{"topIpShare":round(sum(n for _,n in ips.most_common(10))/len(visits),4) if visits else 0,
+                  "topClientShare":round(sum(n for _,n in clients.most_common(10))/len(visits),4) if visits else 0,
+                  "repeatedIpVisits":sum(n for _,n in ips.items() if n>=4),"repeatedClientVisits":sum(n for _,n in clients.items() if n>=3)}}
+              os.makedirs("reports",exist_ok=True)
+              with open("reports/adspector_may26_2026_audit.json","w",encoding="utf-8") as f: json.dump(output,f,ensure_ascii=False,indent=2)
+          finally:
+              try: call(f"{API}/management/v1/counter/{COUNTER}/logrequest/{rid}/clean","POST")
+              except Exception: pass
+          PY
+      - name: Commit aggregated audit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports/adspector_may26_2026_audit.json
+          git commit -m "Add May 2026 Adspector audit" || exit 0
+          git push
