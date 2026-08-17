@@ -12,9 +12,9 @@ def metric(label,impressions,with_device,devices):
     return {"channel":label,"impressions":int(impressions),"impressionsWithDevice":int(with_device),"reach":reach,"frequency":round(impressions/reach,4) if reach else None}
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--input",required=True); ap.add_argument("--out",required=True); a=ap.parse_args()
-    files=sorted(Path(a.input).rglob("*.pkl"))
+    files=sorted(Path(a.input).rglob("*.pkl"), key=lambda p: (0 if "unclassified" in p.name else 1, p.name))
     if not files: raise RuntimeError("No monthly channel artifacts found")
-    global_total=BitMap64(); by_channel=[]; unclassified=None; projects={}; total_imps=0; total_with=0
+    global_total=None; by_channel=[]; unclassified=None; projects={}; total_imps=0; total_with=0
     with TemporaryDirectory(prefix="reach-projects-") as td:
         tmp=Path(td)
         for path in files:
@@ -34,8 +34,15 @@ def main():
             crow=metric(label,cimps,cwith,ctotal)
             if channel=="__UNC__": unclassified=crow
             else: by_channel.append(crow)
-            global_total|=ctotal; total_imps+=cimps; total_with+=cwith
-            del data,ctotal; gc.collect()
+            # Start from the largest bucket (unclassified) without copying its
+            # bitmap.  This avoids the previous peak of two full-month bitmaps.
+            if global_total is None:
+                global_total=ctotal
+            else:
+                global_total |= ctotal
+                del ctotal
+            total_imps+=cimps; total_with+=cwith
+            del data; gc.collect()
         rows=[]
         for pname,p in projects.items():
             pt=BitMap64()
@@ -47,7 +54,7 @@ def main():
             del pt; gc.collect()
     by_channel.sort(key=lambda r:ORDER.index(r["channel"]) if r["channel"] in ORDER else 99)
     rows.sort(key=lambda r:({"object":0,"brand":1,"unassigned":2}.get(r["scope"],3),-r["impressions"],r["project"].casefold()))
-    tr=len(global_total)
+    tr=len(global_total) if global_total is not None else 0
     token_impressions={"prg":0,"med":0,"mrk":0}
     channel_to_token={"Programmatic":"prg","Медийка":"med","Маркетплейсы":"mrk"}
     for row in by_channel: token_impressions[channel_to_token[row["channel"]]]=row["impressions"]
