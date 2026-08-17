@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """One-off July 2026 Reach/Frequency export from Target Ads Raw Data API v2.
 
-The aggregated API currently returns no rows for project 12787, so this prototype
-counts unique InteractionDeviceID values directly from Impression raw data.
+Target Ads Raw Data v2 accepts at most three days per async job. This exporter
+runs non-overlapping three-day windows for the whole of July, streams each gzip
+CSV, and keeps one union of hashed device IDs across all windows so monthly
+reach is deduplicated correctly.
 """
 
 from __future__ import annotations
 
 import csv
+import datetime as dt
 import gzip
 import hashlib
 import io
@@ -22,10 +25,11 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "reach_frequency_july_2026.json"
 API = "https://api.targetads.io"
-DATE_FROM = "2026-07-01"
-DATE_TO = "2026-07-31"
+DATE_FROM = dt.date(2026, 7, 1)
+DATE_TO = dt.date(2026, 7, 31)
 POLL_SECONDS = 5
-TIMEOUT_SECONDS = 25 * 60
+JOB_TIMEOUT_SECONDS = 20 * 60
+CHUNK_DAYS = 3
 
 
 def api_url(path: str, project_id: int, extra: dict[str, str] | None = None) -> str:
@@ -49,17 +53,20 @@ def request_json(url: str, token: str, body: dict | None = None) -> dict:
     )
     try:
         with urllib.request.urlopen(req, timeout=300) as response:
-            return json.load(response)
+            payload = json.load(response)
     except urllib.error.HTTPError as exc:
         details = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"Target Ads HTTP {exc.code}: {details[:3000]}") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("Unexpected non-object Target Ads response")
+    return payload
 
 
 def ensure_ok(payload: dict, action: str) -> dict:
     if payload.get("ErrorCode"):
         raise RuntimeError(
             f"Target Ads error while {action}: {payload.get('ErrorCode')} "
-            f"{payload.get('ErrorMessage')} {payload.get('Errors')}"
+            f"{payload.get('ErrorMessage')} {payload.get('Errors') or payload.get('ErrorsField')}"
         )
     return payload
 
@@ -83,17 +90,33 @@ def load_placement_meta(token: str, project_id: int) -> dict[str, dict]:
         placement_id = str(item.get("placement_id") or "").strip()
         if not placement_id:
             continue
+        placement_name = str(item.get("placement_name") or "").strip()
+        source_name = str(item.get("source_name") or item.get("media_source_name") or "").strip()
+        source_id = str(item.get("source_id") or item.get("media_source_id") or "").strip()
+        marketing_name = str(item.get("marketing_name") or "").strip()
+        # Some Target Ads accounts do not expose source_name in Meta API.
+        # Placement name is still useful as a transparent fallback grouping.
+        group_name = source_name or placement_name or f"Placement {placement_id}"
         result[placement_id] = {
             "placementId": placement_id,
-            "placementName": str(item.get("placement_name") or "").strip(),
-            "sourceId": str(item.get("source_id") or "").strip(),
-            "sourceName": str(item.get("source_name") or "").strip() or "(unknown source)",
-            "marketingName": str(item.get("marketing_name") or "").strip(),
+            "placementName": placement_name,
+            "sourceId": source_id,
+            "sourceName": source_name,
+            "marketingName": marketing_name,
+            "groupName": group_name,
         }
     return result
 
 
-def create_raw_job(token: str, project_id: int) -> str:
+def date_chunks(start: dt.date, end: dt.date):
+    cursor = start
+    while cursor <= end:
+        chunk_end = min(cursor + dt.timedelta(days=CHUNK_DAYS - 1), end)
+        yield cursor, chunk_end
+        cursor = chunk_end + dt.timedelta(days=1)
+
+
+def create_raw_job(token: str, project_id: int, start: dt.date, end: dt.date) -> str:
     payload = ensure_ok(
         request_json(
             api_url("/v2/reports/raw_reports", project_id),
@@ -103,23 +126,22 @@ def create_raw_job(token: str, project_id: int) -> str:
                     "InteractionDate",
                     "InteractionDeviceID",
                     "InteractionPlacementId",
-                    "InteractionNewCookie",
                 ],
-                "DateFrom": DATE_FROM,
-                "DateTo": DATE_TO,
+                "DateFrom": start.isoformat(),
+                "DateTo": end.isoformat(),
                 "InteractionType": "Impression",
             },
         ),
-        "creating July Impression raw job",
+        f"creating Impression raw job {start}..{end}",
     )
     job_id = str(payload.get("job_id") or "").strip()
     if not job_id:
-        raise RuntimeError(f"No job_id returned: {payload}")
+        raise RuntimeError(f"No job_id returned for {start}..{end}: {payload}")
     return job_id
 
 
 def wait_job(token: str, project_id: int, job_id: str) -> str:
-    deadline = time.monotonic() + TIMEOUT_SECONDS
+    deadline = time.monotonic() + JOB_TIMEOUT_SECONDS
     while True:
         payload = ensure_ok(
             request_json(
@@ -142,26 +164,19 @@ def wait_job(token: str, project_id: int, job_id: str) -> str:
 
 
 def device_hash(value: str) -> int:
+    # 64-bit hash is substantially smaller than retaining raw IDs in memory.
     return int.from_bytes(hashlib.blake2b(value.encode("utf-8"), digest_size=8).digest(), "big")
 
 
-def parse_bool_new_cookie(value: object) -> bool | None:
-    text = str(value or "").strip().lower()
-    if text in {"1", "true", "yes"}:
-        return True
-    if text in {"0", "false", "no"}:
-        return False
-    return None
-
-
-def build_metrics(download_url: str, placement_meta: dict[str, dict]) -> dict:
-    total_impressions = 0
-    total_with_device = 0
-    total_devices: set[int] = set()
-    total_stable_devices: set[int] = set()
-    by_source: dict[str, dict] = {}
-    unknown_placement_impressions = 0
-
+def process_download(
+    download_url: str,
+    placement_meta: dict[str, dict],
+    total_devices: set[int],
+    by_group: dict[str, dict],
+    counters: dict[str, int],
+) -> dict:
+    chunk_rows = 0
+    chunk_with_device = 0
     req = urllib.request.Request(download_url, headers={"User-Agent": "LevelGroupDashboard/1.0"})
     with urllib.request.urlopen(req, timeout=300) as response:
         with gzip.GzipFile(fileobj=response) as compressed:
@@ -172,18 +187,30 @@ def build_metrics(download_url: str, placement_meta: dict[str, dict]) -> dict:
                     raise RuntimeError(f"Unexpected raw CSV fields: {reader.fieldnames}")
 
                 for row in reader:
-                    total_impressions += 1
+                    chunk_rows += 1
+                    counters["impressions"] += 1
                     placement_id = str(row.get("InteractionPlacementId") or "").strip()
                     meta = placement_meta.get(placement_id)
                     if meta:
+                        group_name = meta["groupName"]
+                        placement_name = meta["placementName"]
                         source_name = meta["sourceName"]
                     else:
-                        source_name = "(unknown source)"
-                        unknown_placement_impressions += 1
+                        group_name = f"Unknown placement {placement_id or '(empty)'}"
+                        placement_name = ""
+                        source_name = ""
+                        counters["unknownPlacementImpressions"] += 1
 
-                    bucket = by_source.setdefault(
-                        source_name,
-                        {"impressions": 0, "withDevice": 0, "devices": set(), "stableDevices": set()},
+                    bucket = by_group.setdefault(
+                        group_name,
+                        {
+                            "source": group_name,
+                            "sourceName": source_name,
+                            "placementExample": placement_name,
+                            "impressions": 0,
+                            "impressionsWithDevice": 0,
+                            "devices": set(),
+                        },
                     )
                     bucket["impressions"] += 1
 
@@ -191,42 +218,13 @@ def build_metrics(download_url: str, placement_meta: dict[str, dict]) -> dict:
                     if not device_id:
                         continue
                     h = device_hash(device_id)
-                    total_with_device += 1
+                    chunk_with_device += 1
+                    counters["impressionsWithDevice"] += 1
                     total_devices.add(h)
-                    bucket["withDevice"] += 1
+                    bucket["impressionsWithDevice"] += 1
                     bucket["devices"].add(h)
 
-                    is_new = parse_bool_new_cookie(row.get("InteractionNewCookie"))
-                    if is_new is False:
-                        total_stable_devices.add(h)
-                        bucket["stableDevices"].add(h)
-
-    def row_metrics(name: str, item: dict) -> dict:
-        reach = len(item["devices"])
-        impressions = int(item["impressions"])
-        return {
-            "source": name,
-            "impressions": impressions,
-            "impressionsWithDevice": int(item["withDevice"]),
-            "reach": reach,
-            "frequency": round(impressions / reach, 4) if reach else None,
-            "stableReachDiagnostic": len(item["stableDevices"]),
-        }
-
-    source_rows = [row_metrics(name, item) for name, item in by_source.items()]
-    source_rows.sort(key=lambda row: row["impressions"], reverse=True)
-    total_reach = len(total_devices)
-    return {
-        "total": {
-            "impressions": total_impressions,
-            "impressionsWithDevice": total_with_device,
-            "reach": total_reach,
-            "frequency": round(total_impressions / total_reach, 4) if total_reach else None,
-            "stableReachDiagnostic": len(total_stable_devices),
-        },
-        "bySource": source_rows,
-        "unknownPlacementImpressions": unknown_placement_impressions,
-    }
+    return {"rows": chunk_rows, "rowsWithDevice": chunk_with_device}
 
 
 def main() -> None:
@@ -236,22 +234,68 @@ def main() -> None:
     project_id = int(os.environ.get("TARGETADS_PROJECT_ID", "").strip() or "12787")
 
     placement_meta = load_placement_meta(token, project_id)
-    job_id = create_raw_job(token, project_id)
-    print(json.dumps({"jobId": job_id, "placements": len(placement_meta)}, ensure_ascii=False))
-    download_url = wait_job(token, project_id, job_id)
-    metrics = build_metrics(download_url, placement_meta)
+    total_devices: set[int] = set()
+    by_group: dict[str, dict] = {}
+    counters = {
+        "impressions": 0,
+        "impressionsWithDevice": 0,
+        "unknownPlacementImpressions": 0,
+    }
+    jobs: list[dict] = []
 
+    for index, (start, end) in enumerate(date_chunks(DATE_FROM, DATE_TO), start=1):
+        job_id = create_raw_job(token, project_id, start, end)
+        print(json.dumps({"chunk": index, "from": start.isoformat(), "to": end.isoformat(), "jobId": job_id}, ensure_ascii=False), flush=True)
+        download_url = wait_job(token, project_id, job_id)
+        chunk_stats = process_download(download_url, placement_meta, total_devices, by_group, counters)
+        jobs.append(
+            {
+                "from": start.isoformat(),
+                "to": end.isoformat(),
+                "jobId": job_id,
+                **chunk_stats,
+            }
+        )
+        print(json.dumps({"chunk": index, **chunk_stats, "uniqueDevicesSoFar": len(total_devices)}, ensure_ascii=False), flush=True)
+
+    source_rows: list[dict] = []
+    for item in by_group.values():
+        reach = len(item["devices"])
+        impressions = int(item["impressions"])
+        source_rows.append(
+            {
+                "source": item["source"],
+                "sourceName": item["sourceName"],
+                "placementExample": item["placementExample"],
+                "impressions": impressions,
+                "impressionsWithDevice": int(item["impressionsWithDevice"]),
+                "reach": reach,
+                "frequency": round(impressions / reach, 4) if reach else None,
+            }
+        )
+    source_rows.sort(key=lambda row: row["impressions"], reverse=True)
+
+    total_reach = len(total_devices)
     result = {
-        "period": {"from": DATE_FROM, "to": DATE_TO},
+        "period": {"from": DATE_FROM.isoformat(), "to": DATE_TO.isoformat()},
         "projectId": project_id,
-        "method": "Raw Data API v2 Impression events; unique InteractionDeviceID hashed to 64-bit values in memory",
-        "important": "This prototype computes reach directly from raw device IDs because Aggregated API returned zero rows for this project/date. Frequency = all impressions / unique device IDs. The stableReachDiagnostic field is diagnostic only and is not used in frequency.",
+        "method": "Target Ads Raw Data API v2, Impression events; monthly union of InteractionDeviceID across 3-day jobs",
+        "important": "Reach is deduplicated across all July chunks. Frequency = all July impression events / unique July device IDs. Rows without InteractionDeviceID remain in impressions but cannot contribute to reach.",
         "placementMetaCount": len(placement_meta),
-        **metrics,
+        "total": {
+            "impressions": counters["impressions"],
+            "impressionsWithDevice": counters["impressionsWithDevice"],
+            "reach": total_reach,
+            "frequency": round(counters["impressions"] / total_reach, 4) if total_reach else None,
+            "deviceIdCoverage": round(counters["impressionsWithDevice"] / counters["impressions"], 6) if counters["impressions"] else None,
+        },
+        "bySource": source_rows,
+        "unknownPlacementImpressions": counters["unknownPlacementImpressions"],
+        "jobs": jobs,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"total": result["total"], "sourceCount": len(result["bySource"])}, ensure_ascii=False))
+    print(json.dumps({"total": result["total"], "sourceCount": len(source_rows)}, ensure_ascii=False), flush=True)
 
 
 if __name__ == "__main__":
