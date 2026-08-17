@@ -1,0 +1,14 @@
+{
+  "period": {
+    "from": "2026-07-01",
+    "to": "2026-07-31"
+  },
+  "projectId": 12787,
+  "note": "Prototype export from Target Ads Aggregated data API. Reach is deduplicated within each returned grouping row; do not sum Reach across rows to obtain a cross-channel total.",
+  "bySource": [],
+  "byCampaign": [],
+  "counts": {
+    "bySource": 0,
+    "byCampaign": 0
+  }
+}
