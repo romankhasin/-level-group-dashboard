@@ -57,6 +57,8 @@ def main():
             "creative": item.get("creative"),
             "creative_name": item.get("creative_name"),
             "creative_id": item.get("creative_id"),
+            "metadata_fields": sorted(item.keys()),
+            "creative_related_fields": {key: value for key, value in item.items() if "creative" in key.casefold()},
         })
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"projectId": project_id, "count": len(rows), "rows": rows}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
