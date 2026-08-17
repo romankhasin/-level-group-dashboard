@@ -5,14 +5,109 @@
   },
   "projectId": 12787,
   "method": "Target Ads Raw Data API v2, Impression events; monthly union of InteractionDeviceID across 3-day jobs",
-  "important": "Reach is deduplicated across all July chunks. Frequency = all July impression events / unique July device IDs. Rows without InteractionDeviceID remain in impressions but cannot contribute to reach.",
+  "important": "Reach is deduplicated independently for Total, each media channel and each source. Do not sum reach rows to obtain Total. Frequency = impressions / deduplicated device reach.",
+  "channelClassificationVersion": "v1-2026-08-17",
+  "channelClassificationNotes": {
+    "Programmatic": "Roxot, Astralab, Buzzoola, Mobidriven, Adspector, q.bid, Innovation Lab, Adheads, VOX, Digital Alliance, SOLTA, Plazkart, OneTarget",
+    "Smart TV": "MTS, Streamingads, Rutube",
+    "Маркетплейсы": "Ozon, Avito, Wildberries, Пятерочка and Yandex Market placements",
+    "Target": "VK Ads / ВКР placements",
+    "Медийка": "Other identified media sources, including YandexMI and non-Market UrbanAds placements"
+  },
   "placementMetaCount": 773,
   "total": {
+    "label": "Level Group",
     "impressions": 151412152,
     "impressionsWithDevice": 151412152,
     "reach": 63669972,
     "frequency": 2.3781,
     "deviceIdCoverage": 1.0
+  },
+  "byChannel": [
+    {
+      "channel": "Programmatic",
+      "impressions": 34988648,
+      "impressionsWithDevice": 34988648,
+      "reach": 20214792,
+      "frequency": 1.7308,
+      "sources": [
+        "Adheads",
+        "Adspector",
+        "Astralab",
+        "buzzoola",
+        "Digital Alliance",
+        "Innovation lab",
+        "Mobidriven",
+        "onetarget",
+        "Plazkart",
+        "qbid",
+        "qbid баннеры",
+        "Roxot",
+        "SOLTA",
+        "VOX"
+      ]
+    },
+    {
+      "channel": "Smart TV",
+      "impressions": 40882016,
+      "impressionsWithDevice": 40882016,
+      "reach": 16127506,
+      "frequency": 2.5349,
+      "sources": [
+        "Rutube",
+        "streamingads",
+        "МТС"
+      ]
+    },
+    {
+      "channel": "Маркетплейсы",
+      "impressions": 26927814,
+      "impressionsWithDevice": 26927814,
+      "reach": 15060254,
+      "frequency": 1.788,
+      "sources": [
+        "Avito",
+        "Ozon",
+        "UrbanAds",
+        "Пятерочка"
+      ]
+    },
+    {
+      "channel": "Медийка",
+      "impressions": 48613314,
+      "impressionsWithDevice": 48613314,
+      "reach": 14129634,
+      "frequency": 3.4405,
+      "sources": [
+        "Aviasales",
+        "CRE",
+        "Dzen",
+        "matchtv",
+        "Netmonet.co",
+        "Samokat",
+        "Sberseller",
+        "UrbanAds",
+        "Yandex",
+        "YandexMI",
+        "ПромоСтраницы"
+      ]
+    },
+    {
+      "channel": "Target",
+      "impressions": 0,
+      "impressionsWithDevice": 0,
+      "reach": 0,
+      "frequency": null,
+      "sources": []
+    }
+  ],
+  "unclassified": {
+    "channel": "Не классифицировано",
+    "impressions": 360,
+    "impressionsWithDevice": 360,
+    "reach": 360,
+    "frequency": 1.0,
+    "sources": []
   },
   "bySource": [
     {
