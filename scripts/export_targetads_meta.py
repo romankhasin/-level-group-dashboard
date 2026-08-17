@@ -26,7 +26,7 @@ def main():
     if not token:
         raise RuntimeError("TARGETADS_TOKEN is empty")
     project_id = int(os.environ.get("TARGETADS_PROJECT_ID", "").strip() or "12787")
-    params = urllib.parse.urlencode({"project_id": project_id, "active": "false", "include_creative": "false"})
+    params = urllib.parse.urlencode({"project_id": project_id, "active": "false", "include_creative": "true"})
     req = urllib.request.Request(
         f"{API}/v1/meta/campaigns?{params}",
         headers={"Authorization": f"Bearer {token}", "Accept": "application/json"},
@@ -51,6 +51,12 @@ def main():
             "channel_token": token,
             "channel": channel,
             "channel_token_field": token_field,
+            # Preserve the API's native creative payload for naming diagnostics.
+            # No creative field is used as a channel fallback until its token
+            # structure has been inspected and confirmed.
+            "creative": item.get("creative"),
+            "creative_name": item.get("creative_name"),
+            "creative_id": item.get("creative_id"),
         })
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps({"projectId": project_id, "count": len(rows), "rows": rows}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
