@@ -17,12 +17,12 @@ def preclassify_meta(raw_meta: dict[str, dict]) -> dict[str, dict]:
     result = {}
     for placement_id, item in raw_meta.items():
         placement = item.get("placementName", "")
-        source = item.get("sourceName", "")
-        channel = base.classify_channel(source, placement)
+        channel, token, token_field = base.classify_channel(placement, item.get("marketingName", ""), item.get("campaignName", ""))
         project, scope = base.classify_project(placement)
         result[placement_id] = {
-            "source": source,
             "channel": channel,
+            "token": token,
+            "tokenField": token_field,
             "project": project,
             "scope": scope,
         }
@@ -46,13 +46,12 @@ def process_fast(url: str, meta: dict[str, dict], projects: dict[str, dict], cou
                     placement_id = str(row.get("InteractionPlacementId") or "").strip()
                     item = meta.get(placement_id)
                     if item:
-                        source = item["source"]
                         channel = item["channel"]
+                        token = item["token"]
                         project_name = item["project"]
                         scope = item["scope"]
                     else:
-                        source = ""
-                        channel = None
+                        channel = token = None
                         project_name = "Без объекта"
                         scope = "unassigned"
                         counters["unknownPlacementImpressions"] += 1
@@ -60,8 +59,11 @@ def process_fast(url: str, meta: dict[str, dict], projects: dict[str, dict], cou
                     project = projects.setdefault(project_name, base.project_bucket(scope))
                     bucket = project["channels"][channel] if channel else project["unclassified"]
                     bucket["impressions"] += 1
-                    if source:
-                        bucket["sources"].add(source)
+                    if token:
+                        counters["recognizedTokenImpressions"] += 1
+                        counters["tokenImpressions"][token] += 1
+                    else:
+                        counters["noRecognizedChannelTokenImpressions"] += 1
 
                     device_id = str(row.get("InteractionDeviceID") or "").strip()
                     if device_id:
@@ -80,7 +82,7 @@ def main() -> None:
 
     meta = preclassify_meta(base.load_meta(token, project_id))
     projects: dict[str, dict] = {}
-    counters = {"impressions": 0, "impressionsWithDevice": 0, "unknownPlacementImpressions": 0}
+    counters = {"impressions": 0, "impressionsWithDevice": 0, "unknownPlacementImpressions": 0, "recognizedTokenImpressions": 0, "noRecognizedChannelTokenImpressions": 0, "tokenImpressions": {token: 0 for token in base.TOKEN_CHANNELS}}
 
     pending = []
     for index, (start, end) in enumerate(base.chunks(base.DATE_FROM, base.DATE_TO), 1):
@@ -157,15 +159,9 @@ def main() -> None:
         "projectId": project_id,
         "method": "Target Ads Raw Data API v2; preclassified placements + exact 64-bit InteractionDeviceID leaf Roaring Bitmap unions",
         "important": "Reach is deduplicated independently for Total, each channel, each object and each object×channel pair. Do not sum child Reach rows.",
-        "channelClassificationVersion": "v1-2026-08-17",
+        "channelClassificationVersion": "v2-2026-08-17-token-naming",
         "projectClassificationVersion": "v1-2026-08-17",
-        "channelClassificationNotes": {
-            "Programmatic": "Roxot, Astralab, Buzzoola, Mobidriven, Adspector, q.bid, Innovation Lab, Adheads, VOX, Digital Alliance, SOLTA, Plazkart, OneTarget",
-            "Smart TV": "MTS, Streamingads, Rutube",
-            "Маркетплейсы": "Ozon, Avito, Wildberries, Пятерочка and Yandex Market placements",
-            "Target": "VK Ads / ВКР placements",
-            "Медийка": "Other identified media sources, including YandexMI and non-Market UrbanAds placements",
-        },
+        "channelClassificationNotes": {"Programmatic": "Target Ads naming token prg", "Медийка": "Target Ads naming token med", "Маркетплейсы": "Target Ads naming token mrk"},
         "projectClassificationNotes": "Known Level development names are normalized; regional placements roll into the same object. Brand and unknown prefixes remain separate.",
         "placementMetaCount": len(meta),
         "total": {
@@ -180,6 +176,7 @@ def main() -> None:
         "byProject": project_rows,
         "unclassified": base.serial_channel("Не классифицировано", unclassified_acc),
         "unknownPlacementImpressions": counters["unknownPlacementImpressions"],
+        "channelTokenDiagnostics": {"classifier": "Target Ads placement_name → marketing_name → campaign_name; source_name is not used", "mapping": base.TOKEN_CHANNELS, "recognizedTokenImpressions": counters["recognizedTokenImpressions"], "noRecognizedChannelTokenImpressions": counters["noRecognizedChannelTokenImpressions"], "tokenImpressions": counters["tokenImpressions"], "tokenCoverage": round(counters["recognizedTokenImpressions"] / counters["impressions"], 6) if counters["impressions"] else 0.0},
         "jobs": jobs,
     }
     base.OUT.parent.mkdir(parents=True, exist_ok=True)

@@ -31,11 +31,16 @@ CHUNK_DAYS = 3
 POLL_SECONDS = 5
 JOB_TIMEOUT_SECONDS = 20 * 60
 
-CHANNEL_ORDER = ["Programmatic", "Smart TV", "Маркетплейсы", "Медийка", "Target"]
-PROGRAMMATIC_SOURCES = {"roxot","astralab","buzzoola","mobidriven","adspector","qbid","qbid баннеры","innovation lab","adheads","vox","digital alliance","solta","plazkart","onetarget"}
-SMART_TV_SOURCES = {"мтс","streamingads","rutube"}
-MARKETPLACE_SOURCES = {"ozon","avito","wildberries","пятерочка"}
-TARGET_SOURCES = {"вкр","vk","vk ads","vkads"}
+# Channel is intentionally defined by a confirmed Target Ads naming token, never
+# by source_name.  Do not add a token here unless it is actually present in
+# Target Ads naming and its business meaning has been confirmed.
+TOKEN_CHANNELS = {
+    "prg": "Programmatic",
+    "med": "Медийка",
+    "mrk": "Маркетплейсы",
+}
+CHANNEL_ORDER = list(dict.fromkeys(TOKEN_CHANNELS.values()))
+TOKEN_RE = re.compile(r"(?<![a-z0-9а-я])(" + "|".join(TOKEN_CHANNELS) + r")(?![a-z0-9а-я])", re.IGNORECASE)
 
 PROJECT_ALIASES = [
     ("павелецкая сити","Павелецкая Сити"),
@@ -78,19 +83,29 @@ def load_meta(token: str, project_id: int) -> dict[str,dict]:
         if not isinstance(item, dict): continue
         pid = str(item.get("placement_id") or "").strip()
         if pid:
-            result[pid] = {"placementName":str(item.get("placement_name") or "").strip(),"sourceName":str(item.get("source_name") or item.get("media_source_name") or "").strip()}
+            result[pid] = {
+                "placementName": str(item.get("placement_name") or "").strip(),
+                "marketingName": str(item.get("marketing_name") or "").strip(),
+                "campaignName": str(item.get("campaign_name") or "").strip(),
+                # Retained only as a diagnostic attribute; it is not a classifier.
+                "sourceName": str(item.get("source_name") or item.get("media_source_name") or "").strip(),
+            }
     return result
 
 
-def classify_channel(source_name: str, placement_name: str) -> str | None:
-    source = source_name.casefold().strip(); placement = placement_name.casefold().strip()
-    if "market yandex" in placement or "яндекс маркет" in placement: return "Маркетплейсы"
-    if "vkads" in placement or "vk ads" in placement or "вк ads" in placement: return "Target"
-    if source in TARGET_SOURCES or source.startswith("вкр"): return "Target"
-    if source in MARKETPLACE_SOURCES: return "Маркетплейсы"
-    if source in SMART_TV_SOURCES: return "Smart TV"
-    if source in PROGRAMMATIC_SOURCES: return "Programmatic"
-    return "Медийка" if source else None
+def classify_channel(placement_name: str, marketing_name: str = "", campaign_name: str = "") -> tuple[str | None, str | None, str | None]:
+    """Return channel, token and Target Ads field used for the decision.
+
+    placement_name is checked first because it is the populated naming field in
+    the exported metadata. Other native naming fields are checked only when
+    present; source_name is deliberately excluded.
+    """
+    for field, value in (("placement_name", placement_name), ("marketing_name", marketing_name), ("campaign_name", campaign_name)):
+        match = TOKEN_RE.search(value.casefold())
+        if match:
+            token = match.group(1).casefold()
+            return TOKEN_CHANNELS[token], token, field
+    return None, None, None
 
 
 def classify_project(placement_name: str) -> tuple[str,str]:
@@ -154,12 +169,19 @@ def process(url: str, meta: dict[str,dict], projects: dict[str,dict], counters: 
         for row in reader:
             rows+=1; counters["impressions"]+=1
             pid=str(row.get("InteractionPlacementId") or "").strip(); m=meta.get(pid)
-            if m: placement=m["placementName"]; source=m["sourceName"]
-            else: placement=""; source=""; counters["unknownPlacementImpressions"]+=1
-            channel=classify_channel(source,placement); pname,scope=classify_project(placement)
+            if m:
+                placement=m["placementName"]
+                channel, token, token_field = classify_channel(placement, m["marketingName"], m["campaignName"])
+            else:
+                placement=""; channel=token=token_field=None; counters["unknownPlacementImpressions"]+=1
+            if token:
+                counters["recognizedTokenImpressions"] += 1
+                counters["tokenImpressions"][token] += 1
+            else:
+                counters["noRecognizedChannelTokenImpressions"] += 1
+            pname,scope=classify_project(placement)
             project=projects.setdefault(pname,project_bucket(scope)); bucket=project["channels"][channel] if channel else project["unclassified"]
             bucket["impressions"]+=1
-            if source: bucket["sources"].add(source)
             device=str(row.get("InteractionDeviceID") or "").strip()
             if device:
                 with_device+=1; counters["impressionsWithDevice"]+=1; bucket["withDevice"]+=1; bucket["devices"].add(h64(device))
@@ -181,7 +203,7 @@ def main() -> None:
     token=os.environ.get("TARGETADS_TOKEN","").strip()
     if not token: raise RuntimeError("TARGETADS_TOKEN is empty")
     project_id=int(os.environ.get("TARGETADS_PROJECT_ID","").strip() or "12787")
-    meta=load_meta(token,project_id); projects={}; counters={"impressions":0,"impressionsWithDevice":0,"unknownPlacementImpressions":0}
+    meta=load_meta(token,project_id); projects={}; counters={"impressions":0,"impressionsWithDevice":0,"unknownPlacementImpressions":0,"recognizedTokenImpressions":0,"noRecognizedChannelTokenImpressions":0,"tokenImpressions":{token:0 for token in TOKEN_CHANNELS}}
     pending=[]
     for i,(start,end) in enumerate(chunks(DATE_FROM,DATE_TO),1):
         job=create_job(token,project_id,start,end); pending.append({"chunk":i,"from":start,"to":end,"jobId":job}); print(json.dumps({"submitted":i,"from":start.isoformat(),"to":end.isoformat()},ensure_ascii=False),flush=True)
@@ -210,12 +232,12 @@ def main() -> None:
       "period":{"from":DATE_FROM.isoformat(),"to":DATE_TO.isoformat()},"projectId":project_id,
       "method":"Target Ads Raw Data API v2; exact 64-bit hashed InteractionDeviceID unions using leaf-level Roaring Bitmap",
       "important":"Reach is deduplicated independently for Total, each channel, each object and each object×channel pair. Do not sum child Reach rows.",
-      "channelClassificationVersion":"v1-2026-08-17","projectClassificationVersion":"v1-2026-08-17",
-      "channelClassificationNotes":{"Programmatic":"Roxot, Astralab, Buzzoola, Mobidriven, Adspector, q.bid, Innovation Lab, Adheads, VOX, Digital Alliance, SOLTA, Plazkart, OneTarget","Smart TV":"MTS, Streamingads, Rutube","Маркетплейсы":"Ozon, Avito, Wildberries, Пятерочка and Yandex Market placements","Target":"VK Ads / ВКР placements","Медийка":"Other identified media sources, including YandexMI and non-Market UrbanAds placements"},
+      "channelClassificationVersion":"v2-2026-08-17-token-naming","projectClassificationVersion":"v1-2026-08-17",
+      "channelClassificationNotes":{"Programmatic":"Target Ads naming token prg","Медийка":"Target Ads naming token med","Маркетплейсы":"Target Ads naming token mrk"},
       "projectClassificationNotes":"Known Level development names are normalized; regional placements roll into the same object. Brand and unknown prefixes remain separate.",
       "placementMetaCount":len(meta),
       "total":{"label":"Level Group","impressions":counters["impressions"],"impressionsWithDevice":counters["impressionsWithDevice"],"reach":total_reach,"frequency":round(counters["impressions"]/total_reach,4) if total_reach else None,"deviceIdCoverage":round(counters["impressionsWithDevice"]/counters["impressions"],6) if counters["impressions"] else None},
-      "byChannel":[serial_channel(ch,channel_acc[ch]) for ch in CHANNEL_ORDER],"byProject":project_rows,"unclassified":serial_channel("Не классифицировано",unc_acc),"unknownPlacementImpressions":counters["unknownPlacementImpressions"],"jobs":jobs}
+      "byChannel":[serial_channel(ch,channel_acc[ch]) for ch in CHANNEL_ORDER],"byProject":project_rows,"unclassified":serial_channel("Не классифицировано",unc_acc),"unknownPlacementImpressions":counters["unknownPlacementImpressions"],"channelTokenDiagnostics":{"classifier":"Target Ads placement_name → marketing_name → campaign_name; source_name is not used","mapping":TOKEN_CHANNELS,"recognizedTokenImpressions":counters["recognizedTokenImpressions"],"noRecognizedChannelTokenImpressions":counters["noRecognizedChannelTokenImpressions"],"tokenImpressions":counters["tokenImpressions"],"tokenCoverage":round(counters["recognizedTokenImpressions"]/counters["impressions"],6) if counters["impressions"] else 0.0},"jobs":jobs}
     OUT.parent.mkdir(parents=True,exist_ok=True); OUT.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"total":result["total"],"projects":len(project_rows)},ensure_ascii=False),flush=True)
 

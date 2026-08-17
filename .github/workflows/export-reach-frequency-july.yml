@@ -10,6 +10,8 @@ on:
       - "scripts/reach_frequency_merge_leafonly.py"
       - "scripts/export_reach_frequency_july_fast.py"
       - "scripts/export_reach_frequency_july_leaf.py"
+      - "scripts/reach_frequency_chunk_leafonly.py"
+      - "scripts/reach_frequency_merge_leafonly.py"
 
 permissions:
   contents: write
