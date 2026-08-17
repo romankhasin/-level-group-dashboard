@@ -43,5 +43,13 @@ jobs:
             echo "No export changes"
           else
             git commit -m "Export July Reach Frequency"
-            git push
+            for attempt in 1 2 3; do
+              if git push; then
+                exit 0
+              fi
+              echo "main changed during export; rebasing (attempt ${attempt})"
+              git pull --rebase origin main
+            done
+            echo "Could not publish July reach-frequency export"
+            exit 1
           fi
