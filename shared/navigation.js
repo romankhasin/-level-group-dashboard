@@ -2,7 +2,7 @@
   const defaultLinks = {
     portal: "https://romankhasin.github.io/-level-group-dashboard/portal/",
     dashboard: "https://romankhasin.github.io/-level-group-dashboard/dashboard/",
-    reach: "https://romankhasin.github.io/-level-group-dashboard/reach/",
+    reach: "https://romankhasin.github.io/level-reach-frequency-report/",
     creative: "https://creative-quality-checker-one.vercel.app/",
     news: "https://romankhasin.github.io/level-realty-radar-new/"
   };
