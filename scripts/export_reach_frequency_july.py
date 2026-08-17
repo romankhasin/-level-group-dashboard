@@ -2,9 +2,9 @@
 """One-off July 2026 Reach/Frequency export from Target Ads Raw Data API v2.
 
 Target Ads Raw Data v2 accepts at most three days per async job. This exporter
-runs non-overlapping three-day windows for the whole of July, streams each gzip
-CSV, and keeps one union of hashed device IDs across all windows so monthly
-reach is deduplicated correctly.
+creates all non-overlapping three-day July jobs first so Target Ads can process
+them in parallel, then streams each gzip CSV and keeps one union of hashed
+device IDs across all windows so monthly reach is deduplicated correctly.
 """
 
 from __future__ import annotations
@@ -94,8 +94,6 @@ def load_placement_meta(token: str, project_id: int) -> dict[str, dict]:
         source_name = str(item.get("source_name") or item.get("media_source_name") or "").strip()
         source_id = str(item.get("source_id") or item.get("media_source_id") or "").strip()
         marketing_name = str(item.get("marketing_name") or "").strip()
-        # Some Target Ads accounts do not expose source_name in Meta API.
-        # Placement name is still useful as a transparent fallback grouping.
         group_name = source_name or placement_name or f"Placement {placement_id}"
         result[placement_id] = {
             "placementId": placement_id,
@@ -164,7 +162,6 @@ def wait_job(token: str, project_id: int, job_id: str) -> str:
 
 
 def device_hash(value: str) -> int:
-    # 64-bit hash is substantially smaller than retaining raw IDs in memory.
     return int.from_bytes(hashlib.blake2b(value.encode("utf-8"), digest_size=8).digest(), "big")
 
 
@@ -241,22 +238,50 @@ def main() -> None:
         "impressionsWithDevice": 0,
         "unknownPlacementImpressions": 0,
     }
-    jobs: list[dict] = []
 
+    # Submit all short jobs first so Target Ads can process the windows concurrently.
+    pending_jobs: list[dict] = []
     for index, (start, end) in enumerate(date_chunks(DATE_FROM, DATE_TO), start=1):
         job_id = create_raw_job(token, project_id, start, end)
-        print(json.dumps({"chunk": index, "from": start.isoformat(), "to": end.isoformat(), "jobId": job_id}, ensure_ascii=False), flush=True)
-        download_url = wait_job(token, project_id, job_id)
+        pending_jobs.append(
+            {
+                "chunk": index,
+                "from": start,
+                "to": end,
+                "jobId": job_id,
+            }
+        )
+        print(
+            json.dumps(
+                {"submitted": index, "from": start.isoformat(), "to": end.isoformat(), "jobId": job_id},
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
+
+    jobs: list[dict] = []
+    for pending in pending_jobs:
+        download_url = wait_job(token, project_id, pending["jobId"])
         chunk_stats = process_download(download_url, placement_meta, total_devices, by_group, counters)
         jobs.append(
             {
-                "from": start.isoformat(),
-                "to": end.isoformat(),
-                "jobId": job_id,
+                "from": pending["from"].isoformat(),
+                "to": pending["to"].isoformat(),
+                "jobId": pending["jobId"],
                 **chunk_stats,
             }
         )
-        print(json.dumps({"chunk": index, **chunk_stats, "uniqueDevicesSoFar": len(total_devices)}, ensure_ascii=False), flush=True)
+        print(
+            json.dumps(
+                {
+                    "completed": pending["chunk"],
+                    **chunk_stats,
+                    "uniqueDevicesSoFar": len(total_devices),
+                },
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
 
     source_rows: list[dict] = []
     for item in by_group.values():
