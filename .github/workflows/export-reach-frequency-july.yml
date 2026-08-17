@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/export-reach-frequency-july.yml"
-      - "scripts/export_reach_frequency_july.py"
+      - "scripts/export_reach_frequency_july_roaring.py"
 
 permissions:
   contents: write
@@ -28,11 +28,14 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install bitmap dependency
+        run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+
       - name: Export July Reach/Frequency
         env:
           TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
           TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
-        run: python scripts/export_reach_frequency_july.py
+        run: python scripts/export_reach_frequency_july_roaring.py
 
       - name: Commit export
         run: |
