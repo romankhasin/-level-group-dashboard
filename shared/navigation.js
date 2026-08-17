@@ -2,6 +2,7 @@
   const defaultLinks = {
     portal: "https://romankhasin.github.io/-level-group-dashboard/portal/",
     dashboard: "https://romankhasin.github.io/-level-group-dashboard/dashboard/",
+    reach: "https://romankhasin.github.io/-level-group-dashboard/reach/",
     creative: "https://creative-quality-checker-one.vercel.app/",
     news: "https://romankhasin.github.io/level-realty-radar-new/"
   };
@@ -19,6 +20,7 @@
   const items = [
     { key: "portal", label: "Главная" },
     { key: "dashboard", label: "Отчёт" },
+    { key: "reach", label: "Охваты" },
     { key: "creative", label: "Проверка креативов" },
     { key: "news", label: "Новости" }
   ];
