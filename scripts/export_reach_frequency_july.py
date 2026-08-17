@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""One-off July 2026 Reach/Frequency export from Target Ads Raw Data API v2.
+"""July 2026 Reach/Frequency export from Target Ads Raw Data API v2.
 
-Target Ads Raw Data v2 accepts at most three days per async job. This exporter
-creates all non-overlapping three-day July jobs first so Target Ads can process
-them in parallel, then streams each gzip CSV and keeps unions of hashed device
-IDs for the whole month, by source, and by Level Group media channel.
+Target Ads Raw Data v2 accepts at most three days per async job. The exporter
+creates all non-overlapping three-day July jobs first, then streams every gzip
+CSV and keeps unions of hashed device IDs for the whole month, by source, by
+Level Group media channel, by object, and by object × channel.
 """
 
 from __future__ import annotations
@@ -17,6 +17,7 @@ import io
 import json
 import os
 from pathlib import Path
+import re
 import time
 import urllib.error
 import urllib.parse
@@ -52,6 +53,35 @@ PROGRAMMATIC_SOURCES = {
 SMART_TV_SOURCES = {"мтс", "streamingads", "rutube"}
 MARKETPLACE_SOURCES = {"ozon", "avito", "wildberries", "пятерочка"}
 TARGET_SOURCES = {"вкр", "vk", "vk ads", "vkads"}
+
+PROJECT_ALIASES = [
+    ("павелецкая сити", "Павелецкая Сити"),
+    ("нижегородская w", "Level Нижегородская"),
+    ("нижегородская", "Level Нижегородская"),
+    ("южнопортовая регионы", "Level Южнопортовая"),
+    ("южнопортовая", "Level Южнопортовая"),
+    ("мичуринский регионы", "Level Мичуринский"),
+    ("мичуринский", "Level Мичуринский"),
+    ("лесной регионы", "Level Лесной"),
+    ("лесной", "Level Лесной"),
+    ("звенигородская", "Level Звенигородская"),
+    ("селигерская", "Level Селигерская"),
+    ("войковская", "Level Войковская"),
+    ("воронцовская", "Level Воронцовская"),
+    ("мечникова", "Level Мечникова"),
+    ("свободы", "Level Свободы"),
+    ("саввинская 27", "Level Саввинская"),
+    ("саввинская 17", "Level Саввинская"),
+    ("саввинская", "Level Саввинская"),
+    ("бауманская", "Level Бауманская"),
+    ("причальный", "Level Причальный"),
+    ("level group", "Level Group"),
+]
+BRAND_ALIASES = [
+    ("зонтик", "Level Group"),
+    ("премиум", "Level Premium"),
+    ("остатки", "Остатки"),
+]
 
 
 def api_url(path: str, project_id: int, extra: dict[str, str] | None = None) -> str:
@@ -132,7 +162,6 @@ def classify_channel(source_name: str, placement_name: str) -> str | None:
     source = source_name.casefold().strip()
     placement = placement_name.casefold().strip()
 
-    # Placement-level rules must run before source-level rules.
     if "market yandex" in placement or "яндекс маркет" in placement:
         return "Маркетплейсы"
     if "vkads" in placement or "vk ads" in placement or "вк ads" in placement:
@@ -146,12 +175,33 @@ def classify_channel(source_name: str, placement_name: str) -> str | None:
         return "Smart TV"
     if source in PROGRAMMATIC_SOURCES:
         return "Programmatic"
-
-    # UrbanAds contains both Yandex Market and Yandex Go placements. Market is
-    # captured above; the remaining UrbanAds placements are treated as media.
     if source:
         return "Медийка"
     return None
+
+
+def normalize_project_text(value: str) -> str:
+    text = value.casefold().replace("ё", "е")
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def classify_project(placement_name: str) -> tuple[str, str]:
+    placement = normalize_project_text(placement_name)
+    if not placement:
+        return "Без объекта", "unassigned"
+
+    for alias, label in PROJECT_ALIASES:
+        if alias in placement:
+            return label, "object" if label != "Level Group" else "brand"
+    for alias, label in BRAND_ALIASES:
+        if alias in placement:
+            return label, "brand"
+
+    prefix = re.split(r"\s*//\s*|\s+/\s+", placement_name, maxsplit=1)[0].strip()
+    if prefix and len(prefix) <= 80:
+        return f"Прочее · {prefix}", "unassigned"
+    return "Без объекта", "unassigned"
 
 
 def date_chunks(start: dt.date, end: dt.date):
@@ -217,12 +267,24 @@ def empty_channel_bucket() -> dict:
     return {"impressions": 0, "impressionsWithDevice": 0, "devices": set(), "sources": set()}
 
 
+def empty_project_bucket(scope: str) -> dict:
+    return {
+        "scope": scope,
+        "impressions": 0,
+        "impressionsWithDevice": 0,
+        "devices": set(),
+        "channels": {name: empty_channel_bucket() for name in CHANNEL_ORDER},
+        "unclassified": empty_channel_bucket(),
+    }
+
+
 def process_download(
     download_url: str,
     placement_meta: dict[str, dict],
     total_devices: set[int],
     by_group: dict[str, dict],
     by_channel: dict[str, dict],
+    by_project: dict[str, dict],
     unclassified: dict,
     counters: dict[str, int],
 ) -> dict:
@@ -271,6 +333,16 @@ def process_download(
                     if source_name:
                         channel_bucket["sources"].add(source_name)
 
+                    project_name, project_scope = classify_project(placement_name)
+                    project_bucket = by_project.setdefault(project_name, empty_project_bucket(project_scope))
+                    project_bucket["impressions"] += 1
+                    project_channel_bucket = (
+                        project_bucket["channels"][channel] if channel else project_bucket["unclassified"]
+                    )
+                    project_channel_bucket["impressions"] += 1
+                    if source_name:
+                        project_channel_bucket["sources"].add(source_name)
+
                     device_id = str(row.get("InteractionDeviceID") or "").strip()
                     if not device_id:
                         continue
@@ -278,10 +350,15 @@ def process_download(
                     chunk_with_device += 1
                     counters["impressionsWithDevice"] += 1
                     total_devices.add(h)
+
                     source_bucket["impressionsWithDevice"] += 1
                     source_bucket["devices"].add(h)
                     channel_bucket["impressionsWithDevice"] += 1
                     channel_bucket["devices"].add(h)
+                    project_bucket["impressionsWithDevice"] += 1
+                    project_bucket["devices"].add(h)
+                    project_channel_bucket["impressionsWithDevice"] += 1
+                    project_channel_bucket["devices"].add(h)
 
     return {"rows": chunk_rows, "rowsWithDevice": chunk_with_device}
 
@@ -299,6 +376,29 @@ def serialize_bucket(name: str, bucket: dict) -> dict:
     }
 
 
+def serialize_project(name: str, bucket: dict) -> dict:
+    reach = len(bucket["devices"])
+    impressions = int(bucket["impressions"])
+    channel_rows = [serialize_bucket(channel, bucket["channels"][channel]) for channel in CHANNEL_ORDER]
+    channel_rows = [row for row in channel_rows if row["impressions"] > 0]
+    project_unclassified = serialize_bucket("Не классифицировано", bucket["unclassified"])
+    return {
+        "project": name,
+        "scope": bucket["scope"],
+        "impressions": impressions,
+        "impressionsWithDevice": int(bucket["impressionsWithDevice"]),
+        "reach": reach,
+        "frequency": round(impressions / reach, 4) if reach else None,
+        "byChannel": channel_rows,
+        "unclassified": project_unclassified if project_unclassified["impressions"] else None,
+    }
+
+
+def project_sort_key(row: dict) -> tuple:
+    scope_rank = {"object": 0, "brand": 1, "unassigned": 2}.get(row.get("scope"), 3)
+    return (scope_rank, -int(row.get("impressions") or 0), str(row.get("project") or "").casefold())
+
+
 def main() -> None:
     token = os.environ.get("TARGETADS_TOKEN", "").strip()
     if not token:
@@ -309,6 +409,7 @@ def main() -> None:
     total_devices: set[int] = set()
     by_group: dict[str, dict] = {}
     by_channel = {name: empty_channel_bucket() for name in CHANNEL_ORDER}
+    by_project: dict[str, dict] = {}
     unclassified = empty_channel_bucket()
     counters = {
         "impressions": 0,
@@ -337,6 +438,7 @@ def main() -> None:
             total_devices,
             by_group,
             by_channel,
+            by_project,
             unclassified,
             counters,
         )
@@ -375,14 +477,17 @@ def main() -> None:
 
     channel_rows = [serialize_bucket(name, by_channel[name]) for name in CHANNEL_ORDER]
     unclassified_row = serialize_bucket("Не классифицировано", unclassified)
+    project_rows = [serialize_project(name, bucket) for name, bucket in by_project.items()]
+    project_rows.sort(key=project_sort_key)
 
     total_reach = len(total_devices)
     result = {
         "period": {"from": DATE_FROM.isoformat(), "to": DATE_TO.isoformat()},
         "projectId": project_id,
         "method": "Target Ads Raw Data API v2, Impression events; monthly union of InteractionDeviceID across 3-day jobs",
-        "important": "Reach is deduplicated independently for Total, each media channel and each source. Do not sum reach rows to obtain Total. Frequency = impressions / deduplicated device reach.",
+        "important": "Reach is deduplicated independently for Total, each media channel, each object, each object-channel pair and each source. Do not sum Reach rows to obtain parent totals. Frequency = impressions / deduplicated device reach.",
         "channelClassificationVersion": "v1-2026-08-17",
+        "projectClassificationVersion": "v1-2026-08-17",
         "channelClassificationNotes": {
             "Programmatic": "Roxot, Astralab, Buzzoola, Mobidriven, Adspector, q.bid, Innovation Lab, Adheads, VOX, Digital Alliance, SOLTA, Plazkart, OneTarget",
             "Smart TV": "MTS, Streamingads, Rutube",
@@ -390,6 +495,7 @@ def main() -> None:
             "Target": "VK Ads / ВКР placements",
             "Медийка": "Other identified media sources, including YandexMI and non-Market UrbanAds placements",
         },
+        "projectClassificationNotes": "Known Level development names are normalized; regional placements are rolled into the same object. Brand and unknown placement prefixes are kept separately and never silently discarded.",
         "placementMetaCount": len(placement_meta),
         "total": {
             "label": "Level Group",
@@ -400,6 +506,7 @@ def main() -> None:
             "deviceIdCoverage": round(counters["impressionsWithDevice"] / counters["impressions"], 6) if counters["impressions"] else None,
         },
         "byChannel": channel_rows,
+        "byProject": project_rows,
         "unclassified": unclassified_row,
         "bySource": source_rows,
         "unknownPlacementImpressions": counters["unknownPlacementImpressions"],
@@ -409,7 +516,12 @@ def main() -> None:
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         json.dumps(
-            {"total": result["total"], "byChannel": channel_rows, "unclassified": unclassified_row},
+            {
+                "total": result["total"],
+                "byChannel": channel_rows,
+                "projectCount": len(project_rows),
+                "unclassified": unclassified_row,
+            },
             ensure_ascii=False,
         ),
         flush=True,
