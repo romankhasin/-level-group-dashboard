@@ -26,6 +26,7 @@ DATA_DIR = ROOT / "data"
 METRIKA_HISTORY_PATH = DATA_DIR / "metrika.json"
 TARGETADS_HISTORY_PATH = DATA_DIR / "targetads.json"
 LATEST_PATH = DATA_DIR / "latest.json"
+LATEST_SUMMARY_PATH = DATA_DIR / "latest-summary.json"
 STATUS_PATH = DATA_DIR / "status.json"
 GOOGLE_ARCHIVE_PATH = DATA_DIR / "google_archive.json"
 JOURNAL_PATH = ROOT / "journal.html"
@@ -155,6 +156,33 @@ def write_json(path: Path, payload: object) -> None:
         encoding="utf-8",
     )
     temporary.replace(path)
+
+
+def build_startup_summary(latest: dict) -> dict:
+    """Return the tiny, safe-to-fetch payload used for the dashboard shell.
+
+    Detailed Metrika and verifier rows intentionally stay in ``latest.json``.
+    They are only downloaded after a person asks to open the detailed report.
+    """
+    raw_rows = latest.get("rawRows") or []
+    verifier_rows = latest.get("verifierRows") or []
+    return {
+        "version": 1,
+        "generatedAt": latest.get("generatedAt"),
+        "period": latest.get("period") or {},
+        "sourceFile": latest.get("sourceFile"),
+        "status": {
+            "targetads": {
+                "enabled": bool((latest.get("status") or {}).get("targetads", {}).get("enabled")),
+                "mode": (latest.get("status") or {}).get("targetads", {}).get("mode"),
+            }
+        },
+        "counts": {
+            "metrikaRows": len(raw_rows),
+            "verifierRows": len(verifier_rows),
+        },
+        "detailUrl": "data/latest.json",
+    }
 
 
 def date_chunks(start: dt.date, end: dt.date, days: int = 31):
@@ -1152,6 +1180,7 @@ def main() -> None:
         },
     }
     write_json(LATEST_PATH, latest)
+    write_json(LATEST_SUMMARY_PATH, build_startup_summary(latest))
     write_json(STATUS_PATH, {"generatedAt": generated_at, **latest["status"]})
     JOURNAL_PATH.write_text(journal_html(journal_rows, generated_at), encoding="utf-8")
 

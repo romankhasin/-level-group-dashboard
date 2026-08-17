@@ -8,7 +8,7 @@ on:
       - ".github/workflows/export-metrika-2025.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: export-metrika-2025
@@ -266,11 +266,3 @@ jobs:
           name: metrika-2025-reports
           path: reports/metrika_2025
           retention-days: 30
-
-      - name: Commit reports
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports/metrika_2025
-          git commit -m "Export Metrika reports for 2025"
-          git push

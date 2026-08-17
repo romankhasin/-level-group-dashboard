@@ -1,0 +1,10 @@
+# Keep operational source data out of the GitHub Pages publication. The
+# dashboard fetches only data/latest-summary.json at start and data/latest.json
+# on demand; these exclusions are neither part of the public site nor needed
+# for current dashboard calculations.
+exclude:
+  - data/fraud
+  - data/metrika.json
+  - data/targetads.json
+  - reports
+  - antifraud_prg_53197618

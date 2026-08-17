@@ -3182,6 +3182,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       <div class="panel-disclosure">
         <button class="panel-disclosure-button" id="toggleBudgetMetrics" type="button" aria-pressed="false">Скрыть бюджеты</button>
         <button class="panel-disclosure-button" id="toggleTechnicalPanel" type="button" aria-expanded="false" aria-controls="technicalPanel">Показать ручную загрузку</button>
+        <button class="panel-disclosure-button" id="loadDashboardDetails" type="button" hidden>Загрузить детали отчёта</button>
       </div>
       <div class="collapsible-panel" id="technicalPanel" hidden>
       <div class="upload-grid">
@@ -9465,6 +9466,46 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       refreshDashboard();
     }
 
+    let STARTUP_SUMMARY = null;
+
+    function applyStartupSummary(summary) {
+      STARTUP_SUMMARY = summary || null;
+      if (!summary) return;
+
+      const period = summary.period || {};
+      const status = document.getElementById("uploadStatus");
+      const button = document.getElementById("loadDashboardDetails");
+      const summaryText = document.getElementById("executiveSummary");
+      const badge = document.getElementById("periodBadge");
+      const metrikaRows = Number(summary.counts && summary.counts.metrikaRows) || 0;
+      const verifierRows = Number(summary.counts && summary.counts.verifierRows) || 0;
+
+      if (badge && period.from && period.to) {
+        badge.textContent = `Сводка · ${formatDate(period.from)} — ${formatDate(period.to)}`;
+      }
+      if (status) {
+        status.textContent = `Готова компактная сводка: ${formatNumber(metrikaRows)} строк Метрики и ${formatNumber(verifierRows)} строк площадок. Детали не загружены.`;
+        status.style.color = "var(--muted)";
+      }
+      if (summaryText) {
+        summaryText.textContent = "Первый экран загружен без тяжёлых исходных данных. Нажмите «Загрузить детали отчёта», чтобы открыть разрезы по объектам, площадкам, периодам и экспорт.";
+      }
+      if (button) button.hidden = false;
+    }
+
+    async function loadStartupSummary() {
+      if (EMBEDDED_REPORT_DATA || window.location.protocol === "file:") return false;
+      try {
+        const response = await fetch(`data/latest-summary.json?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        applyStartupSummary(await response.json());
+        return true;
+      } catch (error) {
+        console.warn("Не удалось загрузить компактную сводку:", error);
+        return false;
+      }
+    }
+
     async function loadAutomaticReportData() {
       if (EMBEDDED_REPORT_DATA || window.location.protocol === "file:") return false;
 
@@ -9746,7 +9787,20 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     if (ARCHIVE_METRIKA_FILES.length) rebuildMetrikaRowsFromFiles();
 
     applyEmbeddedReportData();
-    loadAutomaticReportData();
+    loadStartupSummary();
+    const loadDetailsButton = document.getElementById("loadDashboardDetails");
+    if (loadDetailsButton) {
+      loadDetailsButton.addEventListener("click", async () => {
+        loadDetailsButton.disabled = true;
+        loadDetailsButton.textContent = "Загружаем детали…";
+        const loaded = await loadAutomaticReportData();
+        loadDetailsButton.hidden = loaded;
+        if (!loaded) {
+          loadDetailsButton.disabled = false;
+          loadDetailsButton.textContent = "Повторить загрузку деталей";
+        }
+      });
+    }
     document.addEventListener("click", event => {
       const target = event.target;
 
