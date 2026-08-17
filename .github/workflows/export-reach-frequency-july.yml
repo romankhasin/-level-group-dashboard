@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/export-reach-frequency-july.yml"
-      - "scripts/export_reach_frequency_july_roaring.py"
+      - "scripts/export_reach_frequency_july_leaf.py"
 
 permissions:
   contents: write
@@ -35,7 +35,7 @@ jobs:
         env:
           TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
           TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
-        run: python scripts/export_reach_frequency_july_roaring.py
+        run: python scripts/export_reach_frequency_july_leaf.py
 
       - name: Commit export
         run: |
