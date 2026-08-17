@@ -3416,7 +3416,6 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       <section class="article-dashboard" id="articleDashboard" aria-live="polite"></section>
     </div>
   </main>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
 
     /*
@@ -3446,6 +3445,21 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       requiredMetricColumns: ["UTM Campaign", "Дата визита", "Визиты", "Отказы", "Время на сайте"],
       requiredTargetAdsColumns: ["Креатив", "Показы", "Клики", "GIVT", "SIVT"]
     };
+
+    let xlsxLibraryPromise = null;
+    function loadXlsxLibrary() {
+      if (window.XLSX) return Promise.resolve(window.XLSX);
+      if (xlsxLibraryPromise) return xlsxLibraryPromise;
+      xlsxLibraryPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+        script.async = true;
+        script.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error("Библиотека Excel не загрузилась."));
+        script.onerror = () => reject(new Error("Не удалось загрузить библиотеку Excel."));
+        document.head.appendChild(script);
+      });
+      return xlsxLibraryPromise;
+    }
 
 
     const PROJECT_MAP = {
@@ -5041,9 +5055,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         const file = event.target.files && event.target.files[0];
         if (!file) return;
 
-        if (!window.XLSX) {
-          throw new Error("Модуль чтения Excel не загрузился. Проверьте интернет-соединение и откройте файл заново.");
-        }
+        await loadXlsxLibrary();
 
         status.textContent = `Читаю ${file.name}…`;
         status.style.color = "var(--muted)";
@@ -9352,9 +9364,9 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       });
     }
 
-    function downloadExcelStatistics() {
+    async function downloadExcelStatistics() {
       try {
-        if (!window.XLSX) throw new Error("Библиотека Excel не загрузилась. Проверьте подключение к интернету.");
+        await loadXlsxLibrary();
 
         const from = document.getElementById("excelPeriodFrom").value;
         const to = document.getElementById("excelPeriodTo").value;
