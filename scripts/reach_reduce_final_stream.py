@@ -5,7 +5,7 @@ import argparse,gc,json,pickle,re
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from pyroaring import BitMap64
-ORDER=["Programmatic","Smart TV","Маркетплейсы","Медийка","Target"]
+ORDER=["Programmatic","Медийка","Маркетплейсы"]
 def safe_name(v): return re.sub(r"[^0-9A-Za-zА-Яа-я_-]+","_",v).strip("_")[:120] or "project"
 def metric(label,impressions,with_device,devices):
     reach=len(devices)
@@ -48,7 +48,12 @@ def main():
     by_channel.sort(key=lambda r:ORDER.index(r["channel"]) if r["channel"] in ORDER else 99)
     rows.sort(key=lambda r:({"object":0,"brand":1,"unassigned":2}.get(r["scope"],3),-r["impressions"],r["project"].casefold()))
     tr=len(global_total)
-    result={"period":{"from":"2026-07-01","to":"2026-07-31"},"projectId":12787,"method":"Target Ads Raw Data API v2; parallel chunk/channel MapReduce; exact monthly unions of 64-bit hashed InteractionDeviceID using Roaring Bitmap","important":"Reach is deduplicated independently for Total, each channel, each object and each object×channel pair. Do not sum child Reach rows.","channelClassificationVersion":"v1-2026-08-17","projectClassificationVersion":"v1-2026-08-17","total":{"label":"Level Group","impressions":total_imps,"impressionsWithDevice":total_with,"reach":tr,"frequency":round(total_imps/tr,4) if tr else None,"deviceIdCoverage":round(total_with/total_imps,6) if total_imps else None},"byChannel":by_channel,"byProject":rows,"unclassified":unclassified,"unknownPlacementImpressions":int(unclassified["impressions"]) if unclassified else 0}
+    token_impressions={"prg":0,"med":0,"mrk":0}
+    channel_to_token={"Programmatic":"prg","Медийка":"med","Маркетплейсы":"mrk"}
+    for row in by_channel: token_impressions[channel_to_token[row["channel"]]]=row["impressions"]
+    recognized=sum(token_impressions.values())
+    no_token=int(unclassified["impressions"]) if unclassified else 0
+    result={"period":{"from":"2026-07-01","to":"2026-07-31"},"projectId":12787,"method":"Target Ads Raw Data API v2; memory-safe parallel chunk/channel MapReduce; exact monthly unions of 64-bit hashed InteractionDeviceID using Roaring Bitmap","important":"Reach is deduplicated independently for Total, each channel, each object and each object×channel pair. Do not sum child Reach rows.","channelClassificationVersion":"v2-2026-08-17-token-naming","projectClassificationVersion":"v1-2026-08-17","channelClassificationNotes":{"Programmatic":"Target Ads naming token prg","Медийка":"Target Ads naming token med","Маркетплейсы":"Target Ads naming token mrk"},"total":{"label":"Level Group","impressions":total_imps,"impressionsWithDevice":total_with,"reach":tr,"frequency":round(total_imps/tr,4) if tr else None,"deviceIdCoverage":round(total_with/total_imps,6) if total_imps else None},"byChannel":by_channel,"byProject":rows,"unclassified":unclassified,"unknownPlacementImpressions":int(unclassified["impressions"]) if unclassified else 0,"channelTokenDiagnostics":{"classifier":"Target Ads placement_name → marketing_name → campaign_name; source_name is not used","mapping":{"prg":"Programmatic","med":"Медийка","mrk":"Маркетплейсы"},"recognizedTokenImpressions":recognized,"noRecognizedChannelTokenImpressions":no_token,"tokenImpressions":token_impressions,"tokenCoverage":round(recognized/total_imps,6) if total_imps else 0.0}}
     out=Path(a.out); out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({"total":result["total"],"projects":len(rows)},ensure_ascii=False),flush=True)
 if __name__=="__main__": main()
