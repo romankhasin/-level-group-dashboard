@@ -6,7 +6,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/export-reach-frequency-july.yml"
-      - "scripts/export_reach_frequency_july_fast2.py"
+      - "scripts/reach_frequency_chunk_leafonly.py"
+      - "scripts/reach_frequency_merge_leafonly.py"
       - "scripts/export_reach_frequency_july_fast.py"
       - "scripts/export_reach_frequency_july_leaf.py"
 
@@ -18,27 +19,59 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  export:
+  chunk:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 11
+      matrix:
+        include:
+          - { idx: "01", start: "2026-07-01", end: "2026-07-03" }
+          - { idx: "02", start: "2026-07-04", end: "2026-07-06" }
+          - { idx: "03", start: "2026-07-07", end: "2026-07-09" }
+          - { idx: "04", start: "2026-07-10", end: "2026-07-12" }
+          - { idx: "05", start: "2026-07-13", end: "2026-07-15" }
+          - { idx: "06", start: "2026-07-16", end: "2026-07-18" }
+          - { idx: "07", start: "2026-07-19", end: "2026-07-21" }
+          - { idx: "08", start: "2026-07-22", end: "2026-07-24" }
+          - { idx: "09", start: "2026-07-25", end: "2026-07-27" }
+          - { idx: "10", start: "2026-07-28", end: "2026-07-30" }
+          - { idx: "11", start: "2026-07-31", end: "2026-07-31" }
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install bitmap dependency
-        run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
-
-      - name: Export July Reach/Frequency
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - name: Process chunk
         env:
           TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
           TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
-        run: python scripts/export_reach_frequency_july_fast2.py
+        run: python scripts/reach_frequency_chunk_leafonly.py --from-date "${{ matrix.start }}" --to-date "${{ matrix.end }}" --out "chunk-${{ matrix.idx }}.pkl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reach-chunk-${{ matrix.idx }}
+          path: chunk-${{ matrix.idx }}.pkl
+          compression-level: 0
+          retention-days: 1
 
+  aggregate:
+    needs: chunk
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: reach-chunk-*
+          path: chunks
+          merge-multiple: true
+      - run: python scripts/reach_frequency_merge_leafonly.py --input chunks --out data/reach_frequency_july_2026.json
       - name: Commit export
         run: |
           git config user.name "github-actions[bot]"
@@ -52,9 +85,7 @@ jobs:
               if git push; then
                 exit 0
               fi
-              echo "main changed during export; rebasing (attempt ${attempt})"
               git pull --rebase origin main
             done
-            echo "Could not publish July reach-frequency export"
             exit 1
           fi
