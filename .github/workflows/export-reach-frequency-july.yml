@@ -8,6 +8,8 @@ on:
       - ".github/workflows/export-reach-frequency-july.yml"
       - "scripts/reach_frequency_chunk_leafonly.py"
       - "scripts/reach_frequency_merge_leafonly.py"
+      - "scripts/reach_reduce_channel.py"
+      - "scripts/reach_reduce_final_stream.py"
       - "scripts/export_reach_frequency_july_fast.py"
       - "scripts/export_reach_frequency_july_leaf.py"
       - "scripts/reach_frequency_chunk_leafonly.py"
