@@ -65,5 +65,44 @@
       </nav>`;
   };
 
+  const injectReachPortalCard = () => {
+    const portalMount = document.querySelector('[data-level-navigation][data-active="portal"]');
+    const grid = document.querySelector('.tools-grid');
+    if (!portalMount || !grid || grid.querySelector('[data-tool="reach"]')) return;
+
+    const card = document.createElement('a');
+    card.className = 'tool-card';
+    card.dataset.tool = 'reach';
+    card.href = settings.links.reach;
+    card.style.setProperty('--card-accent', 'rgba(156, 107, 67, 0.16)');
+    card.innerHTML = `
+      <div class="tool-card__top">
+        <span class="tool-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/><path d="M4 12H2"/><path d="M22 12h-2"/></svg>
+        </span>
+        <span class="tool-card__status">Работает</span>
+      </div>
+      <div class="tool-card__bottom">
+        <span class="tool-card__category">Охват и частота</span>
+        <h3>Охваты</h3>
+        <p class="tool-card__description">Дедуплицированный Reach и Frequency по Level Group, объектам и медиаканалам на основе Device ID из Target Ads.</p>
+        <div class="tool-card__features">
+          <span class="tool-card__feature">Total Level Group</span>
+          <span class="tool-card__feature">По объектам</span>
+          <span class="tool-card__feature">По каналам</span>
+        </div>
+        <span class="tool-card__action">Открыть отчёт <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+      </div>`;
+    grid.appendChild(card);
+
+    const value = document.querySelector('.hero-summary__value');
+    const note = document.querySelector('.hero-summary__note');
+    const heroCopy = document.querySelector('.hero-copy');
+    if (value) value.textContent = '4';
+    if (note) note.textContent = 'Четыре рабочих инструмента с общей навигацией.';
+    if (heroCopy) heroCopy.textContent = 'Отчёт по размещениям, охваты и частота, проверка креативов и новости рынка — в одной системе.';
+  };
+
   document.querySelectorAll("[data-level-navigation]").forEach(renderNavigation);
+  injectReachPortalCard();
 })();
