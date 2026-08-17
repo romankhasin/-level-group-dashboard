@@ -8,12 +8,8 @@ on:
       - ".github/workflows/export-reach-frequency-july.yml"
       - "scripts/reach_frequency_chunk_leafonly.py"
       - "scripts/reach_frequency_merge_leafonly.py"
-      - "scripts/reach_reduce_channel.py"
-      - "scripts/reach_reduce_final_stream.py"
       - "scripts/export_reach_frequency_july_fast.py"
       - "scripts/export_reach_frequency_july_leaf.py"
-      - "scripts/reach_frequency_chunk_leafonly.py"
-      - "scripts/reach_frequency_merge_leafonly.py"
 
 permissions:
   contents: write
@@ -60,19 +56,10 @@ jobs:
           compression-level: 0
           retention-days: 1
 
-  reduce-channel:
+  aggregate:
     needs: chunk
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      max-parallel: 4
-      matrix:
-        include:
-          - { key: "programmatic", channel: "Programmatic" }
-          - { key: "media", channel: "Медийка" }
-          - { key: "marketplaces", channel: "Маркетплейсы" }
-          - { key: "unclassified", channel: "__UNC__" }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -84,30 +71,7 @@ jobs:
           pattern: reach-chunk-*
           path: chunks
           merge-multiple: true
-      - run: python scripts/reach_reduce_channel.py --input chunks --channel "${{ matrix.channel }}" --key "${{ matrix.key }}" --out "monthly-${{ matrix.key }}.pkl"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: monthly-${{ matrix.key }}
-          path: monthly-${{ matrix.key }}.pkl
-          compression-level: 0
-          retention-days: 1
-
-  aggregate:
-    needs: reduce-channel
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: monthly-*
-          path: monthly
-          merge-multiple: true
-      - run: python scripts/reach_reduce_final_stream.py --input monthly --out data/reach_frequency_july_2026.json
+      - run: python scripts/reach_frequency_merge_leafonly.py --input chunks --out data/reach_frequency_july_2026.json
       - name: Commit export
         run: |
           git config user.name "github-actions[bot]"
