@@ -3,8 +3,8 @@
 
 Target Ads Raw Data v2 accepts at most three days per async job. This exporter
 creates all non-overlapping three-day July jobs first so Target Ads can process
-them in parallel, then streams each gzip CSV and keeps one union of hashed
-device IDs across all windows so monthly reach is deduplicated correctly.
+them in parallel, then streams each gzip CSV and keeps unions of hashed device
+IDs for the whole month, by source, and by Level Group media channel.
 """
 
 from __future__ import annotations
@@ -30,6 +30,28 @@ DATE_TO = dt.date(2026, 7, 31)
 POLL_SECONDS = 5
 JOB_TIMEOUT_SECONDS = 20 * 60
 CHUNK_DAYS = 3
+
+CHANNEL_ORDER = ["Programmatic", "Smart TV", "Маркетплейсы", "Медийка", "Target"]
+
+PROGRAMMATIC_SOURCES = {
+    "roxot",
+    "astralab",
+    "buzzoola",
+    "mobidriven",
+    "adspector",
+    "qbid",
+    "qbid баннеры",
+    "innovation lab",
+    "adheads",
+    "vox",
+    "digital alliance",
+    "solta",
+    "plazkart",
+    "onetarget",
+}
+SMART_TV_SOURCES = {"мтс", "streamingads", "rutube"}
+MARKETPLACE_SOURCES = {"ozon", "avito", "wildberries", "пятерочка"}
+TARGET_SOURCES = {"вкр", "vk", "vk ads", "vkads"}
 
 
 def api_url(path: str, project_id: int, extra: dict[str, str] | None = None) -> str:
@@ -106,6 +128,32 @@ def load_placement_meta(token: str, project_id: int) -> dict[str, dict]:
     return result
 
 
+def classify_channel(source_name: str, placement_name: str) -> str | None:
+    source = source_name.casefold().strip()
+    placement = placement_name.casefold().strip()
+
+    # Placement-level rules must run before source-level rules.
+    if "market yandex" in placement or "яндекс маркет" in placement:
+        return "Маркетплейсы"
+    if "vkads" in placement or "vk ads" in placement or "вк ads" in placement:
+        return "Target"
+
+    if source in TARGET_SOURCES or source.startswith("вкр"):
+        return "Target"
+    if source in MARKETPLACE_SOURCES:
+        return "Маркетплейсы"
+    if source in SMART_TV_SOURCES:
+        return "Smart TV"
+    if source in PROGRAMMATIC_SOURCES:
+        return "Programmatic"
+
+    # UrbanAds contains both Yandex Market and Yandex Go placements. Market is
+    # captured above; the remaining UrbanAds placements are treated as media.
+    if source:
+        return "Медийка"
+    return None
+
+
 def date_chunks(start: dt.date, end: dt.date):
     cursor = start
     while cursor <= end:
@@ -165,11 +213,17 @@ def device_hash(value: str) -> int:
     return int.from_bytes(hashlib.blake2b(value.encode("utf-8"), digest_size=8).digest(), "big")
 
 
+def empty_channel_bucket() -> dict:
+    return {"impressions": 0, "impressionsWithDevice": 0, "devices": set(), "sources": set()}
+
+
 def process_download(
     download_url: str,
     placement_meta: dict[str, dict],
     total_devices: set[int],
     by_group: dict[str, dict],
+    by_channel: dict[str, dict],
+    unclassified: dict,
     counters: dict[str, int],
 ) -> dict:
     chunk_rows = 0
@@ -198,7 +252,7 @@ def process_download(
                         source_name = ""
                         counters["unknownPlacementImpressions"] += 1
 
-                    bucket = by_group.setdefault(
+                    source_bucket = by_group.setdefault(
                         group_name,
                         {
                             "source": group_name,
@@ -209,7 +263,13 @@ def process_download(
                             "devices": set(),
                         },
                     )
-                    bucket["impressions"] += 1
+                    source_bucket["impressions"] += 1
+
+                    channel = classify_channel(source_name, placement_name)
+                    channel_bucket = by_channel[channel] if channel else unclassified
+                    channel_bucket["impressions"] += 1
+                    if source_name:
+                        channel_bucket["sources"].add(source_name)
 
                     device_id = str(row.get("InteractionDeviceID") or "").strip()
                     if not device_id:
@@ -218,10 +278,25 @@ def process_download(
                     chunk_with_device += 1
                     counters["impressionsWithDevice"] += 1
                     total_devices.add(h)
-                    bucket["impressionsWithDevice"] += 1
-                    bucket["devices"].add(h)
+                    source_bucket["impressionsWithDevice"] += 1
+                    source_bucket["devices"].add(h)
+                    channel_bucket["impressionsWithDevice"] += 1
+                    channel_bucket["devices"].add(h)
 
     return {"rows": chunk_rows, "rowsWithDevice": chunk_with_device}
+
+
+def serialize_bucket(name: str, bucket: dict) -> dict:
+    reach = len(bucket["devices"])
+    impressions = int(bucket["impressions"])
+    return {
+        "channel": name,
+        "impressions": impressions,
+        "impressionsWithDevice": int(bucket["impressionsWithDevice"]),
+        "reach": reach,
+        "frequency": round(impressions / reach, 4) if reach else None,
+        "sources": sorted(bucket["sources"], key=str.casefold),
+    }
 
 
 def main() -> None:
@@ -233,24 +308,18 @@ def main() -> None:
     placement_meta = load_placement_meta(token, project_id)
     total_devices: set[int] = set()
     by_group: dict[str, dict] = {}
+    by_channel = {name: empty_channel_bucket() for name in CHANNEL_ORDER}
+    unclassified = empty_channel_bucket()
     counters = {
         "impressions": 0,
         "impressionsWithDevice": 0,
         "unknownPlacementImpressions": 0,
     }
 
-    # Submit all short jobs first so Target Ads can process the windows concurrently.
     pending_jobs: list[dict] = []
     for index, (start, end) in enumerate(date_chunks(DATE_FROM, DATE_TO), start=1):
         job_id = create_raw_job(token, project_id, start, end)
-        pending_jobs.append(
-            {
-                "chunk": index,
-                "from": start,
-                "to": end,
-                "jobId": job_id,
-            }
-        )
+        pending_jobs.append({"chunk": index, "from": start, "to": end, "jobId": job_id})
         print(
             json.dumps(
                 {"submitted": index, "from": start.isoformat(), "to": end.isoformat(), "jobId": job_id},
@@ -262,7 +331,15 @@ def main() -> None:
     jobs: list[dict] = []
     for pending in pending_jobs:
         download_url = wait_job(token, project_id, pending["jobId"])
-        chunk_stats = process_download(download_url, placement_meta, total_devices, by_group, counters)
+        chunk_stats = process_download(
+            download_url,
+            placement_meta,
+            total_devices,
+            by_group,
+            by_channel,
+            unclassified,
+            counters,
+        )
         jobs.append(
             {
                 "from": pending["from"].isoformat(),
@@ -273,11 +350,7 @@ def main() -> None:
         )
         print(
             json.dumps(
-                {
-                    "completed": pending["chunk"],
-                    **chunk_stats,
-                    "uniqueDevicesSoFar": len(total_devices),
-                },
+                {"completed": pending["chunk"], **chunk_stats, "uniqueDevicesSoFar": len(total_devices)},
                 ensure_ascii=False,
             ),
             flush=True,
@@ -300,27 +373,47 @@ def main() -> None:
         )
     source_rows.sort(key=lambda row: row["impressions"], reverse=True)
 
+    channel_rows = [serialize_bucket(name, by_channel[name]) for name in CHANNEL_ORDER]
+    unclassified_row = serialize_bucket("Не классифицировано", unclassified)
+
     total_reach = len(total_devices)
     result = {
         "period": {"from": DATE_FROM.isoformat(), "to": DATE_TO.isoformat()},
         "projectId": project_id,
         "method": "Target Ads Raw Data API v2, Impression events; monthly union of InteractionDeviceID across 3-day jobs",
-        "important": "Reach is deduplicated across all July chunks. Frequency = all July impression events / unique July device IDs. Rows without InteractionDeviceID remain in impressions but cannot contribute to reach.",
+        "important": "Reach is deduplicated independently for Total, each media channel and each source. Do not sum reach rows to obtain Total. Frequency = impressions / deduplicated device reach.",
+        "channelClassificationVersion": "v1-2026-08-17",
+        "channelClassificationNotes": {
+            "Programmatic": "Roxot, Astralab, Buzzoola, Mobidriven, Adspector, q.bid, Innovation Lab, Adheads, VOX, Digital Alliance, SOLTA, Plazkart, OneTarget",
+            "Smart TV": "MTS, Streamingads, Rutube",
+            "Маркетплейсы": "Ozon, Avito, Wildberries, Пятерочка and Yandex Market placements",
+            "Target": "VK Ads / ВКР placements",
+            "Медийка": "Other identified media sources, including YandexMI and non-Market UrbanAds placements",
+        },
         "placementMetaCount": len(placement_meta),
         "total": {
+            "label": "Level Group",
             "impressions": counters["impressions"],
             "impressionsWithDevice": counters["impressionsWithDevice"],
             "reach": total_reach,
             "frequency": round(counters["impressions"] / total_reach, 4) if total_reach else None,
             "deviceIdCoverage": round(counters["impressionsWithDevice"] / counters["impressions"], 6) if counters["impressions"] else None,
         },
+        "byChannel": channel_rows,
+        "unclassified": unclassified_row,
         "bySource": source_rows,
         "unknownPlacementImpressions": counters["unknownPlacementImpressions"],
         "jobs": jobs,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"total": result["total"], "sourceCount": len(source_rows)}, ensure_ascii=False), flush=True)
+    print(
+        json.dumps(
+            {"total": result["total"], "byChannel": channel_rows, "unclassified": unclassified_row},
+            ensure_ascii=False,
+        ),
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
