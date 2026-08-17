@@ -1,0 +1,79 @@
+name: Reduce July Reach
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/reduce-july-reach.yml"
+      - "scripts/reach_reduce_channel.py"
+      - "scripts/reach_reduce_final.py"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  reduce-channel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - { key: "programmatic", channel: "Programmatic" }
+          - { key: "smart-tv", channel: "Smart TV" }
+          - { key: "marketplaces", channel: "Маркетплейсы" }
+          - { key: "media", channel: "Медийка" }
+          - { key: "target", channel: "Target" }
+          - { key: "unclassified", channel: "__UNC__" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: reach-chunk-*
+          path: chunks
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          run-id: 32051796205
+      - run: python scripts/reach_reduce_channel.py --input chunks --channel "${{ matrix.channel }}" --key "${{ matrix.key }}" --out "monthly-${{ matrix.key }}.pkl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: monthly-${{ matrix.key }}
+          path: monthly-${{ matrix.key }}.pkl
+          compression-level: 0
+          retention-days: 1
+
+  finalize:
+    needs: reduce-channel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: monthly-*
+          path: monthly
+          merge-multiple: true
+      - run: python scripts/reach_reduce_final.py --input monthly --out data/reach_frequency_july_2026.json
+      - name: Commit export
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reach_frequency_july_2026.json
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Export July Reach Frequency by object"
+            git pull --rebase origin main
+            git push
+          fi
