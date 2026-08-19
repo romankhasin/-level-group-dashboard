@@ -31,7 +31,7 @@ CHUNK_DAYS = 3
 POLL_SECONDS = 5
 JOB_TIMEOUT_SECONDS = 20 * 60
 
-CHANNEL_ORDER = ["Programmatic", "Smart TV", "Маркетплейсы", "Медийка", "Target"]
+CHANNEL_ORDER = []
 PROGRAMMATIC_SOURCES = {"roxot","astralab","buzzoola","mobidriven","adspector","qbid","qbid баннеры","innovation lab","adheads","vox","digital alliance","solta","plazkart","onetarget"}
 SMART_TV_SOURCES = {"мтс","streamingads","rutube"}
 MARKETPLACE_SOURCES = {"ozon","avito","wildberries","пятерочка"}
@@ -81,14 +81,7 @@ def load_meta(token: str, project_id: int) -> dict[str,dict]:
 
 
 def classify_channel(source_name: str, placement_name: str) -> str | None:
-    source = source_name.casefold().strip(); placement = placement_name.casefold().strip()
-    if "market yandex" in placement or "яндекс маркет" in placement: return "Маркетплейсы"
-    if "vkads" in placement or "vk ads" in placement or "вк ads" in placement: return "Target"
-    if source in TARGET_SOURCES or source.startswith("вкр"): return "Target"
-    if source in MARKETPLACE_SOURCES: return "Маркетплейсы"
-    if source in SMART_TV_SOURCES: return "Smart TV"
-    if source in PROGRAMMATIC_SOURCES: return "Programmatic"
-    return "Медийка" if source else None
+    return None
 
 
 def classify_project(placement_name: str) -> tuple[str,str]:
