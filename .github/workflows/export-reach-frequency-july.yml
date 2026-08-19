@@ -8,6 +8,7 @@ on:
       - ".github/workflows/export-reach-frequency-july.yml"
       - "scripts/reach_frequency_chunk_leafonly.py"
       - "scripts/reach_frequency_merge_leafonly.py"
+      - "scripts/reach_frequency_merge_projects_stream.py"
       - "scripts/export_reach_frequency_july_fast.py"
       - "scripts/export_reach_frequency_july_leaf.py"
 
@@ -71,7 +72,7 @@ jobs:
           pattern: reach-chunk-*
           path: chunks
           merge-multiple: true
-      - run: python scripts/reach_frequency_merge_leafonly.py --input chunks --out data/reach_frequency_july_2026.json
+      - run: python scripts/reach_frequency_merge_projects_stream.py --input chunks --out data/reach_frequency_july_2026.json
       - name: Commit export
         run: |
           git config user.name "github-actions[bot]"
