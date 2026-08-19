@@ -48,33 +48,41 @@ def main() -> None:
         del chunk
 
     rows = []
-    for name, scope in project_scopes.items():
-        devices = BitMap64()
-        impressions = 0
-        with_device = 0
+    project_items = list(project_scopes.items())
+    batch_size = 5
+    for batch_start in range(0, len(project_items), batch_size):
+        batch = project_items[batch_start:batch_start + batch_size]
+        accumulators = {
+            name: {"scope": scope, "devices": BitMap64(), "impressions": 0, "withDevice": 0}
+            for name, scope in batch
+        }
         for path in files:
             with path.open("rb") as stream:
                 chunk = pickle.load(stream)
-            project = chunk["projects"].get(name)
-            if project:
-                buckets = [*project["channels"].values(), project["unclassified"]]
-                for bucket in buckets:
-                    impressions += bucket["impressions"]
-                    with_device += bucket["withDevice"]
-                    devices |= bucket["devices"]
+            for name, _scope in batch:
+                project = chunk["projects"].get(name)
+                if project:
+                    accumulator = accumulators[name]
+                    buckets = [*project["channels"].values(), project["unclassified"]]
+                    for bucket in buckets:
+                        accumulator["impressions"] += bucket["impressions"]
+                        accumulator["withDevice"] += bucket["withDevice"]
+                        accumulator["devices"] |= bucket["devices"]
             del chunk
-        reach = len(devices)
-        rows.append({
-            "project": name,
-            "scope": scope,
-            "impressions": impressions,
-            "impressionsWithDevice": with_device,
-            "reach": reach,
-            "frequency": round(impressions / reach, 4) if reach else None,
-            "byChannel": [],
-            "unclassified": None,
-        })
-        del devices
+        for name, _scope in batch:
+            accumulator = accumulators[name]
+            reach = len(accumulator["devices"])
+            rows.append({
+                "project": name,
+                "scope": accumulator["scope"],
+                "impressions": accumulator["impressions"],
+                "impressionsWithDevice": accumulator["withDevice"],
+                "reach": reach,
+                "frequency": round(accumulator["impressions"] / reach, 4) if reach else None,
+                "byChannel": [],
+                "unclassified": None,
+            })
+        del accumulators
         gc.collect()
 
     rows.sort(key=lambda row: (
