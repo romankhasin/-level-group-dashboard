@@ -2,6 +2,14 @@ name: Export Reach Frequency August 1-16
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/export-reach-frequency-august-1-16.yml"
+      - "scripts/export_reach_frequency_august_leaf.py"
+      - "scripts/export_reach_frequency_august_fast.py"
+      - "scripts/reach_frequency_august_chunk.py"
+      - "scripts/reach_frequency_august_merge.py"
 
 permissions:
   contents: write

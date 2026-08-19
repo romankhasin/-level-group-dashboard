@@ -40,7 +40,7 @@ TOKEN_RE = re.compile(r"(?<![a-z0-9а-я])(" + "|".join(TOKEN_CHANNELS) + r")(?!
 
 PROJECT_ALIASES = [
     ("павелецкая сити","Павелецкая Сити"),
-    ("нижегородская w","Level Нижегородская"),("нижегородская","Level Нижегородская"),
+    ("нижегородская w","Work Нижегородская"),("нижегородская","Level Нижегородская"),
     ("южнопортовая регионы","Level Южнопортовая"),("южнопортовая","Level Южнопортовая"),
     ("мичуринский регионы","Level Мичуринский"),("мичуринский","Level Мичуринский"),
     ("лесной регионы","Level Лесной"),("лесной","Level Лесной"),
@@ -49,9 +49,7 @@ PROJECT_ALIASES = [
     ("мечникова","Level Мечникова"),("свободы","Level Свободы"),
     ("саввинская 27","Level Саввинская"),("саввинская 17","Level Саввинская"),("саввинская","Level Саввинская"),
     ("бауманская","Level Бауманская"),("причальный","Level Причальный"),
-    ("level group","Level Group"),
 ]
-BRAND_ALIASES = [("зонтик","Level Group"),("премиум","Level Premium"),("остатки","Остатки")]
 
 
 def api_url(path: str, project_id: int, extra: dict[str,str] | None = None) -> str:
@@ -100,10 +98,12 @@ def classify_channel(placement_name: str, marketing_name: str = "", campaign_nam
 def classify_project(placement_name: str) -> tuple[str,str]:
     placement = re.sub(r"\s+"," ",placement_name.casefold().replace("ё","е")).strip()
     if not placement: return "Без объекта","unassigned"
+    if "регионы" in placement: return "Регионы","object"
+    if "остатки" in placement: return "Остатки","brand"
+    if "премиум" in placement or "premium" in placement: return "Премиальные коллекции","brand"
+    if "зонтик" in placement or "level group" in placement: return "Левел Групп","brand"
     for alias,label in PROJECT_ALIASES:
-        if alias in placement: return label, "object" if label != "Level Group" else "brand"
-    for alias,label in BRAND_ALIASES:
-        if alias in placement: return label,"brand"
+        if alias in placement: return label,"object"
     prefix = re.split(r"\s*//\s*|\s+/\s+", placement_name, maxsplit=1)[0].strip()
     return (f"Прочее · {prefix}","unassigned") if prefix and len(prefix)<=80 else ("Без объекта","unassigned")
 
