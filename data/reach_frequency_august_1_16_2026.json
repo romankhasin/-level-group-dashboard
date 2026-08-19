@@ -5,15 +5,11 @@
   },
   "projectId": 12787,
   "method": "Target Ads Raw Data API v2; parallel date chunks; exact 64-bit hashed InteractionDeviceID Roaring Bitmap unions",
-  "important": "Reach is deduplicated independently for Total, each channel, each object and each object×channel pair. Do not sum child Reach rows.",
-  "channelClassificationVersion": "v2-2026-08-19-token-based",
-  "projectClassificationVersion": "v1-2026-08-17",
-  "channelClassificationNotes": {
-    "Programmatic": "confirmed Target Ads naming token prg",
-    "Медийка": "confirmed Target Ads naming token med",
-    "Маркетплейсы": "confirmed Target Ads naming token mrk"
-  },
-  "projectClassificationNotes": "Known Level development names are normalized; regional placements roll into the same object. Brand and unknown prefixes remain separate.",
+  "important": "Reach is deduplicated independently for Total and each project. Do not sum project Reach rows.",
+  "channelClassificationVersion": "none-2026-08-19",
+  "projectClassificationVersion": "v2-2026-08-19",
+  "channelClassificationNotes": null,
+  "projectClassificationNotes": "Known Level developments, Work Нижегородская, regional placements, Остатки, Левел Групп and Премиальные коллекции are reported separately.",
   "placementMetaCount": 773,
   "total": {
     "label": "Level Group",
@@ -23,29 +19,7 @@
     "frequency": 2.2895,
     "deviceIdCoverage": 1.0
   },
-  "byChannel": [
-    {
-      "channel": "Programmatic",
-      "impressions": 0,
-      "impressionsWithDevice": 0,
-      "reach": 0,
-      "frequency": null
-    },
-    {
-      "channel": "Медийка",
-      "impressions": 0,
-      "impressionsWithDevice": 0,
-      "reach": 0,
-      "frequency": null
-    },
-    {
-      "channel": "Маркетплейсы",
-      "impressions": 0,
-      "impressionsWithDevice": 0,
-      "reach": 0,
-      "frequency": null
-    }
-  ],
+  "byChannel": [],
   "byProject": [
     {
       "project": "Level Мичуринский",
@@ -55,13 +29,7 @@
       "reach": 4391825,
       "frequency": 1.6005,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 7029003,
-        "impressionsWithDevice": 7029003,
-        "reach": 4391825,
-        "frequency": 1.6005
-      }
+      "unclassified": null
     },
     {
       "project": "Level Южнопортовая",
@@ -71,13 +39,7 @@
       "reach": 2988126,
       "frequency": 2.1996,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 6572770,
-        "impressionsWithDevice": 6572770,
-        "reach": 2988126,
-        "frequency": 2.1996
-      }
+      "unclassified": null
     },
     {
       "project": "Регионы",
@@ -87,13 +49,7 @@
       "reach": 3235569,
       "frequency": 1.5616,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 5052801,
-        "impressionsWithDevice": 5052801,
-        "reach": 3235569,
-        "frequency": 1.5616
-      }
+      "unclassified": null
     },
     {
       "project": "Level Селигерская",
@@ -103,13 +59,7 @@
       "reach": 2700474,
       "frequency": 1.7504,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 4727008,
-        "impressionsWithDevice": 4727008,
-        "reach": 2700474,
-        "frequency": 1.7504
-      }
+      "unclassified": null
     },
     {
       "project": "Павелецкая Сити",
@@ -119,13 +69,7 @@
       "reach": 2693091,
       "frequency": 1.6196,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 4361862,
-        "impressionsWithDevice": 4361862,
-        "reach": 2693091,
-        "frequency": 1.6196
-      }
+      "unclassified": null
     },
     {
       "project": "Level Мечникова",
@@ -135,13 +79,7 @@
       "reach": 1834719,
       "frequency": 2.2713,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 4167224,
-        "impressionsWithDevice": 4167224,
-        "reach": 1834719,
-        "frequency": 2.2713
-      }
+      "unclassified": null
     },
     {
       "project": "Level Звенигородская",
@@ -151,13 +89,7 @@
       "reach": 2217193,
       "frequency": 1.8356,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 4069932,
-        "impressionsWithDevice": 4069932,
-        "reach": 2217193,
-        "frequency": 1.8356
-      }
+      "unclassified": null
     },
     {
       "project": "Level Лесной",
@@ -167,13 +99,7 @@
       "reach": 2180124,
       "frequency": 1.7922,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 3907286,
-        "impressionsWithDevice": 3907286,
-        "reach": 2180124,
-        "frequency": 1.7922
-      }
+      "unclassified": null
     },
     {
       "project": "Level Свободы",
@@ -183,13 +109,7 @@
       "reach": 2088988,
       "frequency": 1.804,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 3768480,
-        "impressionsWithDevice": 3768480,
-        "reach": 2088988,
-        "frequency": 1.804
-      }
+      "unclassified": null
     },
     {
       "project": "Level Войковская",
@@ -199,13 +119,7 @@
       "reach": 2064487,
       "frequency": 1.6237,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 3352155,
-        "impressionsWithDevice": 3352155,
-        "reach": 2064487,
-        "frequency": 1.6237
-      }
+      "unclassified": null
     },
     {
       "project": "Level Воронцовская",
@@ -215,13 +129,7 @@
       "reach": 1361395,
       "frequency": 2.0873,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 2841706,
-        "impressionsWithDevice": 2841706,
-        "reach": 1361395,
-        "frequency": 2.0873
-      }
+      "unclassified": null
     },
     {
       "project": "Work Нижегородская",
@@ -231,13 +139,7 @@
       "reach": 1399292,
       "frequency": 1.9076,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 2669330,
-        "impressionsWithDevice": 2669330,
-        "reach": 1399292,
-        "frequency": 1.9076
-      }
+      "unclassified": null
     },
     {
       "project": "Level Нижегородская",
@@ -247,13 +149,7 @@
       "reach": 680280,
       "frequency": 2.4596,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 1673232,
-        "impressionsWithDevice": 1673232,
-        "reach": 680280,
-        "frequency": 2.4596
-      }
+      "unclassified": null
     },
     {
       "project": "Level Саввинская",
@@ -263,13 +159,7 @@
       "reach": 761854,
       "frequency": 1.2876,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 980950,
-        "impressionsWithDevice": 980950,
-        "reach": 761854,
-        "frequency": 1.2876
-      }
+      "unclassified": null
     },
     {
       "project": "Левел Групп",
@@ -279,13 +169,7 @@
       "reach": 2908875,
       "frequency": 1.7722,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 5155093,
-        "impressionsWithDevice": 5155093,
-        "reach": 2908875,
-        "frequency": 1.7722
-      }
+      "unclassified": null
     },
     {
       "project": "Остатки",
@@ -295,13 +179,7 @@
       "reach": 2968342,
       "frequency": 1.5982,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 4744131,
-        "impressionsWithDevice": 4744131,
-        "reach": 2968342,
-        "frequency": 1.5982
-      }
+      "unclassified": null
     },
     {
       "project": "Премиальные коллекции",
@@ -311,13 +189,7 @@
       "reach": 1380279,
       "frequency": 1.3333,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 1840363,
-        "impressionsWithDevice": 1840363,
-        "reach": 1380279,
-        "frequency": 1.3333
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · Волга",
@@ -327,13 +199,7 @@
       "reach": 513845,
       "frequency": 2.0681,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 1062705,
-        "impressionsWithDevice": 1062705,
-        "reach": 513845,
-        "frequency": 2.0681
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · Академическая",
@@ -343,13 +209,7 @@
       "reach": 368155,
       "frequency": 1.9408,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 714519,
-        "impressionsWithDevice": 714519,
-        "reach": 368155,
-        "frequency": 1.9408
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · promopages",
@@ -359,13 +219,7 @@
       "reach": 63322,
       "frequency": 1.1951,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 75677,
-        "impressionsWithDevice": 75677,
-        "reach": 63322,
-        "frequency": 1.1951
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · Дзен",
@@ -375,13 +229,7 @@
       "reach": 2349,
       "frequency": 1.0106,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 2374,
-        "impressionsWithDevice": 2374,
-        "reach": 2349,
-        "frequency": 1.0106
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · ПромоСтраницы",
@@ -391,13 +239,7 @@
       "reach": 231,
       "frequency": 1.1775,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 272,
-        "impressionsWithDevice": 272,
-        "reach": 231,
-        "frequency": 1.1775
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · yandex Go",
@@ -407,13 +249,7 @@
       "reach": 166,
       "frequency": 1.3193,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 219,
-        "impressionsWithDevice": 219,
-        "reach": 166,
-        "frequency": 1.3193
-      }
+      "unclassified": null
     },
     {
       "project": "Без объекта",
@@ -423,13 +259,7 @@
       "reach": 149,
       "frequency": 1.0336,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 154,
-        "impressionsWithDevice": 154,
-        "reach": 149,
-        "frequency": 1.0336
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · lg_promopages_msk_article_none_none_ostatki_none_cont",
@@ -439,13 +269,7 @@
       "reach": 14,
       "frequency": 1.2143,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 17,
-        "impressionsWithDevice": 17,
-        "reach": 14,
-        "frequency": 1.2143
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · Level Академическая",
@@ -455,13 +279,7 @@
       "reach": 7,
       "frequency": 1.0,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 7,
-        "impressionsWithDevice": 7,
-        "reach": 7,
-        "frequency": 1.0
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · UrbanAds (Yandex Go)",
@@ -471,13 +289,7 @@
       "reach": 3,
       "frequency": 1.0,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 3,
-        "impressionsWithDevice": 3,
-        "reach": 3,
-        "frequency": 1.0
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · video yandex",
@@ -487,13 +299,7 @@
       "reach": 2,
       "frequency": 1.0,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 2,
-        "impressionsWithDevice": 2,
-        "reach": 2,
-        "frequency": 1.0
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · ozon",
@@ -503,13 +309,7 @@
       "reach": 1,
       "frequency": 1.0,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 1,
-        "impressionsWithDevice": 1,
-        "reach": 1,
-        "frequency": 1.0
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · yandex",
@@ -519,22 +319,10 @@
       "reach": 1,
       "frequency": 1.0,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 1,
-        "impressionsWithDevice": 1,
-        "reach": 1,
-        "frequency": 1.0
-      }
+      "unclassified": null
     }
   ],
-  "unclassified": {
-    "channel": "Не классифицировано",
-    "impressions": 68769277,
-    "impressionsWithDevice": 68769277,
-    "reach": 30037382,
-    "frequency": 2.2895
-  },
+  "unclassified": null,
   "unknownPlacementImpressions": 154,
   "jobs": [
     {
