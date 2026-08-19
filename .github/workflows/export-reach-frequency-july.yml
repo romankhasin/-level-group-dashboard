@@ -21,10 +21,10 @@ concurrency:
 jobs:
   chunk:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       fail-fast: false
-      max-parallel: 11
+      max-parallel: 6
       matrix:
         include:
           - { idx: "01", start: "2026-07-01", end: "2026-07-03" }
