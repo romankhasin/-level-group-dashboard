@@ -7234,7 +7234,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       const reportDate = dateKey((row || {}).interaction_dt || "");
       if (!campaign || !reportDate.startsWith("2026-08") || campaignChannel(campaign) !== "prg") return false;
       const platformCode = String(parseCampaign(campaign).platformCode || "").trim().toLowerCase();
-      return ["yandex", "mts", "buzzoola", "roxot"].includes(platformCode);
+      return ["yandex", "mts"].includes(platformCode);
     }
 
     function isAvitoMedMrkVerifierCampaign(campaign) {

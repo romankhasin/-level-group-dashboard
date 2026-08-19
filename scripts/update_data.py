@@ -52,7 +52,10 @@ AUGUST_PRG_GOOGLE_WORKBOOK_URL = (
     "https://drive.usercontent.google.com/download?"
     "id=1zT8E9gAQSSXmW1e1T9-Wy1V9-C4esm3C&export=download"
 )
-AUGUST_PRG_PLATFORM_SOURCES = {"yandex", "mts", "buzzoola", "roxot"}
+# The supplied August media report is the authoritative source only for the
+# two agreed PRG platforms.  Keep other programmatic platforms on their own
+# sources instead of accidentally replacing their facts from this workbook.
+AUGUST_PRG_PLATFORM_SOURCES = {"yandex", "mts"}
 DEFAULT_TARGETADS_PROJECT_ID = 12787
 TARGETADS_API_URL = "https://api.targetads.io"
 TARGETADS_RAW_FIELDS = [
@@ -538,6 +541,79 @@ def is_avito_med_mrk_campaign(campaign: str) -> bool:
     return "avito-ads" in tokens and any(channel in tokens for channel in ("med", "mrk"))
 
 
+def read_august_avito_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], dict]:
+    """Read non-zero August Avito MED/MRK facts from the supplied workbook.
+
+    The workbook currently has Avito technical marks in ``Данные_метрика``.
+    A row is emitted only once it contains a media fact, so a blank Avito row
+    cannot overwrite the working Avito report used as a temporary fallback.
+    """
+    workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    if "Данные_метрика" not in workbook.sheetnames:
+        raise RuntimeError("August media workbook is missing sheet: Данные_метрика")
+
+    headers, source_rows = workbook_rows(workbook["Данные_метрика"])
+    column_index = {name: index for index, name in enumerate(headers)}
+    required_headers = {"report_date", "utm_source", "technical_mark", "impressions", "clicks", "cost"}
+    missing_headers = required_headers.difference(column_index)
+    if missing_headers:
+        raise RuntimeError(
+            "August Avito Данные_метрика is missing columns: "
+            f"{sorted(missing_headers)}"
+        )
+
+    aggregated: dict[tuple[str, str], dict] = {}
+    source_rows_count = 0
+    media_rows_count = 0
+    for row in source_rows:
+        source = str(row[column_index["utm_source"]] or "").strip().lower()
+        report_date = cell_date(row[column_index["report_date"]])
+        campaign = str(row[column_index["technical_mark"]] or "").strip()
+        if (
+            source != "avito-ads"
+            or not report_date
+            or report_date.year != 2026
+            or report_date.month != 8
+            or report_date > yesterday
+            or not is_avito_med_mrk_campaign(campaign)
+        ):
+            continue
+        source_rows_count += 1
+        impressions = number(row[column_index["impressions"]])
+        clicks = number(row[column_index["clicks"]])
+        cost = number(row[column_index["cost"]])
+        if not any((impressions, clicks, cost)):
+            continue
+        media_rows_count += 1
+        key = (report_date.isoformat(), campaign.lower())
+        if key not in aggregated:
+            aggregated[key] = {
+                "placement_nm": campaign,
+                "interaction_dt": report_date.isoformat(),
+                "impressions": 0.0,
+                "clicks": 0.0,
+                "givt": 0.0,
+                "fraud_impressions": 0.0,
+                "cost": 0.0,
+                "has_actual_cost": True,
+                "metric_source": "google_avito",
+            }
+        item = aggregated[key]
+        item["impressions"] += impressions
+        item["clicks"] += clicks
+        # Like the existing Avito report, this field is net of VAT.
+        item["cost"] += cost * GOOGLE_ACTUAL_COST_VAT_MULTIPLIER
+
+    workbook.close()
+    rows = sorted(aggregated.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
+    return rows, {
+        "sheet": "Данные_метрика",
+        "source_rows": source_rows_count,
+        "media_rows": media_rows_count,
+        "metric_rows": len(rows),
+    }
+
+
 def read_avito_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], dict]:
     """Read Avito MED/MRK actuals from the shared media workbook's Data sheet."""
     workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
@@ -930,8 +1006,8 @@ def combine_targetads_rows(existing: dict, incoming: dict) -> dict:
 def merge_verifier_rows(targetads_rows: list[dict], google_rows: list[dict]) -> list[dict]:
     """Merge media and fraud facts without duplicating Google and Target Ads.
 
-    Google has priority for Yandex/MTS PRG, the August Yandex/MTS/Buzzoola/
-    Roxot PRG facts, and Avito MED/MRK only when it has at least one non-zero
+    Google has priority for Yandex/MTS PRG, the August Yandex/MTS PRG facts,
+    and Avito MED/MRK only when it has at least one non-zero
     media fact. Otherwise Target Ads supplies media.
     Target Ads rows with the same date and campaign are summed before sources
     are merged, preventing creative-level rows from being overwritten.
@@ -1134,16 +1210,27 @@ def main() -> None:
     august_prg_google_rows, august_prg_status = read_august_prg_workbook(
         august_prg_workbook_path, yesterday
     )
+    august_avito_google_rows, august_avito_status = read_august_avito_workbook(
+        august_prg_workbook_path, yesterday
+    )
     archived_google_rows = read_json_rows(GOOGLE_ARCHIVE_PATH)
     google_rows = merge_google_rows(
         archived_google_rows,
-        [*live_google_rows, *avito_google_rows, *august_prg_google_rows],
+        # Facts from the supplied August workbook are last so they replace the
+        # temporary Avito fallback only for matching date + technical mark.
+        [
+            *live_google_rows,
+            *avito_google_rows,
+            *august_prg_google_rows,
+            *august_avito_google_rows,
+        ],
     )
     google_status.update(
         {
             "archive_rows": len(archived_google_rows),
             "live_rows": len(live_google_rows),
             "avito": avito_status,
+            "august_avito": august_avito_status,
             "august_prg": august_prg_status,
             "metric_rows": len(google_rows),
         }
