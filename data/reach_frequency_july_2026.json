@@ -4,10 +4,11 @@
     "to": "2026-07-31"
   },
   "projectId": 12787,
-  "method": "Target Ads Raw Data API v2; parallel chunk/channel MapReduce; exact monthly unions of 64-bit hashed InteractionDeviceID using Roaring Bitmap",
-  "important": "Reach is deduplicated independently for Total, each channel, each object and each object×channel pair. Do not sum child Reach rows.",
-  "channelClassificationVersion": "v1-2026-08-17",
-  "projectClassificationVersion": "v1-2026-08-17",
+  "method": "Target Ads Raw Data API v2; project-only streaming Roaring Bitmap unions; unchanged exact period Total reach reused from the previous calculation",
+  "important": "Reach is deduplicated independently for Total and each project. Do not sum project Reach rows.",
+  "channelClassificationVersion": "none-2026-08-19",
+  "projectClassificationVersion": "v2-2026-08-19",
+  "placementMetaCount": 773,
   "total": {
     "label": "Level Group",
     "impressions": 151412152,
@@ -16,120 +17,26 @@
     "frequency": 2.3781,
     "deviceIdCoverage": 1.0
   },
-  "byChannel": [
-    {
-      "channel": "Programmatic",
-      "impressions": 34988648,
-      "impressionsWithDevice": 34988648,
-      "reach": 20214792,
-      "frequency": 1.7308
-    },
-    {
-      "channel": "Smart TV",
-      "impressions": 40882016,
-      "impressionsWithDevice": 40882016,
-      "reach": 16127506,
-      "frequency": 2.5349
-    },
-    {
-      "channel": "Маркетплейсы",
-      "impressions": 26927814,
-      "impressionsWithDevice": 26927814,
-      "reach": 15060254,
-      "frequency": 1.788
-    },
-    {
-      "channel": "Медийка",
-      "impressions": 48613314,
-      "impressionsWithDevice": 48613314,
-      "reach": 14129634,
-      "frequency": 3.4405
-    },
-    {
-      "channel": "Target",
-      "impressions": 0,
-      "impressionsWithDevice": 0,
-      "reach": 0,
-      "frequency": null
-    }
-  ],
+  "byChannel": [],
   "byProject": [
     {
       "project": "Level Мичуринский",
       "scope": "object",
-      "impressions": 17451126,
-      "impressionsWithDevice": 17451126,
-      "reach": 8540823,
-      "frequency": 2.0433,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 4243013,
-          "impressionsWithDevice": 4243013,
-          "reach": 1854282,
-          "frequency": 2.2882
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 3624381,
-          "impressionsWithDevice": 3624381,
-          "reach": 1929979,
-          "frequency": 1.8779
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 4467117,
-          "impressionsWithDevice": 4467117,
-          "reach": 2815432,
-          "frequency": 1.5867
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 5116615,
-          "impressionsWithDevice": 5116615,
-          "reach": 2080782,
-          "frequency": 2.459
-        }
-      ],
+      "impressions": 15342536,
+      "impressionsWithDevice": 15342536,
+      "reach": 7482605,
+      "frequency": 2.0504,
+      "byChannel": [],
       "unclassified": null
     },
     {
       "project": "Level Южнопортовая",
       "scope": "object",
-      "impressions": 15588200,
-      "impressionsWithDevice": 15588200,
-      "reach": 7466251,
-      "frequency": 2.0878,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 4573008,
-          "impressionsWithDevice": 4573008,
-          "reach": 2270234,
-          "frequency": 2.0143
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 3705437,
-          "impressionsWithDevice": 3705437,
-          "reach": 1983300,
-          "frequency": 1.8683
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 1695499,
-          "impressionsWithDevice": 1695499,
-          "reach": 979666,
-          "frequency": 1.7307
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 5614256,
-          "impressionsWithDevice": 5614256,
-          "reach": 2273527,
-          "frequency": 2.4694
-        }
-      ],
+      "impressions": 14120672,
+      "impressionsWithDevice": 14120672,
+      "reach": 6702874,
+      "frequency": 2.1067,
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -139,68 +46,7 @@
       "impressionsWithDevice": 13934272,
       "reach": 7649133,
       "frequency": 1.8217,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 4,
-          "impressionsWithDevice": 4,
-          "reach": 4,
-          "frequency": 1.0
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 2873699,
-          "impressionsWithDevice": 2873699,
-          "reach": 1461415,
-          "frequency": 1.9664
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 5507102,
-          "impressionsWithDevice": 5507102,
-          "reach": 4004747,
-          "frequency": 1.3751
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 5553467,
-          "impressionsWithDevice": 5553467,
-          "reach": 2255033,
-          "frequency": 2.4627
-        }
-      ],
-      "unclassified": null
-    },
-    {
-      "project": "Level Нижегородская",
-      "scope": "object",
-      "impressions": 12841677,
-      "impressionsWithDevice": 12841677,
-      "reach": 7239996,
-      "frequency": 1.7737,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 7215401,
-          "impressionsWithDevice": 7215401,
-          "reach": 5234110,
-          "frequency": 1.3785
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 4332014,
-          "impressionsWithDevice": 4332014,
-          "reach": 1571894,
-          "frequency": 2.7559
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 1294262,
-          "impressionsWithDevice": 1294262,
-          "reach": 565796,
-          "frequency": 2.2875
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -210,36 +56,17 @@
       "impressionsWithDevice": 11286365,
       "reach": 5843559,
       "frequency": 1.9314,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 1079057,
-          "impressionsWithDevice": 1079057,
-          "reach": 730845,
-          "frequency": 1.4765
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 2675629,
-          "impressionsWithDevice": 2675629,
-          "reach": 971256,
-          "frequency": 2.7548
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 1645081,
-          "impressionsWithDevice": 1645081,
-          "reach": 1067357,
-          "frequency": 1.5413
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 5886598,
-          "impressionsWithDevice": 5886598,
-          "reach": 3200973,
-          "frequency": 1.839
-        }
-      ],
+      "byChannel": [],
+      "unclassified": null
+    },
+    {
+      "project": "Регионы",
+      "scope": "object",
+      "impressions": 11272352,
+      "impressionsWithDevice": 11272352,
+      "reach": 6320152,
+      "frequency": 1.7836,
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -249,29 +76,17 @@
       "impressionsWithDevice": 10144847,
       "reach": 6637182,
       "frequency": 1.5285,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 4147050,
-          "impressionsWithDevice": 4147050,
-          "reach": 2697782,
-          "frequency": 1.5372
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 3271799,
-          "impressionsWithDevice": 3271799,
-          "reach": 1895301,
-          "frequency": 1.7263
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 2725998,
-          "impressionsWithDevice": 2725998,
-          "reach": 2085809,
-          "frequency": 1.3069
-        }
-      ],
+      "byChannel": [],
+      "unclassified": null
+    },
+    {
+      "project": "Work Нижегородская",
+      "scope": "object",
+      "impressions": 9499831,
+      "impressionsWithDevice": 9499831,
+      "reach": 5786657,
+      "frequency": 1.6417,
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -281,29 +96,7 @@
       "impressionsWithDevice": 8124901,
       "reach": 3367732,
       "frequency": 2.4126,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 18,
-          "impressionsWithDevice": 18,
-          "reach": 13,
-          "frequency": 1.3846
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 3020647,
-          "impressionsWithDevice": 3020647,
-          "reach": 1234494,
-          "frequency": 2.4469
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 5104236,
-          "impressionsWithDevice": 5104236,
-          "reach": 2160514,
-          "frequency": 2.3625
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -313,75 +106,17 @@
       "impressionsWithDevice": 6835815,
       "reach": 3966469,
       "frequency": 1.7234,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 71,
-          "impressionsWithDevice": 71,
-          "reach": 51,
-          "frequency": 1.3922
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 50,
-          "impressionsWithDevice": 50,
-          "reach": 32,
-          "frequency": 1.5625
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 3150693,
-          "impressionsWithDevice": 3150693,
-          "reach": 2075925,
-          "frequency": 1.5177
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 3685001,
-          "impressionsWithDevice": 3685001,
-          "reach": 1890462,
-          "frequency": 1.9493
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
       "project": "Level Лесной",
       "scope": "object",
-      "impressions": 6383378,
-      "impressionsWithDevice": 6383378,
-      "reach": 3527206,
+      "impressions": 6383247,
+      "impressionsWithDevice": 6383247,
+      "reach": 3527085,
       "frequency": 1.8098,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 6,
-          "impressionsWithDevice": 6,
-          "reach": 5,
-          "frequency": 1.2
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 1366380,
-          "impressionsWithDevice": 1366380,
-          "reach": 585793,
-          "frequency": 2.3325
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 2089232,
-          "impressionsWithDevice": 2089232,
-          "reach": 1794277,
-          "frequency": 1.1644
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 2927760,
-          "impressionsWithDevice": 2927760,
-          "reach": 1167013,
-          "frequency": 2.5088
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -391,36 +126,7 @@
       "impressionsWithDevice": 4639515,
       "reach": 1758631,
       "frequency": 2.6381,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 816511,
-          "impressionsWithDevice": 816511,
-          "reach": 31084,
-          "frequency": 26.2679
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 1217275,
-          "impressionsWithDevice": 1217275,
-          "reach": 472044,
-          "frequency": 2.5787
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 1002112,
-          "impressionsWithDevice": 1002112,
-          "reach": 616177,
-          "frequency": 1.6263
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 1603617,
-          "impressionsWithDevice": 1603617,
-          "reach": 653691,
-          "frequency": 2.4532
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -430,22 +136,7 @@
       "impressionsWithDevice": 3914932,
       "reach": 2867901,
       "frequency": 1.3651,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 3139996,
-          "impressionsWithDevice": 3139996,
-          "reach": 2389677,
-          "frequency": 1.314
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 774936,
-          "impressionsWithDevice": 774936,
-          "reach": 478224,
-          "frequency": 1.6204
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -455,125 +146,47 @@
       "impressionsWithDevice": 3806538,
       "reach": 1562453,
       "frequency": 2.4363,
-      "byChannel": [
-        {
-          "channel": "Smart TV",
-          "impressions": 3805679,
-          "impressionsWithDevice": 3805679,
-          "reach": 1561655,
-          "frequency": 2.437
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 859,
-          "impressionsWithDevice": 859,
-          "reach": 807,
-          "frequency": 1.0644
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
-      "project": "Level Group",
-      "scope": "brand",
-      "impressions": 15593749,
-      "impressionsWithDevice": 15593749,
-      "reach": 9775188,
-      "frequency": 1.5952,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 1198827,
-          "impressionsWithDevice": 1198827,
-          "reach": 629543,
-          "frequency": 1.9043
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 7788446,
-          "impressionsWithDevice": 7788446,
-          "reach": 6671357,
-          "frequency": 1.1674
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 12,
-          "impressionsWithDevice": 12,
-          "reach": 11,
-          "frequency": 1.0909
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 6606464,
-          "impressionsWithDevice": 6606464,
-          "reach": 2495520,
-          "frequency": 2.6473
-        }
-      ],
+      "project": "Level Нижегородская",
+      "scope": "object",
+      "impressions": 3341846,
+      "impressionsWithDevice": 3341846,
+      "reach": 1754121,
+      "frequency": 1.9051,
+      "byChannel": [],
       "unclassified": null
     },
     {
       "project": "Остатки",
       "scope": "brand",
-      "impressions": 12472471,
-      "impressionsWithDevice": 12472471,
-      "reach": 7067871,
+      "impressions": 12472487,
+      "impressionsWithDevice": 12472487,
+      "reach": 7067887,
       "frequency": 1.7647,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 4815913,
-          "impressionsWithDevice": 4815913,
-          "reach": 3320444,
-          "frequency": 1.4504
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 3649060,
-          "impressionsWithDevice": 3649060,
-          "reach": 2023690,
-          "frequency": 1.8032
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 4007498,
-          "impressionsWithDevice": 4007498,
-          "reach": 1807168,
-          "frequency": 2.2176
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
-      "project": "Level Premium",
+      "project": "Левел Групп",
       "scope": "brand",
-      "impressions": 5851449,
-      "impressionsWithDevice": 5851449,
-      "reach": 3221686,
+      "impressions": 7897618,
+      "impressionsWithDevice": 7897618,
+      "reach": 4843785,
+      "frequency": 1.6305,
+      "byChannel": [],
+      "unclassified": null
+    },
+    {
+      "project": "Премиальные коллекции",
+      "scope": "brand",
+      "impressions": 5851461,
+      "impressionsWithDevice": 5851461,
+      "reach": 3221698,
       "frequency": 1.8163,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 3759772,
-          "impressionsWithDevice": 3759772,
-          "reach": 2501304,
-          "frequency": 1.5031
-        },
-        {
-          "channel": "Smart TV",
-          "impressions": 1794690,
-          "impressionsWithDevice": 1794690,
-          "reach": 622354,
-          "frequency": 2.8837
-        },
-        {
-          "channel": "Медийка",
-          "impressions": 296987,
-          "impressionsWithDevice": 296987,
-          "reach": 152932,
-          "frequency": 1.942
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -583,22 +196,7 @@
       "impressionsWithDevice": 1775059,
       "reach": 1054969,
       "frequency": 1.6826,
-      "byChannel": [
-        {
-          "channel": "Smart TV",
-          "impressions": 779217,
-          "impressionsWithDevice": 779217,
-          "reach": 323588,
-          "frequency": 2.4081
-        },
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 995842,
-          "impressionsWithDevice": 995842,
-          "reach": 732912,
-          "frequency": 1.3587
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -608,15 +206,7 @@
       "impressionsWithDevice": 626637,
       "reach": 256989,
       "frequency": 2.4384,
-      "byChannel": [
-        {
-          "channel": "Smart TV",
-          "impressions": 626637,
-          "impressionsWithDevice": 626637,
-          "reach": 256989,
-          "frequency": 2.4384
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -626,15 +216,7 @@
       "impressionsWithDevice": 135489,
       "reach": 106885,
       "frequency": 1.2676,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 135489,
-          "impressionsWithDevice": 135489,
-          "reach": 106885,
-          "frequency": 1.2676
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -644,15 +226,7 @@
       "impressionsWithDevice": 3800,
       "reach": 3729,
       "frequency": 1.019,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 3800,
-          "impressionsWithDevice": 3800,
-          "reach": 3729,
-          "frequency": 1.019
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -662,15 +236,7 @@
       "impressionsWithDevice": 1132,
       "reach": 754,
       "frequency": 1.5013,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 1132,
-          "impressionsWithDevice": 1132,
-          "reach": 754,
-          "frequency": 1.5013
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -681,13 +247,7 @@
       "reach": 360,
       "frequency": 1.0,
       "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 360,
-        "impressionsWithDevice": 360,
-        "reach": 360,
-        "frequency": 1.0
-      }
+      "unclassified": null
     },
     {
       "project": "Прочее · ПромоСтраницы",
@@ -696,15 +256,7 @@
       "impressionsWithDevice": 264,
       "reach": 196,
       "frequency": 1.3469,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 264,
-          "impressionsWithDevice": 264,
-          "reach": 196,
-          "frequency": 1.3469
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -714,15 +266,7 @@
       "impressionsWithDevice": 38,
       "reach": 27,
       "frequency": 1.4074,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 38,
-          "impressionsWithDevice": 38,
-          "reach": 27,
-          "frequency": 1.4074
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -732,15 +276,7 @@
       "impressionsWithDevice": 28,
       "reach": 27,
       "frequency": 1.037,
-      "byChannel": [
-        {
-          "channel": "Smart TV",
-          "impressions": 28,
-          "impressionsWithDevice": 28,
-          "reach": 27,
-          "frequency": 1.037
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -750,15 +286,7 @@
       "impressionsWithDevice": 28,
       "reach": 28,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 28,
-          "impressionsWithDevice": 28,
-          "reach": 28,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -768,15 +296,7 @@
       "impressionsWithDevice": 27,
       "reach": 13,
       "frequency": 2.0769,
-      "byChannel": [
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 27,
-          "impressionsWithDevice": 27,
-          "reach": 13,
-          "frequency": 2.0769
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -786,15 +306,7 @@
       "impressionsWithDevice": 19,
       "reach": 1,
       "frequency": 19.0,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 19,
-          "impressionsWithDevice": 19,
-          "reach": 1,
-          "frequency": 19.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -804,15 +316,7 @@
       "impressionsWithDevice": 11,
       "reach": 11,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Маркетплейсы",
-          "impressions": 11,
-          "impressionsWithDevice": 11,
-          "reach": 11,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -822,15 +326,7 @@
       "impressionsWithDevice": 9,
       "reach": 9,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 9,
-          "impressionsWithDevice": 9,
-          "reach": 9,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -840,15 +336,7 @@
       "impressionsWithDevice": 6,
       "reach": 1,
       "frequency": 6.0,
-      "byChannel": [
-        {
-          "channel": "Smart TV",
-          "impressions": 6,
-          "impressionsWithDevice": 6,
-          "reach": 1,
-          "frequency": 6.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -858,15 +346,7 @@
       "impressionsWithDevice": 5,
       "reach": 5,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 5,
-          "impressionsWithDevice": 5,
-          "reach": 5,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -876,15 +356,7 @@
       "impressionsWithDevice": 2,
       "reach": 1,
       "frequency": 2.0,
-      "byChannel": [
-        {
-          "channel": "Smart TV",
-          "impressions": 2,
-          "impressionsWithDevice": 2,
-          "reach": 1,
-          "frequency": 2.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -894,15 +366,7 @@
       "impressionsWithDevice": 1,
       "reach": 1,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Programmatic",
-          "impressions": 1,
-          "impressionsWithDevice": 1,
-          "reach": 1,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -912,15 +376,7 @@
       "impressionsWithDevice": 1,
       "reach": 1,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 1,
-          "impressionsWithDevice": 1,
-          "reach": 1,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     },
     {
@@ -930,24 +386,89 @@
       "impressionsWithDevice": 1,
       "reach": 1,
       "frequency": 1.0,
-      "byChannel": [
-        {
-          "channel": "Медийка",
-          "impressions": 1,
-          "impressionsWithDevice": 1,
-          "reach": 1,
-          "frequency": 1.0
-        }
-      ],
+      "byChannel": [],
       "unclassified": null
     }
   ],
-  "unclassified": {
-    "channel": "Не классифицировано",
-    "impressions": 360,
-    "impressionsWithDevice": 360,
-    "reach": 360,
-    "frequency": 1.0
-  },
-  "unknownPlacementImpressions": 360
+  "unclassified": null,
+  "unknownPlacementImpressions": 360,
+  "jobs": [
+    {
+      "from": "2026-07-01",
+      "to": "2026-07-03",
+      "jobId": "b5cf99e5-f94a-499f-9fdb-165c402c7f66",
+      "rows": 8664639,
+      "rowsWithDevice": 8664639
+    },
+    {
+      "from": "2026-07-04",
+      "to": "2026-07-06",
+      "jobId": "f196fe4d-b4aa-49aa-95de-8c42cb7f5df5",
+      "rows": 12002948,
+      "rowsWithDevice": 12002948
+    },
+    {
+      "from": "2026-07-07",
+      "to": "2026-07-09",
+      "jobId": "110010f9-dc9a-4c9d-ad56-e841a432f31e",
+      "rows": 12958916,
+      "rowsWithDevice": 12958916
+    },
+    {
+      "from": "2026-07-10",
+      "to": "2026-07-12",
+      "jobId": "fcd586f7-c4e2-4271-b4d1-fafe00fe7767",
+      "rows": 12220330,
+      "rowsWithDevice": 12220330
+    },
+    {
+      "from": "2026-07-13",
+      "to": "2026-07-15",
+      "jobId": "f378956a-d92b-4a90-95a1-f76cd94b5f6c",
+      "rows": 13469708,
+      "rowsWithDevice": 13469708
+    },
+    {
+      "from": "2026-07-16",
+      "to": "2026-07-18",
+      "jobId": "ba66459b-8363-455f-ad50-e5e538b1e752",
+      "rows": 13341969,
+      "rowsWithDevice": 13341969
+    },
+    {
+      "from": "2026-07-19",
+      "to": "2026-07-21",
+      "jobId": "7b49ab58-6bbc-496a-8a8d-87fbc2a6a46f",
+      "rows": 14517392,
+      "rowsWithDevice": 14517392
+    },
+    {
+      "from": "2026-07-22",
+      "to": "2026-07-24",
+      "jobId": "0547aa85-a21a-4596-85f9-039dd14eba19",
+      "rows": 18154018,
+      "rowsWithDevice": 18154018
+    },
+    {
+      "from": "2026-07-25",
+      "to": "2026-07-27",
+      "jobId": "6e49b3f8-12a5-46dd-8841-397140b45f12",
+      "rows": 17700279,
+      "rowsWithDevice": 17700279
+    },
+    {
+      "from": "2026-07-28",
+      "to": "2026-07-30",
+      "jobId": "8621967b-bad5-4227-9b59-685d65099cb6",
+      "rows": 21512096,
+      "rowsWithDevice": 21512096
+    },
+    {
+      "from": "2026-07-31",
+      "to": "2026-07-31",
+      "jobId": "d30c6ccd-8090-42aa-8a45-79014cf333da",
+      "rows": 6869857,
+      "rowsWithDevice": 6869857
+    }
+  ]
 }
