@@ -50,33 +50,49 @@
     {
       "project": "Level Мичуринский",
       "scope": "object",
-      "impressions": 7715257,
-      "impressionsWithDevice": 7715257,
-      "reach": 4838838,
-      "frequency": 1.5944,
+      "impressions": 7029003,
+      "impressionsWithDevice": 7029003,
+      "reach": 4391825,
+      "frequency": 1.6005,
       "byChannel": [],
       "unclassified": {
         "channel": "Не классифицировано",
-        "impressions": 7715257,
-        "impressionsWithDevice": 7715257,
-        "reach": 4838838,
-        "frequency": 1.5944
+        "impressions": 7029003,
+        "impressionsWithDevice": 7029003,
+        "reach": 4391825,
+        "frequency": 1.6005
       }
     },
     {
       "project": "Level Южнопортовая",
       "scope": "object",
-      "impressions": 7382761,
-      "impressionsWithDevice": 7382761,
-      "reach": 3488794,
-      "frequency": 2.1161,
+      "impressions": 6572770,
+      "impressionsWithDevice": 6572770,
+      "reach": 2988126,
+      "frequency": 2.1996,
       "byChannel": [],
       "unclassified": {
         "channel": "Не классифицировано",
-        "impressions": 7382761,
-        "impressionsWithDevice": 7382761,
-        "reach": 3488794,
-        "frequency": 2.1161
+        "impressions": 6572770,
+        "impressionsWithDevice": 6572770,
+        "reach": 2988126,
+        "frequency": 2.1996
+      }
+    },
+    {
+      "project": "Регионы",
+      "scope": "object",
+      "impressions": 5052801,
+      "impressionsWithDevice": 5052801,
+      "reach": 3235569,
+      "frequency": 1.5616,
+      "byChannel": [],
+      "unclassified": {
+        "channel": "Не классифицировано",
+        "impressions": 5052801,
+        "impressionsWithDevice": 5052801,
+        "reach": 3235569,
+        "frequency": 1.5616
       }
     },
     {
@@ -109,22 +125,6 @@
         "impressionsWithDevice": 4361862,
         "reach": 2693091,
         "frequency": 1.6196
-      }
-    },
-    {
-      "project": "Level Нижегородская",
-      "scope": "object",
-      "impressions": 4342562,
-      "impressionsWithDevice": 4342562,
-      "reach": 1950840,
-      "frequency": 2.226,
-      "byChannel": [],
-      "unclassified": {
-        "channel": "Не классифицировано",
-        "impressions": 4342562,
-        "impressionsWithDevice": 4342562,
-        "reach": 1950840,
-        "frequency": 2.226
       }
     },
     {
@@ -224,6 +224,38 @@
       }
     },
     {
+      "project": "Work Нижегородская",
+      "scope": "object",
+      "impressions": 2669330,
+      "impressionsWithDevice": 2669330,
+      "reach": 1399292,
+      "frequency": 1.9076,
+      "byChannel": [],
+      "unclassified": {
+        "channel": "Не классифицировано",
+        "impressions": 2669330,
+        "impressionsWithDevice": 2669330,
+        "reach": 1399292,
+        "frequency": 1.9076
+      }
+    },
+    {
+      "project": "Level Нижегородская",
+      "scope": "object",
+      "impressions": 1673232,
+      "impressionsWithDevice": 1673232,
+      "reach": 680280,
+      "frequency": 2.4596,
+      "byChannel": [],
+      "unclassified": {
+        "channel": "Не классифицировано",
+        "impressions": 1673232,
+        "impressionsWithDevice": 1673232,
+        "reach": 680280,
+        "frequency": 2.4596
+      }
+    },
+    {
       "project": "Level Саввинская",
       "scope": "object",
       "impressions": 980950,
@@ -240,50 +272,50 @@
       }
     },
     {
-      "project": "Level Group",
+      "project": "Левел Групп",
       "scope": "brand",
-      "impressions": 8711659,
-      "impressionsWithDevice": 8711659,
-      "reach": 5402358,
-      "frequency": 1.6126,
+      "impressions": 5155093,
+      "impressionsWithDevice": 5155093,
+      "reach": 2908875,
+      "frequency": 1.7722,
       "byChannel": [],
       "unclassified": {
         "channel": "Не классифицировано",
-        "impressions": 8711659,
-        "impressionsWithDevice": 8711659,
-        "reach": 5402358,
-        "frequency": 1.6126
+        "impressions": 5155093,
+        "impressionsWithDevice": 5155093,
+        "reach": 2908875,
+        "frequency": 1.7722
       }
     },
     {
       "project": "Остатки",
       "scope": "brand",
-      "impressions": 4744123,
-      "impressionsWithDevice": 4744123,
-      "reach": 2968334,
+      "impressions": 4744131,
+      "impressionsWithDevice": 4744131,
+      "reach": 2968342,
       "frequency": 1.5982,
       "byChannel": [],
       "unclassified": {
         "channel": "Не классифицировано",
-        "impressions": 4744123,
-        "impressionsWithDevice": 4744123,
-        "reach": 2968334,
+        "impressions": 4744131,
+        "impressionsWithDevice": 4744131,
+        "reach": 2968342,
         "frequency": 1.5982
       }
     },
     {
-      "project": "Level Premium",
+      "project": "Премиальные коллекции",
       "scope": "brand",
-      "impressions": 1840361,
-      "impressionsWithDevice": 1840361,
-      "reach": 1380277,
+      "impressions": 1840363,
+      "impressionsWithDevice": 1840363,
+      "reach": 1380279,
       "frequency": 1.3333,
       "byChannel": [],
       "unclassified": {
         "channel": "Не классифицировано",
-        "impressions": 1840361,
-        "impressionsWithDevice": 1840361,
-        "reach": 1380277,
+        "impressions": 1840363,
+        "impressionsWithDevice": 1840363,
+        "reach": 1380279,
         "frequency": 1.3333
       }
     },
