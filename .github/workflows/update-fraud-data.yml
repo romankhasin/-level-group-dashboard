@@ -62,6 +62,20 @@ jobs:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
         run: python -u scripts/update_clientid_periods.py
 
+      - name: Publish refreshed fraud aggregates
+        if: steps.build.outcome == 'success' && steps.period.outcome == 'success'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/fraud
+          if git diff --cached --quiet; then
+            echo "No fraud aggregate changes"
+          else
+            git commit -m "Update fraud analysis data"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+
       - name: Retain fraud detail as a short-lived workflow artifact
         if: always()
         uses: actions/upload-artifact@v4
