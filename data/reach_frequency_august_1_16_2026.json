@@ -152,12 +152,32 @@
       "unclassified": null
     },
     {
+      "project": "Level Волга",
+      "scope": "object",
+      "impressions": 1062705,
+      "impressionsWithDevice": 1062705,
+      "reach": 513845,
+      "frequency": 2.0681,
+      "byChannel": [],
+      "unclassified": null
+    },
+    {
       "project": "Level Саввинская",
       "scope": "object",
       "impressions": 980950,
       "impressionsWithDevice": 980950,
       "reach": 761854,
       "frequency": 1.2876,
+      "byChannel": [],
+      "unclassified": null
+    },
+    {
+      "project": "Level Академическая",
+      "scope": "object",
+      "impressions": 714526,
+      "impressionsWithDevice": 714526,
+      "reach": 368162,
+      "frequency": 1.9408,
       "byChannel": [],
       "unclassified": null
     },
@@ -188,26 +208,6 @@
       "impressionsWithDevice": 1840363,
       "reach": 1380279,
       "frequency": 1.3333,
-      "byChannel": [],
-      "unclassified": null
-    },
-    {
-      "project": "Прочее · Волга",
-      "scope": "unassigned",
-      "impressions": 1062705,
-      "impressionsWithDevice": 1062705,
-      "reach": 513845,
-      "frequency": 2.0681,
-      "byChannel": [],
-      "unclassified": null
-    },
-    {
-      "project": "Прочее · Академическая",
-      "scope": "unassigned",
-      "impressions": 714519,
-      "impressionsWithDevice": 714519,
-      "reach": 368155,
-      "frequency": 1.9408,
       "byChannel": [],
       "unclassified": null
     },
@@ -268,16 +268,6 @@
       "impressionsWithDevice": 17,
       "reach": 14,
       "frequency": 1.2143,
-      "byChannel": [],
-      "unclassified": null
-    },
-    {
-      "project": "Прочее · Level Академическая",
-      "scope": "unassigned",
-      "impressions": 7,
-      "impressionsWithDevice": 7,
-      "reach": 7,
-      "frequency": 1.0,
       "byChannel": [],
       "unclassified": null
     },
