@@ -5460,6 +5460,8 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         days: DATA ? DATA.dates.map(() => 0) : [],
         bounceDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
         bounceDaysVisits: DATA ? DATA.dates.map(() => 0) : [],
+        timeDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
+        timeDaysVisits: DATA ? DATA.dates.map(() => 0) : [],
         ivtDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
         ivtDaysImpressions: DATA ? DATA.dates.map(() => 0) : []
       };
@@ -5498,10 +5500,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       (metrics.days || []).forEach((value, index) => {
         const dayVisits = Number(value) || 0;
         const dayBounce = (metrics.bounceDays || [])[index] || 0;
+        const dayTime = (metrics.timeDays || [])[index] || 0;
 
         target.days[index] = (target.days[index] || 0) + dayVisits;
         target.bounceDaysWeighted[index] = (target.bounceDaysWeighted[index] || 0) + dayBounce * dayVisits;
         target.bounceDaysVisits[index] = (target.bounceDaysVisits[index] || 0) + dayVisits;
+        target.timeDaysWeighted[index] = (target.timeDaysWeighted[index] || 0) + dayTime * dayVisits;
+        target.timeDaysVisits[index] = (target.timeDaysVisits[index] || 0) + dayVisits;
       });
     }
 
@@ -5545,6 +5550,10 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         bounceDays: (metric.days || []).map((_, index) => {
           const dayVisits = metric.bounceDaysVisits[index] || 0;
           return dayVisits ? metric.bounceDaysWeighted[index] / dayVisits : 0;
+        }),
+        timeDays: (metric.days || []).map((_, index) => {
+          const dayVisits = metric.timeDaysVisits[index] || 0;
+          return dayVisits ? metric.timeDaysWeighted[index] / dayVisits : 0;
         }),
         ivtDays: (metric.ivtDaysWeighted || []).map((weighted, index) => {
           const impressions = metric.ivtDaysImpressions[index] || 0;
