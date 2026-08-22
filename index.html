@@ -3206,6 +3206,183 @@ body.all-mode .artcl-hero { margin-top: 10px; }
   .artcl-body-head { align-items: flex-start; flex-direction: column; }
 }
 
+/* Unified date-range picker */
+.period-card .period-range-field {
+  position: relative;
+  flex: 0 0 250px !important;
+  z-index: 40;
+}
+
+.period-range-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.period-range-trigger[aria-expanded="true"] {
+  border-color: rgba(156,107,67,.42);
+  box-shadow: 0 0 0 4px rgba(156,107,67,.08);
+}
+
+.period-range-icon {
+  color: var(--bronze);
+  font-size: 12px;
+  transition: transform .18s ease;
+}
+
+.period-range-trigger[aria-expanded="true"] .period-range-icon {
+  transform: rotate(180deg);
+}
+
+.period-range-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  left: auto;
+  z-index: 12000;
+  width: min(680px, calc(100vw - 48px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255,255,255,.99);
+  box-shadow: 0 26px 80px rgba(32,35,58,.18);
+}
+
+.period-range-popover[hidden] { display: none !important; }
+
+.period-range-head,
+.period-range-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.period-range-head { border-bottom: 1px solid var(--line); }
+.period-range-head strong { display: block; font-size: 14px; }
+.period-range-head span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.period-range-nav { display: flex; gap: 7px; }
+.period-range-nav button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--soft);
+  color: var(--ink);
+  font: 800 15px Montserrat,sans-serif;
+  cursor: pointer;
+}
+
+.period-range-months {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 22px;
+  padding: 18px;
+}
+
+.period-range-month-title {
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: capitalize;
+}
+
+.period-range-weekdays,
+.period-range-days {
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  gap: 3px;
+}
+
+.period-range-weekdays span {
+  padding: 4px 0 7px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.period-range-day {
+  position: relative;
+  height: 34px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font: 700 10px Montserrat,sans-serif;
+  cursor: pointer;
+}
+
+.period-range-day:hover:not(:disabled) { background: rgba(199,160,90,.14); }
+.period-range-day:disabled { color: rgba(116,119,130,.3); cursor: default; }
+.period-range-day.is-range { border-radius: 0; background: rgba(221,236,246,.72); }
+.period-range-day.is-start,
+.period-range-day.is-end {
+  border-radius: 10px;
+  background: linear-gradient(135deg,var(--gold),var(--bronze));
+  color: #fff;
+}
+
+.period-range-empty { height: 34px; }
+
+.period-range-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 0 18px 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.period-range-presets button {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--soft);
+  color: var(--ink);
+  font: 750 9px Montserrat,sans-serif;
+  cursor: pointer;
+}
+
+.period-range-presets button:hover { border-color: rgba(156,107,67,.35); color: var(--bronze); }
+.period-range-footer { background: rgba(247,244,239,.55); }
+.period-range-footer > span { color: var(--muted); font-size: 10px; font-weight: 700; }
+.period-range-footer .button:disabled { opacity: .45; cursor: default; }
+
+@media (max-width: 720px) {
+  .period-card .period-range-field { grid-column: 1 / -1; width: 100%; flex-basis: 100% !important; }
+  .period-range-popover {
+    position: fixed;
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    border-radius: 20px;
+  }
+  .period-range-months { grid-template-columns: 1fr; padding: 14px 18px; }
+  .period-range-month:nth-child(2) { display: none; }
+  .period-range-day { height: 38px; font-size: 11px; }
+  .period-range-empty { height: 38px; }
+  .period-range-footer { position: sticky; bottom: 0; background: #fff; }
+}
+
 </style>
 </head>
 
@@ -3407,19 +3584,41 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           <div class="period-note" id="periodNote">Выберите даты, чтобы пересчитать Метрику, Target Ads и равномерный план показов/кликов.</div>
         </div>
 
-        <div class="period-field">
-          <label for="periodFrom">Дата от</label>
-          <input class="date-input" type="date" id="periodFrom">
+        <div class="period-field period-range-field">
+          <label for="periodRangeTrigger">Диапазон дат</label>
+          <button class="date-input period-range-trigger" type="button" id="periodRangeTrigger" aria-expanded="false" aria-controls="periodRangePopover">
+            <span id="periodRangeValue">Весь период</span>
+            <span class="period-range-icon" aria-hidden="true">▾</span>
+          </button>
+          <input type="hidden" id="periodFrom">
+          <input type="hidden" id="periodTo">
+          <div class="period-range-popover" id="periodRangePopover" hidden>
+            <div class="period-range-head">
+              <div>
+                <strong>Выберите период</strong>
+                <span id="periodRangeHint">Сначала начало, затем конец</span>
+              </div>
+              <div class="period-range-nav">
+                <button type="button" id="periodRangePrev" aria-label="Предыдущий месяц">←</button>
+                <button type="button" id="periodRangeNext" aria-label="Следующий месяц">→</button>
+              </div>
+            </div>
+            <div class="period-range-months" id="periodRangeMonths"></div>
+            <div class="period-range-presets">
+              <button type="button" data-range-preset="7">Последние 7 дней</button>
+              <button type="button" data-range-preset="30">Последние 30 дней</button>
+              <button type="button" data-range-preset="month">Текущий месяц</button>
+              <button type="button" data-range-preset="all">Весь период</button>
+            </div>
+            <div class="period-range-footer">
+              <span id="periodRangeDraft">Диапазон не выбран</span>
+              <button class="button primary" id="applyPeriod" type="button" disabled>Применить</button>
+            </div>
+          </div>
         </div>
 
-        <div class="period-field">
-          <label for="periodTo">Дата до</label>
-          <input class="date-input" type="date" id="periodTo">
-        </div>
-
-        <div class="action-group">
+        <div class="action-group period-actions">
           <span class="action-group-label">Период</span>
-          <button class="button" id="applyPeriod">Применить</button>
           <button class="button" id="resetPeriod">Весь период</button>
         </div>
         <div class="action-group">
@@ -3728,6 +3927,11 @@ body.all-mode .artcl-hero { margin-top: 10px; }
     let PERIOD_FILTER = {
       from: "",
       to: ""
+    };
+    let RANGE_PICKER_STATE = {
+      draftFrom: "",
+      draftTo: "",
+      cursor: new Date(2026, 6, 1)
     };
     let hierarchyMode = "project";
     let COMPARISON_ACTIVE = false;
@@ -4189,6 +4393,167 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
+    }
+
+    function formatRangePickerDate(value) {
+      const date = parseDate(value);
+      if (Number.isNaN(date.getTime()) || date.getTime() === 0) return "";
+      return new Intl.DateTimeFormat("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(date);
+    }
+
+    function rangePickerAvailablePeriod() {
+      const available = excelAvailablePeriod();
+      if (available.from && available.to) return available;
+
+      const summaryPeriod = STARTUP_SUMMARY && STARTUP_SUMMARY.period
+        ? STARTUP_SUMMARY.period
+        : {};
+      return {
+        from: summaryPeriod.from || PERIOD_FILTER.from || "",
+        to: summaryPeriod.to || PERIOD_FILTER.to || ""
+      };
+    }
+
+    function syncPeriodRangeUi() {
+      const fromInput = document.getElementById("periodFrom");
+      const toInput = document.getElementById("periodTo");
+      const value = document.getElementById("periodRangeValue");
+
+      if (fromInput) fromInput.value = PERIOD_FILTER.from || "";
+      if (toInput) toInput.value = PERIOD_FILTER.to || "";
+      if (!value) return;
+
+      value.textContent = PERIOD_FILTER.from && PERIOD_FILTER.to
+        ? `${formatRangePickerDate(PERIOD_FILTER.from)} — ${formatRangePickerDate(PERIOD_FILTER.to)}`
+        : "Весь период";
+    }
+
+    function rangePickerMonthDate(offset = 0) {
+      return new Date(
+        RANGE_PICKER_STATE.cursor.getFullYear(),
+        RANGE_PICKER_STATE.cursor.getMonth() + offset,
+        1
+      );
+    }
+
+    function rangePickerMonthHtml(monthDate) {
+      const year = monthDate.getFullYear();
+      const month = monthDate.getMonth();
+      const days = new Date(year, month + 1, 0).getDate();
+      const leading = (new Date(year, month, 1).getDay() + 6) % 7;
+      const available = rangePickerAvailablePeriod();
+      const weekdays = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
+      const cells = [];
+
+      for (let index = 0; index < leading; index++) {
+        cells.push('<span class="period-range-empty" aria-hidden="true"></span>');
+      }
+
+      for (let day = 1; day <= days; day++) {
+        const date = new Date(year, month, day);
+        const key = dateKey(date);
+        const disabled = (available.from && key < available.from) || (available.to && key > available.to);
+        const classes = ["period-range-day"];
+        if (RANGE_PICKER_STATE.draftFrom && key > RANGE_PICKER_STATE.draftFrom && (!RANGE_PICKER_STATE.draftTo || key < RANGE_PICKER_STATE.draftTo)) classes.push("is-range");
+        if (key === RANGE_PICKER_STATE.draftFrom) classes.push("is-start");
+        if (key === RANGE_PICKER_STATE.draftTo) classes.push("is-end");
+
+        cells.push(`<button type="button" class="${classes.join(" ")}" data-range-date="${key}" ${disabled ? "disabled" : ""} aria-label="${date.toLocaleDateString("ru-RU")}">${day}</button>`);
+      }
+
+      return `
+        <section class="period-range-month">
+          <div class="period-range-month-title">${monthDate.toLocaleDateString("ru-RU", { month: "long", year: "numeric" })}</div>
+          <div class="period-range-weekdays">${weekdays.map(day => `<span>${day}</span>`).join("")}</div>
+          <div class="period-range-days">${cells.join("")}</div>
+        </section>
+      `;
+    }
+
+    function updateRangePickerDraftUi() {
+      const hint = document.getElementById("periodRangeHint");
+      const draft = document.getElementById("periodRangeDraft");
+      const apply = document.getElementById("applyPeriod");
+      const from = RANGE_PICKER_STATE.draftFrom;
+      const to = RANGE_PICKER_STATE.draftTo;
+
+      if (hint) hint.textContent = !from
+        ? "Сначала выберите начало периода"
+        : !to
+          ? "Теперь выберите конец периода"
+          : "Диапазон готов к применению";
+      if (draft) draft.textContent = from
+        ? `${formatRangePickerDate(from)}${to ? ` — ${formatRangePickerDate(to)}` : " — …"}`
+        : "Диапазон не выбран";
+      if (apply) apply.disabled = !(from && to);
+    }
+
+    function renderRangePicker() {
+      const months = document.getElementById("periodRangeMonths");
+      if (!months) return;
+      months.innerHTML = rangePickerMonthHtml(rangePickerMonthDate(0)) + rangePickerMonthHtml(rangePickerMonthDate(1));
+      updateRangePickerDraftUi();
+    }
+
+    function openPeriodRangePicker() {
+      const popover = document.getElementById("periodRangePopover");
+      const trigger = document.getElementById("periodRangeTrigger");
+      if (!popover || !trigger) return;
+
+      const available = rangePickerAvailablePeriod();
+      RANGE_PICKER_STATE.draftFrom = PERIOD_FILTER.from || "";
+      RANGE_PICKER_STATE.draftTo = PERIOD_FILTER.to || "";
+
+      const anchor = parseDate(RANGE_PICKER_STATE.draftTo || available.to || new Date());
+      RANGE_PICKER_STATE.cursor = new Date(anchor.getFullYear(), anchor.getMonth() - 1, 1);
+      popover.hidden = false;
+      trigger.setAttribute("aria-expanded", "true");
+      renderRangePicker();
+    }
+
+    function closePeriodRangePicker() {
+      const popover = document.getElementById("periodRangePopover");
+      const trigger = document.getElementById("periodRangeTrigger");
+      if (popover) popover.hidden = true;
+      if (trigger) trigger.setAttribute("aria-expanded", "false");
+    }
+
+    function selectRangePickerDate(key) {
+      if (!RANGE_PICKER_STATE.draftFrom || RANGE_PICKER_STATE.draftTo) {
+        RANGE_PICKER_STATE.draftFrom = key;
+        RANGE_PICKER_STATE.draftTo = "";
+      } else if (key < RANGE_PICKER_STATE.draftFrom) {
+        RANGE_PICKER_STATE.draftTo = RANGE_PICKER_STATE.draftFrom;
+        RANGE_PICKER_STATE.draftFrom = key;
+      } else {
+        RANGE_PICKER_STATE.draftTo = key;
+      }
+      renderRangePicker();
+    }
+
+    function applyRangePickerPreset(preset) {
+      const available = rangePickerAvailablePeriod();
+      if (!available.from || !available.to) return;
+
+      const end = parseDate(available.to);
+      let start = parseDate(available.from);
+      if (preset === "7" || preset === "30") {
+        start = new Date(end);
+        start.setDate(start.getDate() - Number(preset) + 1);
+        if (dateKey(start) < available.from) start = parseDate(available.from);
+      } else if (preset === "month") {
+        start = new Date(end.getFullYear(), end.getMonth(), 1);
+        if (dateKey(start) < available.from) start = parseDate(available.from);
+      }
+
+      RANGE_PICKER_STATE.draftFrom = dateKey(start);
+      RANGE_PICKER_STATE.draftTo = available.to;
+      RANGE_PICKER_STATE.cursor = new Date(end.getFullYear(), end.getMonth() - 1, 1);
+      renderRangePicker();
     }
 
     function isDateInPeriod(value) {
@@ -8003,6 +8368,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           fromInput.value = "";
           toInput.value = "";
         }
+        syncPeriodRangeUi();
 
         const verifierText = VERIFIER_ROWS ? " Target Ads добавлен." : " Target Ads не загружен.";
         const archiveText = ARCHIVE_METRIKA_FILES.length || ARCHIVE_VERIFIER_FILES.length
@@ -8115,6 +8481,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
 
       if (fromInput) fromInput.value = "";
       if (toInput) toInput.value = "";
+      syncPeriodRangeUi();
     }
 
     async function handleFileUpload(event) {
@@ -9693,18 +10060,62 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       window.setTimeout(() => URL.revokeObjectURL(url), 2000);
     }
 
+    document.getElementById("periodRangeTrigger").addEventListener("click", event => {
+      event.stopPropagation();
+      const isOpen = document.getElementById("periodRangeTrigger").getAttribute("aria-expanded") === "true";
+      if (isOpen) closePeriodRangePicker();
+      else openPeriodRangePicker();
+    });
+
+    document.getElementById("periodRangeMonths").addEventListener("click", event => {
+      event.stopPropagation();
+      const day = event.target.closest("[data-range-date]");
+      if (day && !day.disabled) selectRangePickerDate(day.dataset.rangeDate);
+    });
+
+    document.getElementById("periodRangePopover").addEventListener("click", event => {
+      event.stopPropagation();
+    });
+
+    document.getElementById("periodRangePrev").addEventListener("click", () => {
+      RANGE_PICKER_STATE.cursor = rangePickerMonthDate(-1);
+      renderRangePicker();
+    });
+
+    document.getElementById("periodRangeNext").addEventListener("click", () => {
+      RANGE_PICKER_STATE.cursor = rangePickerMonthDate(1);
+      renderRangePicker();
+    });
+
+    document.querySelectorAll("[data-range-preset]").forEach(button => {
+      button.addEventListener("click", () => applyRangePickerPreset(button.dataset.rangePreset));
+    });
+
     document.getElementById("applyPeriod").addEventListener("click", () => {
-      PERIOD_FILTER.from = document.getElementById("periodFrom").value || "";
-      PERIOD_FILTER.to = document.getElementById("periodTo").value || "";
+      if (!RANGE_PICKER_STATE.draftFrom || !RANGE_PICKER_STATE.draftTo) return;
+      PERIOD_FILTER.from = RANGE_PICKER_STATE.draftFrom;
+      PERIOD_FILTER.to = RANGE_PICKER_STATE.draftTo;
+      syncPeriodRangeUi();
+      closePeriodRangePicker();
       refreshDashboard();
     });
 
     document.getElementById("resetPeriod").addEventListener("click", () => {
       PERIOD_FILTER.from = "";
       PERIOD_FILTER.to = "";
-      document.getElementById("periodFrom").value = "";
-      document.getElementById("periodTo").value = "";
+      RANGE_PICKER_STATE.draftFrom = "";
+      RANGE_PICKER_STATE.draftTo = "";
+      syncPeriodRangeUi();
+      closePeriodRangePicker();
       refreshDashboard();
+    });
+
+    document.addEventListener("click", event => {
+      if (!event.target.closest(".period-range-field")) closePeriodRangePicker();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closePeriodRangePicker();
     });
 
     document.querySelectorAll("[data-report-mode]").forEach(button => {
