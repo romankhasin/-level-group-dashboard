@@ -3206,6 +3206,68 @@ body.all-mode .artcl-hero { margin-top: 10px; }
   .artcl-body-head { align-items: flex-start; flex-direction: column; }
 }
 
+/* Dashboard methodology help */
+.help-button::before { content: "?"; margin-right: 7px; color: var(--bronze); font-weight: 900; }
+.help-modal { position: fixed; inset: 0; z-index: 13000; display: none; }
+.help-modal.open { display: block; }
+.help-backdrop { position: absolute; inset: 0; background: rgba(22,25,45,.42); backdrop-filter: blur(5px); }
+.help-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1080px,calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  margin: 24px auto;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow: 0 34px 110px rgba(32,35,58,.25);
+}
+.help-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 26px 18px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg,#fff,rgba(221,236,246,.5));
+}
+.help-eyebrow { color: var(--bronze); font-size: 9px; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.help-head h3 { margin: 5px 0 0; font-size: 23px; letter-spacing: -.04em; }
+.help-close { border: 0; background: transparent; color: var(--muted); font-size: 27px; cursor: pointer; }
+.help-body { overflow-y: auto; padding: 22px 26px 30px; }
+.help-callout { padding: 15px 17px; border: 1px solid rgba(199,160,90,.24); border-radius: 16px; background: rgba(247,244,239,.7); color: var(--muted); font-size: 12px; font-weight: 650; line-height: 1.6; }
+.help-section { margin-top: 24px; }
+.help-section h4 { margin: 0 0 12px; font-size: 17px; letter-spacing: -.03em; }
+.help-section > p { margin: -5px 0 14px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.help-source-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.help-source-card { padding: 16px; border: 1px solid var(--line); border-radius: 17px; background: #fff; }
+.help-source-card strong { display: block; margin-bottom: 7px; font-size: 12px; }
+.help-source-card span { display: block; color: var(--muted); font-size: 10px; line-height: 1.55; }
+.help-source-card em { display: inline-block; margin-top: 10px; padding: 5px 8px; border-radius: 999px; background: var(--soft); color: var(--bronze); font-size: 8px; font-style: normal; font-weight: 850; text-transform: uppercase; }
+.help-flow { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; }
+.help-flow-step { position: relative; padding: 14px; border-radius: 15px; background: var(--soft); font-size: 10px; font-weight: 750; line-height: 1.45; }
+.help-flow-step b { display: block; margin-bottom: 5px; color: var(--bronze); font-size: 9px; }
+.help-formulas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 9px; }
+.help-formula { padding: 13px; border: 1px solid var(--line); border-radius: 14px; font-size: 10px; line-height: 1.5; }
+.help-formula b { display: block; margin-bottom: 4px; }
+.help-token-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; align-items: start; }
+.help-token-card { overflow: hidden; border: 1px solid var(--line); border-radius: 16px; }
+.help-token-card h5 { margin: 0; padding: 12px 14px; background: var(--soft); font-size: 11px; }
+.help-token-table { width: 100%; border-collapse: collapse; }
+.help-token-table td { padding: 7px 11px; border-top: 1px solid var(--line); font-size: 9px; vertical-align: top; }
+.help-token-table td:first-child { width: 42%; color: var(--bronze); font-family: ui-monospace,SFMono-Regular,Menlo,monospace; font-weight: 800; overflow-wrap: anywhere; }
+.help-rules { margin: 12px 0 0; padding-left: 18px; color: var(--muted); font-size: 10px; line-height: 1.65; }
+body.help-open { overflow: hidden; }
+@media(max-width:800px){
+  .help-dialog { width: calc(100vw - 16px); max-height: calc(100vh - 16px); margin: 8px auto; border-radius: 20px; }
+  .help-head { padding: 17px 18px 14px; }
+  .help-body { padding: 16px 18px 24px; }
+  .help-source-grid,.help-token-grid,.help-formulas { grid-template-columns: 1fr; }
+  .help-flow { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
 /* Unified date-range picker */
 .period-card .period-range-field {
   position: relative;
@@ -3652,6 +3714,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         
         <button class="button" id="toggleHierarchy">Сортировка по Площадкам</button>
         <button class="button compare-periods-button" id="openPeriodComparison" type="button">Сравнение периодов</button>
+        <button class="button help-button" id="openHelp" type="button">Справка</button>
         <button class="button" id="toggleProjects">Развернуть всё</button>
         <button class="button" id="togglePlatforms">Развернуть 2-й уровень</button>
       </div>
@@ -3837,6 +3900,109 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       givt: ["givt"],
       sivt: ["sivt", "fraud_impressions"]
     };
+
+    function helpDictionaryTable(title, dictionary) {
+      const rows = Object.entries(dictionary)
+        .sort((a, b) => a[1].localeCompare(b[1], "ru") || a[0].localeCompare(b[0], "ru"))
+        .map(([token, label]) => `<tr><td>${token}</td><td>${label}</td></tr>`)
+        .join("");
+
+      return `
+        <div class="help-token-card">
+          <h5>${title}</h5>
+          <table class="help-token-table"><tbody>${rows}</tbody></table>
+        </div>
+      `;
+    }
+
+    function buildHelpContent() {
+      return `
+        <div class="help-callout">
+          Автоматическое обновление запускается ежедневно около 06:00 МСК и забирает данные включительно по вчерашний день. Сначала открывается компактная сводка, затем полный отчёт загружается в фоне.
+        </div>
+
+        <section class="help-section">
+          <h4>Источники данных</h4>
+          <div class="help-source-grid">
+            <article class="help-source-card"><strong>Яндекс Метрика</strong><span>Автоматически через API по двум счётчикам. Забираются дата, UTM Campaign, визиты, отказы, среднее время на сайте и первично-качественные звонки. Точность запроса — full.</span><em>Автоматически</em></article>
+            <article class="help-source-card"><strong>Google / Excel «Данные_метрика»</strong><span>Показы, клики и фактическая стоимость для согласованных размещений Yandex, MTS и Avito. Строки объединяются по дате и technical_mark. Фактическая стоимость без НДС приводится к сумме с НДС × 1,22.</span><em>Автоматически</em></article>
+            <article class="help-source-card"><strong>Target Ads</strong><span>Сейчас API-обновление отключено. CSV верификатора загружается вручную и добавляет IVT/GIVT/SIVT, а также доступные показы и клики. Для Yandex/MTS факты из Google имеют приоритет.</span><em>Вручную</em></article>
+            <article class="help-source-card"><strong>Медиаплан</strong><span>Встроен план августа 2026 по PRG и MED/MRK. Его можно заменить вручную Excel-файлом; показы, клики и бюджет распределяются равномерно по выбранным дням месяца.</span><em>Встроен / вручную</em></article>
+            <article class="help-source-card"><strong>Журнал оптимизаций</strong><span>Лист «Дневник оптимизации» из рабочего Google-файла: проект, канал, площадка, период, комментарии и дальнейшие действия.</span><em>Автоматически</em></article>
+            <article class="help-source-card"><strong>ARTCL</strong><span>Встроенные выгрузки Яндекс ПромоСтраниц и Дзена. Этот режим использует собственные показатели статей, дочитываний, переходов и подписок.</span><em>Встроенные файлы</em></article>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h4>Что можно загрузить вручную</h4>
+          <div class="help-flow">
+            <div class="help-flow-step"><b>01 · Метрика CSV</b>Один или несколько файлов с UTM Campaign, датой, визитами, отказами и временем.</div>
+            <div class="help-flow-step"><b>02 · Target Ads CSV</b>Текущий или архивный отчёт с креативом/размещением, показами, кликами и IVT.</div>
+            <div class="help-flow-step"><b>03 · Медиаплан Excel</b>Плановые показы, клики и бюджет вместо встроенного плана.</div>
+            <div class="help-flow-step"><b>04 · Архив CSV</b>Прошлые месяцы Метрики и Target Ads. Архив хранится локально только в текущем браузере.</div>
+          </div>
+        </section>
+
+        <section class="help-section">
+          <h4>Как читается UTM / technical_mark</h4>
+          <p>Метка приводится к нижнему регистру и разбивается по символу подчёркивания. Дашборд последовательно определяет режим, проект, площадку и формат.</p>
+          <ol class="help-rules">
+            <li><b>Режим:</b> отдельный токен <code>prg</code> относится к PRG; <code>med</code> и <code>mrk</code> — к MED/MRK. Дзен и ПромоСтраницы отображаются отдельно в ARTCL.</li>
+            <li><b>Проект:</b> обычно первый распознанный код. Токены <code>reg</code> или <code>prov</code> всегда дают «Регионы»; <code>last</code> — «Остатки»; сочетание <code>lg</code> + <code>prem</code>/<code>premium</code> — «Премиум».</li>
+            <li><b>Площадка:</b> первый известный токен площадки после проекта; служебные токены региона, месяца и формата пропускаются.</li>
+            <li><b>Формат:</b> первый известный токен формата после площадки. <code>allroll</code>, <code>all-roll</code> и <code>all_roll</code> нормализуются в <code>video</code>.</li>
+            <li><b>Диагностика:</b> неизвестный код не удаляется молча — он попадает в раздел «Диагностика данных» для добавления в словарь.</li>
+            <li>Метки с <code>move</code> исключаются; Дзен и StreamingAds не смешиваются с основным PRG/MED/MRK-срезом.</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h4>Словарь считываемых токенов</h4>
+          <div class="help-token-grid">
+            ${helpDictionaryTable("Проекты / ЖК", PROJECT_MAP)}
+            ${helpDictionaryTable("Площадки", PLATFORM_LABELS)}
+            ${helpDictionaryTable("Форматы", FORMAT_LABELS)}
+          </div>
+          <ol class="help-rules">
+            <li>Алиасы <code>lmech-rspb</code> → <code>lmech</code>, <code>lwnizh-rmsk</code> → <code>lwnizh</code>, <code>lvol</code> → <code>lvol-rnn</code>.</li>
+            <li>Алиасы площадок: <code>in-lab</code>/<code>in_lab</code> → Inlab; <code>vk-video</code>/<code>vk_video</code> → VK Video; <code>platzkart</code> → Plazkart.</li>
+            <li>Служебные токены <code>msk</code>, <code>spb</code>, <code>reg</code>, <code>prov</code>, месяцы вида <code>aug26</code> и значения <code>none</code> не считаются площадкой или форматом.</li>
+          </ol>
+        </section>
+
+        <section class="help-section">
+          <h4>Расчёт показателей</h4>
+          <div class="help-formulas">
+            <div class="help-formula"><b>Отказы</b>Средневзвешенное по визитам.</div>
+            <div class="help-formula"><b>Время на сайте</b>Средневзвешенное по визитам.</div>
+            <div class="help-formula"><b>IVT</b>Невалидные показы / показы с данными IVT.</div>
+            <div class="help-formula"><b>CTR</b>Клики / показы.</div>
+            <div class="help-formula"><b>CPM</b>Фактический бюджет / показы × 1 000.</div>
+            <div class="help-formula"><b>CPC</b>Фактический бюджет / клики.</div>
+          </div>
+        </section>
+      `;
+    }
+
+    function openHelpModal() {
+      const modal = document.getElementById("helpModal");
+      const content = document.getElementById("helpContent");
+      if (!modal || !content) return;
+      content.innerHTML = buildHelpContent();
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("help-open");
+      const closeButton = modal.querySelector(".help-close");
+      if (closeButton) closeButton.focus();
+    }
+
+    function closeHelpModal() {
+      const modal = document.getElementById("helpModal");
+      if (!modal) return;
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("help-open");
+    }
 
     const EMBEDDED_PLAN_MONTH = "2026-08";
     const EMBEDDED_MONTHLY_PLAN_ROWS = [{"channel":"med","projectCode":"gvl","projectName":"Лесной","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":400000,"clicks":240,"budget":107360,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"gvl","projectName":"Лесной","platformCode":"pyaterochka","platformName":"Пятёрочка","formatCode":"banner","formatName":"Баннер","impressions":1627502,"clicks":2604.0032,"budget":694943.35,"sourceFormats":["Главный баннер в каталоге"]},{"channel":"med","projectCode":"last","projectName":"Остатки","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":1120000,"clicks":672,"budget":300608,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"last","projectName":"Остатки","platformCode":"tiburon","platformName":"Tiburon","formatCode":"research","formatName":"Исследование","impressions":0,"clicks":0,"budget":48800,"sourceFormats":["Tiburon Research (исследование ЦА)"]},{"channel":"med","projectCode":"lg_prem","projectName":"Премиум","platformCode":"tbank","platformName":"Т-Банк","formatCode":"banner","formatName":"Баннер","impressions":715000,"clicks":5720,"budget":732732,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"lg_reg","projectName":"Регионы","platformCode":"yandexgo","platformName":"Яндекс Go","formatCode":"banner","formatName":"Баннер","impressions":630000,"clicks":819,"budget":345870,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"lg","projectName":"Левел Групп","platformCode":"2gis","platformName":"2GIS","formatCode":"banner","formatName":"Баннер","impressions":114481,"clicks":716,"budget":49776,"sourceFormats":["Баннеры"]},{"channel":"med","projectCode":"lg","projectName":"Левел Групп","platformCode":"dzen","platformName":"Дзен","formatCode":"article","formatName":"Статья","impressions":2227200,"clicks":24499.2,"budget":296716.49,"sourceFormats":["Статьи"]},{"channel":"med","projectCode":"lg","projectName":"Левел Групп","platformCode":"dzen","platformName":"Дзен","formatCode":"native","formatName":"Нативный формат","impressions":1205476,"clicks":4821.904,"budget":137655.72,"sourceFormats":["Сообщество, группа или профиль // Подписка на сообщество"]},{"channel":"med","projectCode":"lg","projectName":"Левел Групп","platformCode":"promopages","platformName":"Яндекс Промостраницы","formatCode":"article","formatName":"Статья","impressions":6655684.686099,"clicks":86523.900919,"budget":2440000,"sourceFormats":["Статьи"]},{"channel":"med","projectCode":"lg","projectName":"Левел Групп","platformCode":"vk","platformName":"VK Ads","formatCode":"video","formatName":"Видео","impressions":750000,"clicks":75,"budget":366000,"sourceFormats":["Smart TV"]},{"channel":"med","projectCode":"lg","projectName":"Левел Групп","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":1500000,"clicks":1500,"budget":366000,"sourceFormats":["Прайм - баннер"]},{"channel":"med","projectCode":"lm","projectName":"Мичуринский","platformCode":"avito-ads","platformName":"Авито Ads","formatCode":"banner","formatName":"Баннер","impressions":335000,"clicks":502.5,"budget":124653.5,"sourceFormats":["Медийный премиум"]},{"channel":"med","projectCode":"lm","projectName":"Мичуринский","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":1620000,"clicks":972,"budget":434808,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"lm","projectName":"Мичуринский","platformCode":"ozon","platformName":"Ozon","formatCode":"video","formatName":"Видео","impressions":1080001,"clicks":1296.0012,"budget":434808.4,"sourceFormats":["Видео баннер на главной"]},{"channel":"med","projectCode":"lm","projectName":"Мичуринский","platformCode":"promopages","platformName":"Яндекс Промостраницы","formatCode":"article","formatName":"Статья","impressions":1411605.368991,"clicks":14116.247745,"budget":447761.19,"sourceFormats":["Статьи"]},{"channel":"med","projectCode":"lm","projectName":"Мичуринский","platformCode":"yandexmarket","platformName":"Яндекс Маркет","formatCode":"banner","formatName":"Баннер","impressions":550000,"clicks":825,"budget":301950,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"lmech","projectName":"Мечникова","platformCode":"avito-ads","platformName":"Авито Ads","formatCode":"banner","formatName":"Баннер","impressions":1620000,"clicks":3240,"budget":612684,"sourceFormats":["Медийный премиум"]},{"channel":"med","projectCode":"lmech","projectName":"Мечникова","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":490000,"clicks":332,"budget":161650,"sourceFormats":["Баннер \"Заказ выполнен\"","Баннер на главной"]},{"channel":"med","projectCode":"lmech","projectName":"Мечникова","platformCode":"yandexgo","platformName":"Яндекс Go","formatCode":"banner","formatName":"Баннер","impressions":350000,"clicks":455,"budget":163602,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"lv","projectName":"Войковская","platformCode":"avito-ads","platformName":"Авито Ads","formatCode":"banner","formatName":"Баннер","impressions":600000,"clicks":900,"budget":223260,"sourceFormats":["Медийный премиум"]},{"channel":"med","projectCode":"lv","projectName":"Войковская","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":1334894.7,"clicks":1067.91576,"budget":570000.04,"sourceFormats":["Баннер \"Заказ выполнен\""]},{"channel":"med","projectCode":"lv","projectName":"Войковская","platformCode":"wildberries","platformName":"Wildberries","formatCode":"banner","formatName":"Баннер","impressions":10000000,"clicks":10000,"budget":366000,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"lv","projectName":"Войковская","platformCode":"yandexgo","platformName":"Яндекс Go","formatCode":"banner","formatName":"Баннер","impressions":1795446.23,"clicks":2334.080099,"budget":800137.98,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"lvol-rnn","projectName":"Волга","platformCode":"yandexmarket","platformName":"Яндекс Маркет","formatCode":"banner","formatName":"Баннер","impressions":287000,"clicks":287,"budget":150210.06,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"2gis","platformName":"2GIS","formatCode":"banner","formatName":"Баннер","impressions":37223,"clicks":1995,"budget":56815,"sourceFormats":["Баннеры"]},{"channel":"med","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"alfamobile","platformName":"Альфа-Мобайл","formatCode":"banner","formatName":"Баннер","impressions":1042000,"clicks":3126,"budget":1220390.4,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"amberdata","platformName":"Amberdata","formatCode":"data","formatName":"Данные","impressions":1200000,"clicks":0,"budget":58560,"sourceFormats":["Использование данных"]},{"channel":"med","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"2gis","platformName":"2GIS","formatCode":"banner","formatName":"Баннер","impressions":31646,"clicks":1845,"budget":53212,"sourceFormats":["Баннеры"]},{"channel":"med","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"alfamobile","platformName":"Альфа-Мобайл","formatCode":"banner","formatName":"Баннер","impressions":1111200,"clicks":3333.6,"budget":1220097.6,"sourceFormats":["Баннер-растяжка в истории операций"]},{"channel":"med","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"cre","platformName":"CRE","formatCode":"banner","formatName":"Баннер","impressions":33000,"clicks":33,"budget":553392,"sourceFormats":["Баннер 300х600 В"]},{"channel":"med","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"smi2","platformName":"СМИ2","formatCode":"tgb","formatName":"ТГБ","impressions":3333333,"clicks":5000,"budget":183000,"sourceFormats":["Нативный ТГБ"]},{"channel":"med","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"tbank","platformName":"Т-Банк","formatCode":"banner","formatName":"Баннер","impressions":1000000,"clicks":15000,"budget":1317600,"sourceFormats":["Баннер на главной в МП Инвестици"]},{"channel":"med","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"avito-ads","platformName":"Авито Ads","formatCode":"video","formatName":"Видео","impressions":1250000,"clicks":2500,"budget":503250,"sourceFormats":["Видео"]},{"channel":"med","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"tbank","platformName":"Т-Банк","formatCode":"banner","formatName":"Баннер","impressions":707000,"clicks":919.1,"budget":500273.2,"sourceFormats":["Витрина"]},{"channel":"med","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":936769,"clicks":1873.538,"budget":500000.45,"sourceFormats":["Баннер в мобильном поиске под виджетом погоды"]},{"channel":"med","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"yandexgo","platformName":"Яндекс Go","formatCode":"banner","formatName":"Баннер","impressions":700000,"clicks":910,"budget":298656,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"sav","projectName":"Саввинская","platformCode":"yandexgo","platformName":"Яндекс Go","formatCode":"banner","formatName":"Баннер","impressions":650000,"clicks":845,"budget":264069,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)","Сквозной баннер (горизонтальный, вертикальный баннеры): Urban Ads (Яндекс Лавка, Яндекс Еда, Деливери, Яндекс Доставка)"]},{"channel":"med","projectCode":"sel","projectName":"Селигерская","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":1200000,"clicks":720,"budget":322080,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"sel","projectName":"Селигерская","platformCode":"yandexmarket","platformName":"Яндекс Маркет","formatCode":"banner","formatName":"Баннер","impressions":1100000,"clicks":1650,"budget":583404,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"sp","projectName":"Южнопортовая","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":250000,"clicks":150,"budget":67100,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"sp","projectName":"Южнопортовая","platformCode":"promopages","platformName":"Яндекс Промостраницы","formatCode":"article","formatName":"Статья","impressions":3213630.385,"clicks":36956.749428,"budget":845771.14,"sourceFormats":["Не указан"]},{"channel":"med","projectCode":"sp","projectName":"Южнопортовая","platformCode":"tbank","platformName":"Т-Банк","formatCode":"banner","formatName":"Баннер","impressions":709000,"clicks":921.7,"budget":501688.4,"sourceFormats":["Витрина"]},{"channel":"med","projectCode":"sp","projectName":"Южнопортовая","platformCode":"wildberries","platformName":"Wildberries","formatCode":"banner","formatName":"Баннер","impressions":10000000,"clicks":10000,"budget":366000,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"sp","projectName":"Южнопортовая","platformCode":"yandexgo","platformName":"Яндекс Go","formatCode":"banner","formatName":"Баннер","impressions":500000,"clicks":650,"budget":274500,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"med","projectCode":"vr","projectName":"Коммерция Воронцовская","platformCode":"2gis","platformName":"2GIS","formatCode":"banner","formatName":"Баннер","impressions":43055,"clicks":2695,"budget":64710,"sourceFormats":["Баннеры"]},{"channel":"med","projectCode":"vr","projectName":"Коммерция Воронцовская","platformCode":"amberdata","platformName":"Amberdata","formatCode":"data","formatName":"Данные","impressions":1948000,"clicks":0,"budget":95062.4,"sourceFormats":["Использование данных"]},{"channel":"med","projectCode":"zv","projectName":"Звенигородская","platformCode":"ozon","platformName":"Ozon","formatCode":"banner","formatName":"Баннер","impressions":645000,"clicks":387,"budget":173118,"sourceFormats":["Баннер на главной"]},{"channel":"med","projectCode":"zv","projectName":"Звенигородская","platformCode":"ozon","platformName":"Ozon","formatCode":"video","formatName":"Видео","impressions":430000,"clicks":516,"budget":173118,"sourceFormats":["Видеобаннер"]},{"channel":"med","projectCode":"zv","projectName":"Звенигородская","platformCode":"tbank","platformName":"Т-Банк","formatCode":"banner","formatName":"Баннер","impressions":707000,"clicks":919.1,"budget":500273.2,"sourceFormats":["Витрина"]},{"channel":"med","projectCode":"zv","projectName":"Звенигородская","platformCode":"yandexmarket","platformName":"Яндекс Маркет","formatCode":"banner","formatName":"Баннер","impressions":920000,"clicks":1380,"budget":505080,"sourceFormats":["Сквозной баннер (горизонтальный, вертикальный баннеры)"]},{"channel":"mrk","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"marketcall","platformName":"Marketcall","formatCode":"lead","formatName":"Лид","impressions":0,"clicks":10,"budget":457500,"sourceFormats":["Lead"]},{"channel":"mrk","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"marketcall","platformName":"Marketcall","formatCode":"lead","formatName":"Лид","impressions":0,"clicks":7,"budget":443012.5,"sourceFormats":["Lead"]},{"channel":"mrk","projectCode":"vr","projectName":"Коммерция Воронцовская","platformCode":"marketcall","platformName":"Marketcall","formatCode":"lead","formatName":"Лид","impressions":0,"clicks":7,"budget":320250,"sourceFormats":["Lead"]},{"channel":"prg","projectCode":"ak","projectName":"Академический","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":1250000,"clicks":10000,"budget":244000,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"ak","projectName":"Академический","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":3446.5,"sourceFormats":["-"]},{"channel":"prg","projectCode":"gvl","projectName":"Лесной","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":2500000,"clicks":20000,"budget":488000,"sourceFormats":["Multi-roll 15 сек"]},{"channel":"prg","projectCode":"gvl","projectName":"Лесной","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":23512.03,"sourceFormats":["-"]},{"channel":"prg","projectCode":"gvl","projectName":"Лесной","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":4000000,"clicks":6000,"budget":390400,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"last","projectName":"Остатки","platformCode":"astralab","platformName":"Astralab","formatCode":"banner","formatName":"Баннер","impressions":1024666.666667,"clicks":3074,"budget":300022.4,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"last","projectName":"Остатки","platformCode":"roxot","platformName":"Roxot","formatCode":"video","formatName":"Видео","impressions":2595918.367347,"clicks":12720,"budget":506520.58,"sourceFormats":["Видеобаннер ((пре-, мид-, пост-ролл))"]},{"channel":"prg","projectCode":"last","projectName":"Остатки","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":22720.94,"sourceFormats":["-"]},{"channel":"prg","projectCode":"last","projectName":"Остатки","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":2000000,"clicks":3000,"budget":244000,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"last","projectName":"Остатки","platformCode":"yandex","platformName":"Яндекс","formatCode":"video","formatName":"Видео","impressions":1500000,"clicks":3000,"budget":549000,"sourceFormats":["In-stream + Out-stream"]},{"channel":"prg","projectCode":"lg_prem","projectName":"Премиум","platformCode":"astralab","platformName":"Astralab","formatCode":"banner","formatName":"Баннер","impressions":1500000,"clicks":4500,"budget":494100,"sourceFormats":["1280х720, 970х250, 300х600, 320х480, 360х280"]},{"channel":"prg","projectCode":"lg_prem","projectName":"Премиум","platformCode":"astralab","platformName":"Astralab","formatCode":"video","formatName":"Видео","impressions":1650955,"clicks":4952.865,"budget":745241.09,"sourceFormats":["Видео Smart Tube"]},{"channel":"prg","projectCode":"lg_prem","projectName":"Премиум","platformCode":"da","platformName":"Digital Alliance","formatCode":"video","formatName":"Видео","impressions":677000,"clicks":2031,"budget":330376,"sourceFormats":["ONLINE CINEMA PACK"]},{"channel":"prg","projectCode":"lg_prem","projectName":"Премиум","platformCode":"inlab","platformName":"Inlab","formatCode":"banner","formatName":"Баннер","impressions":1800000,"clicks":12600,"budget":505080,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"lg_prem","projectName":"Премиум","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":19004.23,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lg_prem","projectName":"Премиум","platformCode":"yandex","platformName":"Яндекс","formatCode":"video","formatName":"Видео","impressions":500000,"clicks":50,"budget":237900,"sourceFormats":["Connected TV"]},{"channel":"prg","projectCode":"lg","projectName":"Левел Групп","platformCode":"buzzoola","platformName":"Buzzoola","formatCode":"video","formatName":"Видео","impressions":1500000,"clicks":12000,"budget":457500,"sourceFormats":["Pre-roll 15 секунд"]},{"channel":"prg","projectCode":"lg","projectName":"Левел Групп","platformCode":"da","platformName":"Digital Alliance","formatCode":"video","formatName":"Видео","impressions":1111111.111111,"clicks":1333.333333,"budget":366000,"sourceFormats":["In-stream, 100% досмотр"]},{"channel":"prg","projectCode":"lg","projectName":"Левел Групп","platformCode":"rutube","platformName":"Rutube","formatCode":"video","formatName":"Видео","impressions":1500000,"clicks":19500,"budget":576450,"sourceFormats":["Видеобаннер ((пре-, мид-, пост-ролл))"]},{"channel":"prg","projectCode":"lg","projectName":"Левел Групп","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":60834.73,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lg","projectName":"Левел Групп","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":3500000,"clicks":7000,"budget":384300,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"lm","projectName":"Мичуринский","platformCode":"adheads","platformName":"AdHeads","formatCode":"banner","formatName":"Баннер","impressions":1662510,"clicks":9975.06,"budget":341599.92,"sourceFormats":["Brandformance"]},{"channel":"prg","projectCode":"lm","projectName":"Мичуринский","platformCode":"adspector","platformName":"Adspector","formatCode":"video","formatName":"Видео","impressions":2500000,"clicks":25000,"budget":378200,"sourceFormats":["Cross-Stream до 30 сек"]},{"channel":"prg","projectCode":"lm","projectName":"Мичуринский","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":3000000,"clicks":24000,"budget":585600,"sourceFormats":["Multi-roll 15 сек"]},{"channel":"prg","projectCode":"lm","projectName":"Мичуринский","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":42988.22,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lm","projectName":"Мичуринский","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":4843750,"clicks":7265.625,"budget":472750,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"lmech","projectName":"Мечникова","platformCode":"buzzoola","platformName":"Buzzoola","formatCode":"video","formatName":"Видео","impressions":1000000,"clicks":8000,"budget":305000,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"lmech","projectName":"Мечникова","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":2500000,"clicks":20000,"budget":488000,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"lmech","projectName":"Мечникова","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":23325.91,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lmech","projectName":"Мечникова","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":2500000,"clicks":3750,"budget":244000,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"lv","projectName":"Войковская","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":37857.3,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lvol-rnn","projectName":"Волга","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":1178279,"clicks":9426.232,"budget":230000.06,"sourceFormats":["OLV (in-stream+out-stream)"]},{"channel":"prg","projectCode":"lvol-rnn","projectName":"Волга","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":6094.18,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"mobidriven","platformName":"Mobidriven","formatCode":"banner","formatName":"Баннер","impressions":2885000,"clicks":0,"budget":0,"sourceFormats":["In-app + Mobile web Banners"]},{"channel":"prg","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":3000000,"clicks":24000,"budget":585600,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":38620.03,"sourceFormats":["-"]},{"channel":"prg","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"vox","platformName":"VOX","formatCode":"banner","formatName":"Баннер","impressions":1000000,"clicks":2500,"budget":305000,"sourceFormats":["VOX Combo"]},{"channel":"prg","projectCode":"lwnizh","projectName":"Нижегородская Коммерция","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":1200000,"clicks":1680,"budget":120004.08,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"astralab","platformName":"Astralab","formatCode":"video","formatName":"Видео","impressions":665000,"clicks":2660,"budget":300181,"sourceFormats":["Видео Smart Tube"]},{"channel":"prg","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":2500000,"clicks":20000,"budget":488000,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"soloway","platformName":"Soloway","formatCode":"banner","formatName":"Баннер","impressions":950000,"clicks":1900,"budget":104310,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"soloway","platformName":"Soloway","formatCode":"video","formatName":"Видео","impressions":895000,"clicks":4475,"budget":305732,"sourceFormats":["Видео"]},{"channel":"prg","projectCode":"lwsv","projectName":"Свободы Коммерция","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":34517.88,"sourceFormats":["-"]},{"channel":"prg","projectCode":"ng","projectName":"Нижегородская","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":1565000,"clicks":12520,"budget":305488,"sourceFormats":["Multi-roll 15 сек"]},{"channel":"prg","projectCode":"ng","projectName":"Нижегородская","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":9829.42,"sourceFormats":["-"]},{"channel":"prg","projectCode":"ng","projectName":"Нижегородская","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":2000000,"clicks":3000,"budget":195200,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"adspector","platformName":"Adspector","formatCode":"video","formatName":"Видео","impressions":1996300,"clicks":19963,"budget":302000.26,"sourceFormats":["Cross-Stream до 30 сек"]},{"channel":"prg","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"astralab","platformName":"Astralab","formatCode":"banner","formatName":"Баннер","impressions":998787,"clicks":2996.361,"budget":329000.44,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":2489755,"clicks":19918.04,"budget":486000.18,"sourceFormats":["In-stream + Out-stream"]},{"channel":"prg","projectCode":"pc","projectName":"Павелецкая Сити","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":25031.55,"sourceFormats":["-"]},{"channel":"prg","projectCode":"sav","projectName":"Саввинская","platformCode":"astralab","platformName":"Astralab","formatCode":"video","formatName":"Видео","impressions":1170000,"clicks":4680,"budget":528138,"sourceFormats":["Видео Smart Tube"]},{"channel":"prg","projectCode":"sav","projectName":"Саввинская","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":5018.1,"sourceFormats":["-"]},{"channel":"prg","projectCode":"sel","projectName":"Селигерская","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":2400000,"clicks":19200,"budget":468480,"sourceFormats":["Multi-roll 15 сек"]},{"channel":"prg","projectCode":"sel","projectName":"Селигерская","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":23987.64,"sourceFormats":["-"]},{"channel":"prg","projectCode":"sel","projectName":"Селигерская","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":4000000,"clicks":4000,"budget":390400,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"sp","projectName":"Южнопортовая","platformCode":"buzzoola","platformName":"Buzzoola","formatCode":"video","formatName":"Видео","impressions":1521955,"clicks":12175.64,"budget":464196.28,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"sp","projectName":"Южнопортовая","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":3084000,"clicks":24672,"budget":601996.8,"sourceFormats":["Multi-roll 15 сек"]},{"channel":"prg","projectCode":"sp","projectName":"Южнопортовая","platformCode":"roxot","platformName":"Roxot","formatCode":"banner","formatName":"Баннер","impressions":3587619.047619,"clicks":7534,"budget":300003.88,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"sp","projectName":"Южнопортовая","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":81758.08,"sourceFormats":["-"]},{"channel":"prg","projectCode":"sp","projectName":"Южнопортовая","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":10000000,"clicks":15000,"budget":512400.04,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"vr","projectName":"Коммерция Воронцовская","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":3200000,"clicks":25600,"budget":624640,"sourceFormats":["Multi-roll (15 сек)"]},{"channel":"prg","projectCode":"vr","projectName":"Коммерция Воронцовская","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":28650.22,"sourceFormats":["-"]},{"channel":"prg","projectCode":"vr","projectName":"Коммерция Воронцовская","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":2500000,"clicks":7500,"budget":250008.5,"sourceFormats":["Баннеры"]},{"channel":"prg","projectCode":"zv","projectName":"Звенигородская","platformCode":"mts","platformName":"MTS","formatCode":"video","formatName":"Видео","impressions":3000000,"clicks":24000,"budget":585600,"sourceFormats":["Multi-roll 15 сек"]},{"channel":"prg","projectCode":"zv","projectName":"Звенигородская","platformCode":"targetads","platformName":"Target Ads","formatCode":"verification","formatName":"Верификация","impressions":0,"clicks":0,"budget":17375.87,"sourceFormats":["-"]},{"channel":"prg","projectCode":"zv","projectName":"Звенигородская","platformCode":"yandex","platformName":"Яндекс","formatCode":"banner","formatName":"Баннер","impressions":3600000,"clicks":5400,"budget":395280,"sourceFormats":["Баннеры"]}];
@@ -5812,7 +5978,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       };
     }
 
-    function emptyCombinedMetric() {
+    function emptyCombinedMetric(data = DATA) {
       return {
         visits: 0,
         bounceWeighted: 0,
@@ -5828,13 +5994,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         impressionsWithoutActualCost: 0,
         ivtCount: 0,
         ivtImpressions: 0,
-        days: DATA ? DATA.dates.map(() => 0) : [],
-        bounceDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
-        bounceDaysVisits: DATA ? DATA.dates.map(() => 0) : [],
-        timeDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
-        timeDaysVisits: DATA ? DATA.dates.map(() => 0) : [],
-        ivtDaysWeighted: DATA ? DATA.dates.map(() => 0) : [],
-        ivtDaysImpressions: DATA ? DATA.dates.map(() => 0) : []
+        days: data ? data.dates.map(() => 0) : [],
+        bounceDaysWeighted: data ? data.dates.map(() => 0) : [],
+        bounceDaysVisits: data ? data.dates.map(() => 0) : [],
+        timeDaysWeighted: data ? data.dates.map(() => 0) : [],
+        timeDaysVisits: data ? data.dates.map(() => 0) : [],
+        ivtDaysWeighted: data ? data.dates.map(() => 0) : [],
+        ivtDaysImpressions: data ? data.dates.map(() => 0) : []
       };
     }
 
@@ -5934,18 +6100,18 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       };
     }
 
-    function makePlatformHierarchy() {
-      if (!DATA) return [];
+    function makePlatformHierarchy(data = DATA, useDirectPlan = data === DATA) {
+      if (!data) return [];
 
       const store = {};
 
-      DATA.projects.forEach(project => {
+      data.projects.forEach(project => {
         project.platforms.forEach(platform => {
           if (!store[platform.code]) {
             store[platform.code] = {
               code: platform.code,
               name: platform.name,
-              metric: emptyCombinedMetric(),
+              metric: emptyCombinedMetric(data),
               formats: {}
             };
           }
@@ -5957,7 +6123,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
               store[platform.code].formats[format.code] = {
                 code: format.code,
                 name: format.name,
-                metric: emptyCombinedMetric(),
+                metric: emptyCombinedMetric(data),
                 projects: {}
               };
             }
@@ -5969,16 +6135,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
               formatItem.projects[project.code] = {
                 code: project.code,
                 name: project.name,
-                metric: emptyCombinedMetric()
+                metric: emptyCombinedMetric(data)
               };
             }
 
-            const metricsWithDirectPlan = mergeDirectPlan(
-              { ...format.metrics },
-              project.code,
-              platform.code,
-              format.code
-            );
+            const metricsWithDirectPlan = useDirectPlan
+              ? mergeDirectPlan({ ...format.metrics }, project.code, platform.code, format.code)
+              : format.metrics;
 
             addCombinedMetric(formatItem.projects[project.code].metric, metricsWithDirectPlan);
           });
@@ -6328,6 +6491,139 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       return projects.map(item => comparisonProjectCard(item.a, item.b)).join("");
     }
 
+    function emptyComparisonMetrics() {
+      return {
+        visits: 0,
+        bounce: 0,
+        timeSec: 0,
+        ivt: null,
+        impressions: 0,
+        clicks: 0,
+        ctr: null,
+        factBudget: 0,
+        factCpm: null,
+        factCpc: null
+      };
+    }
+
+    function comparisonEntityRow(entityA, entityB, entityLabel) {
+      const a = entityA ? (entityA.metrics || {}) : emptyComparisonMetrics();
+      const b = entityB ? (entityB.metrics || {}) : {};
+      const primary = entityA || entityB;
+
+      return `
+        <tr>
+          <td>
+            <span class="format-name">${primary.name}</span>
+            ${primary.code ? `<span class="nested-code">${primary.code}</span>` : ""}
+            <span class="compare-format-status">${entityA && entityB ? entityLabel : `Нет данных ${entityA ? "во втором" : "в первом"} периоде`}</span>
+          </td>
+          <td class="num compare-cell">${comparisonTableValue(a.visits, b.visits, formatNumber, comparisonRelative(a.visits, b.visits))}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.bounce, b.bounce, formatPercent, comparisonPoints(a.bounce, b.bounce), "points", true)}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.timeSec, b.timeSec, formatTime, comparisonPoints(a.timeSec, b.timeSec), "seconds")}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.ivt, b.ivt, formatOptionalPercent, comparisonPoints(a.ivt, b.ivt), "points", true)}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.impressions, b.impressions, formatNumber, comparisonRelative(a.impressions, b.impressions))}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.clicks, b.clicks, formatNumber, comparisonRelative(a.clicks, b.clicks))}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.ctr, b.ctr, formatCtr, comparisonPoints(a.ctr, b.ctr), "points")}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.factBudget, b.factBudget, formatMoney, comparisonRelative(a.factBudget, b.factBudget))}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.factCpm, b.factCpm, formatCost, comparisonRelative(a.factCpm, b.factCpm), "relative", true)}</td>
+          <td class="num compare-cell">${comparisonTableValue(a.factCpc, b.factCpc, formatCost, comparisonRelative(a.factCpc, b.factCpc), "relative", true)}</td>
+        </tr>
+      `;
+    }
+
+    function comparisonProjectItemMap(format) {
+      const map = new Map();
+      (format && format.projects || []).forEach(project => map.set(project.code, project));
+      return map;
+    }
+
+    function comparisonPlatformFirstFormatCard(formatA, formatB) {
+      const projectsA = comparisonProjectItemMap(formatA);
+      const projectsB = comparisonProjectItemMap(formatB);
+      const projectCodes = new Set([...projectsA.keys(), ...projectsB.keys()]);
+      const primary = formatA || formatB;
+      const rows = Array.from(projectCodes)
+        .map(code => comparisonEntityRow(projectsA.get(code), projectsB.get(code), "Проект"))
+        .join("");
+
+      return `
+        <details class="platform comparison-platform" ${platformsOpen ? "open" : ""}>
+          <summary>
+            <div>
+              <div class="platform-name">${primary.name}</div>
+              <div class="platform-note">Формат · сравнение проектов</div>
+            </div>
+            <div class="comparison-metric-row">
+              ${metricCompareHtml(formatA ? formatA.metrics : emptyComparisonMetrics(), formatB ? formatB.metrics : null)}
+            </div>
+          </summary>
+          <table class="format-table comparison-format-table">
+            <thead>
+              <tr>
+                <th>Проект</th>
+                <th class="num">Визиты</th>
+                <th class="num">Отказы</th>
+                <th class="num">Время</th>
+                <th class="num">IVT</th>
+                <th class="num">Показы</th>
+                <th class="num">Клики</th>
+                <th class="num">CTR</th>
+                <th class="num">Бюджет</th>
+                <th class="num">CPM</th>
+                <th class="num">CPC</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </details>
+      `;
+    }
+
+    function comparisonPlatformFirstCard(platformA, platformB) {
+      const formatsA = comparisonFormatMap(platformA);
+      const formatsB = comparisonFormatMap(platformB);
+      const formatCodes = new Set([...formatsA.keys(), ...formatsB.keys()]);
+      const primary = platformA || platformB;
+      const formatsHtml = Array.from(formatCodes)
+        .map(code => comparisonPlatformFirstFormatCard(formatsA.get(code), formatsB.get(code)))
+        .join("");
+
+      return `
+        <details class="project-card comparison-project-card" open data-search="${searchTextPlatform(primary)}">
+          <summary class="comparison-project-summary">
+            <div class="project-main">
+              <div class="project-name">
+                <span>${primary.name}</span>
+                <span class="project-code">${primary.code}</span>
+              </div>
+              <div class="project-sub">${COMPARISON_RANGE_A.from} — ${COMPARISON_RANGE_A.to} vs ${COMPARISON_RANGE_B.from} — ${COMPARISON_RANGE_B.to}</div>
+            </div>
+            <div class="comparison-metric-row">
+              ${metricCompareHtml(platformA ? platformA.metrics : emptyComparisonMetrics(), platformB ? platformB.metrics : null)}
+            </div>
+          </summary>
+          <div class="project-body">${formatsHtml}</div>
+        </details>
+      `;
+    }
+
+    function renderComparisonPlatforms() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const hierarchyA = makePlatformHierarchy(COMPARISON_DATA_A, false);
+      const hierarchyB = makePlatformHierarchy(COMPARISON_DATA_B, false);
+      const mapA = new Map(hierarchyA.map(platform => [platform.code, platform]));
+      const mapB = new Map(hierarchyB.map(platform => [platform.code, platform]));
+      const codes = new Set([...mapA.keys(), ...mapB.keys()]);
+
+      return Array.from(codes)
+        .map(code => ({ a: mapA.get(code), b: mapB.get(code) }))
+        .filter(item => !query || searchTextPlatform(item.a || item.b).includes(query))
+        .sort((x, y) => ((y.a || y.b).metrics.visits || 0) - ((x.a || x.b).metrics.visits || 0))
+        .map(item => comparisonPlatformFirstCard(item.a, item.b))
+        .join("");
+    }
+
 
     function buildDataForRange(range) {
       const saved = { ...PERIOD_FILTER };
@@ -6404,6 +6700,32 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       document.getElementById("compareBTo").value = dateKey(previousEnd);
     }
 
+    function updateHierarchyUi() {
+      const hierarchyButton = document.getElementById("toggleHierarchy");
+      const title = document.getElementById("hierarchyTitle");
+      const subtitle = document.getElementById("hierarchySubtitle");
+
+      if (hierarchyButton) {
+        hierarchyButton.disabled = false;
+        hierarchyButton.textContent = hierarchyMode === "project"
+          ? "Сортировка по Площадкам"
+          : "Сортировка по Проектам";
+      }
+
+      if (COMPARISON_ACTIVE) {
+        if (title) title.textContent = hierarchyMode === "project" ? "Сравнение проектов" : "Сравнение площадок";
+        if (subtitle) subtitle.textContent = `Период 1: ${COMPARISON_RANGE_A.from} — ${COMPARISON_RANGE_A.to} · Период 2: ${COMPARISON_RANGE_B.from} — ${COMPARISON_RANGE_B.to}`;
+        return;
+      }
+
+      if (title) title.textContent = hierarchyMode === "project" ? "Проекты" : "Площадки";
+      if (subtitle) {
+        subtitle.textContent = hierarchyMode === "project"
+          ? "Внутри каждого объекта — площадки и форматы. Показатели собраны в компактной клиентской структуре."
+          : "Внутри каждой площадки — форматы и объекты.";
+      }
+    }
+
     function applyPeriodComparison() {
       const rangeA = {
         from: document.getElementById("compareAFrom").value,
@@ -6429,13 +6751,6 @@ body.all-mode .artcl-hero { margin-top: 10px; }
         COMPARISON_RANGE_A = rangeA;
         COMPARISON_RANGE_B = rangeB;
         COMPARISON_ACTIVE = true;
-        hierarchyMode = "project";
-
-        const hierarchyButton = document.getElementById("toggleHierarchy");
-        if (hierarchyButton) {
-          hierarchyButton.textContent = "Сортировка по Площадкам";
-          hierarchyButton.disabled = true;
-        }
 
         const compareButton = document.getElementById("openPeriodComparison");
         if (compareButton) {
@@ -6443,10 +6758,7 @@ body.all-mode .artcl-hero { margin-top: 10px; }
           compareButton.classList.add("active");
         }
 
-        const title = document.getElementById("hierarchyTitle");
-        const subtitle = document.getElementById("hierarchySubtitle");
-        if (title) title.textContent = "Сравнение проектов";
-        if (subtitle) subtitle.textContent = `Период 1: ${rangeA.from} — ${rangeA.to} · Период 2: ${rangeB.from} — ${rangeB.to}`;
+        updateHierarchyUi();
 
         closePeriodComparisonModal();
         render();
@@ -6460,22 +6772,13 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       COMPARISON_DATA_A = null;
       COMPARISON_DATA_B = null;
 
-      const hierarchyButton = document.getElementById("toggleHierarchy");
-      if (hierarchyButton) {
-        hierarchyButton.disabled = false;
-        hierarchyButton.textContent = "Сортировка по Площадкам";
-      }
-
       const compareButton = document.getElementById("openPeriodComparison");
       if (compareButton) {
         compareButton.textContent = "Сравнение периодов";
         compareButton.classList.remove("active");
       }
 
-      const title = document.getElementById("hierarchyTitle");
-      const subtitle = document.getElementById("hierarchySubtitle");
-      if (title) title.textContent = "Проекты";
-      if (subtitle) subtitle.textContent = "Внутри каждого объекта — площадки и форматы. Показатели собраны в компактной клиентской структуре.";
+      updateHierarchyUi();
 
       render();
     }
@@ -7380,7 +7683,9 @@ body.all-mode .artcl-hero { margin-top: 10px; }
       const sortBy = "visits";
 
       if (COMPARISON_ACTIVE) {
-        const comparisonHtml = renderComparisonProjects();
+        const comparisonHtml = hierarchyMode === "project"
+          ? renderComparisonProjects()
+          : renderComparisonPlatforms();
         root.innerHTML = comparisonHtml;
         emptyState.style.display = comparisonHtml ? "none" : "block";
       } else if (hierarchyMode === "project") {
@@ -10115,7 +10420,10 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     });
 
     document.addEventListener("keydown", event => {
-      if (event.key === "Escape") closePeriodRangePicker();
+      if (event.key !== "Escape") return;
+      closePeriodRangePicker();
+      closePeriodComparisonModal();
+      closeHelpModal();
     });
 
     document.querySelectorAll("[data-report-mode]").forEach(button => {
@@ -10332,6 +10640,18 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     document.addEventListener("click", event => {
       const target = event.target;
 
+      if (target.closest && target.closest("#openHelp")) {
+        event.preventDefault();
+        openHelpModal();
+        return;
+      }
+
+      if (target.closest && target.closest("[data-help-close]")) {
+        event.preventDefault();
+        closeHelpModal();
+        return;
+      }
+
       if (target.closest && target.closest("#openPeriodComparison")) {
         event.preventDefault();
         openPeriodComparisonModal();
@@ -10364,29 +10684,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     document.getElementById("searchInput").addEventListener("input", render);
 
     document.getElementById("toggleHierarchy").addEventListener("click", () => {
-      if (COMPARISON_ACTIVE) return;
       hierarchyMode = hierarchyMode === "project" ? "platform" : "project";
-
-      const button = document.getElementById("toggleHierarchy");
-      const title = document.getElementById("hierarchyTitle");
-      const subtitle = document.getElementById("hierarchySubtitle");
-
-      if (button) {
-        button.textContent = hierarchyMode === "project"
-          ? "Сортировка по Площадкам"
-          : "Сортировка по Проектам";
-      }
-
-      if (title) {
-        title.textContent = hierarchyMode === "project" ? "Проекты" : "Площадки";
-      }
-
-      if (subtitle) {
-        subtitle.textContent = hierarchyMode === "project"
-          ? "Внутри каждого объекта — площадки и форматы. Показатели собраны в компактной клиентской структуре."
-          : "Внутри каждой площадки — форматы и объекты.";
-      }
-
+      updateHierarchyUi();
       render();
     });
 
@@ -10454,7 +10753,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
   <section class="period-compare-dialog" role="dialog" aria-modal="true" aria-labelledby="periodCompareTitle">
     <div class="period-compare-head">
       <div>
-        <div class="period-compare-eyebrow">Основная вкладка · проекты</div>
+        <div class="period-compare-eyebrow">Текущий разрез · проекты или площадки</div>
         <h3 id="periodCompareTitle">Сравнение периодов</h3>
       </div>
       <button class="period-compare-close" type="button" data-compare-close aria-label="Закрыть">×</button>
@@ -10480,13 +10779,27 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       </div>
       <button class="period-compare-quick" type="button" id="usePreviousEqualPeriod">Подставить предыдущий равный период</button>
       <div class="period-compare-note">
-        На 1-й и 3-й ступенях будут показаны значения обоих периодов и дельта. Графики и план-факт временно скрываются.
+        Сравнение сохраняет текущую сортировку: по проектам или по площадкам. На 1-й и 3-й ступенях показываются значения обоих периодов и дельта; графики и план-факт временно скрываются.
       </div>
     </div>
     <div class="period-compare-actions">
       <button class="button" type="button" data-compare-close>Отмена</button>
       <button class="button compare-apply" type="button" id="applyPeriodComparison">Сравнить</button>
     </div>
+  </section>
+</div>
+
+<div class="help-modal" id="helpModal" aria-hidden="true">
+  <div class="help-backdrop" data-help-close></div>
+  <section class="help-dialog" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="help-head">
+      <div>
+        <div class="help-eyebrow">Методология и правила классификации</div>
+        <h3 id="helpTitle">Справка по дашборду</h3>
+      </div>
+      <button class="help-close" type="button" data-help-close aria-label="Закрыть">×</button>
+    </div>
+    <div class="help-body" id="helpContent"></div>
   </section>
 </div>
 
