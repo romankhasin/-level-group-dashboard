@@ -7728,6 +7728,21 @@ body.help-open { overflow: hidden; }
       applyBudgetMetricsVisibility();
     }
 
+    function fitSummaryKpiValues() {
+      window.requestAnimationFrame(() => {
+        document.querySelectorAll(".kpi-grid .kpi-value").forEach(element => {
+          element.style.fontSize = "";
+          const availableWidth = element.clientWidth;
+          const naturalWidth = element.scrollWidth;
+          if (!availableWidth || naturalWidth <= availableWidth) return;
+
+          const baseSize = Number.parseFloat(window.getComputedStyle(element).fontSize) || 42;
+          const fittedSize = Math.max(24, Math.floor(baseSize * availableWidth / naturalWidth));
+          element.style.fontSize = `${fittedSize}px`;
+        });
+      });
+    }
+
     function renderSummary() {
       if (!DATA) {
         document.getElementById("totalVisits").textContent = "—";
@@ -7744,6 +7759,7 @@ body.help-open { overflow: hidden; }
         const totalCtrElement = document.getElementById("totalCtr");
         if (totalCtrElement) { totalCtrElement.textContent = "—"; totalCtrElement.className = "kpi-value"; }
         document.getElementById("periodBadge").textContent = "Файл не загружен";
+        fitSummaryKpiValues();
         return;
       }
 
@@ -7777,6 +7793,8 @@ body.help-open { overflow: hidden; }
       } else {
         warningBox.style.display = "none";
       }
+
+      fitSummaryKpiValues();
     }
 
     function readFileAsText(file) {
@@ -10691,6 +10709,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     window.addEventListener("resize", () => {
       enforceMobileViewingMode();
       render();
+      fitSummaryKpiValues();
     });
 
     document.getElementById("searchInput").addEventListener("input", render);
