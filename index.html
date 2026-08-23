@@ -9395,7 +9395,7 @@ body.help-open { overflow: hidden; }
       const next = childKey ? (node[childKey] || []) : [];
 
       return `
-        <details class="tc-node tc-${level}" open>
+        <details class="tc-node tc-${level}">
           <summary>
             <div>
               <div class="tc-name">${node.name}</div>
@@ -9653,6 +9653,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 .tc-node summary:hover{background:rgba(221,236,246,.22)}
 .tc-node summary::before{content:"+";width:26px;height:26px;border-radius:999px;background:rgba(199,160,90,.13);color:var(--bronze);display:inline-flex;align-items:center;justify-content:center;font-weight:850;position:absolute}
 .tc-node[open] > summary::before{content:"−"}
+.tc-node:not([open]) > .tc-children{display:none!important}
+.tc-node:not([open]){height:auto!important;min-height:0!important}
 .tc-node summary > div:first-child{padding-left:38px}
 .tc-project{border-left:5px solid var(--gold)}
 .tc-platform{margin-left:18px;border-left:4px solid rgba(89,145,180,.34)}
