@@ -2595,6 +2595,94 @@ details.project-card > summary{
   }
 }
 
+/* Integrated trends: each quality KPI owns its chart instead of using four extra columns */
+details.project-card > summary{
+  grid-template-columns:minmax(190px,.46fr) minmax(0,2.54fr)!important;
+}
+
+.platform > summary{
+  grid-template-columns:minmax(170px,.38fr) minmax(0,2.62fr)!important;
+}
+
+.metric-row,
+.metric-row-total,
+.platform-metrics{
+  grid-template-columns:
+    88px 78px 72px 68px
+    106px 88px 72px
+    120px 72px 72px!important;
+  gap:8px!important;
+  align-items:start!important;
+  justify-content:end!important;
+}
+
+.metric-with-trend{
+  align-self:stretch;
+}
+
+.metric-inline-spark{
+  width:100%;
+  height:20px;
+  margin-top:6px;
+}
+
+.metric-inline-spark .bar-spark,
+.metric-inline-spark .bar-spark.bounce-spark,
+.metric-inline-spark .bar-spark.time-spark,
+.metric-inline-spark .bar-spark.ivt-spark{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:20px!important;
+  margin:0!important;
+  gap:2px!important;
+}
+
+.metric-chart-group{
+  display:none!important;
+}
+
+.format-table{
+  min-width:1120px!important;
+}
+
+.format-table th:first-child,
+.format-table td:first-child{
+  min-width:210px;
+}
+
+.metric-trend-cell > span{
+  display:block;
+}
+
+.metric-trend-cell .inline-table-spark,
+.metric-trend-cell .inline-table-spark.bounce-spark,
+.metric-trend-cell .inline-table-spark.time-spark,
+.metric-trend-cell .inline-table-spark.ivt-spark{
+  display:flex!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  height:22px!important;
+  margin:6px 0 0 auto!important;
+  gap:2px!important;
+}
+
+@media (min-width:901px) and (max-width:1180px){
+  details.project-card > summary,
+  .platform > summary{
+    grid-template-columns:1fr!important;
+  }
+
+  .metric-row,
+  .metric-row-total,
+  .platform-metrics{
+    grid-template-columns:repeat(5,minmax(90px,1fr))!important;
+    row-gap:10px!important;
+    justify-content:stretch!important;
+  }
+}
+
 
 /* Dashboard Engine 5.6 Naming — Excel export */
 .excel-export-modal{position:fixed;inset:0;z-index:10000;display:none}
@@ -6796,31 +6884,25 @@ body.help-open { overflow: hidden; }
 
     function metricHtml(metrics) {
       return `
-        <div class="metric"><div class="metric-label">Визиты</div><div class="metric-value">${formatNumber(metrics.visits)}</div></div>
-        <div class="metric"><div class="metric-label">Отказы</div><div class="metric-value ${bounceClass(metrics.bounce)}">${formatPercent(metrics.bounce)}</div></div>
-        <div class="metric"><div class="metric-label">Время</div><div class="metric-value ${timeClass(metrics.timeSec)}">${formatTime(metrics.timeSec)}</div></div>
-        <div class="metric"><div class="metric-label">IVT</div><div class="metric-value ${ivtClass(metrics.ivt)}">${formatOptionalPercent(metrics.ivt)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">Визиты</div><div class="metric-value">${formatNumber(metrics.visits)}</div><div class="metric-inline-spark">${barSpark(metrics.days, "inline-spark", "visits", 5)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">Отказы</div><div class="metric-value ${bounceClass(metrics.bounce)}">${formatPercent(metrics.bounce)}</div><div class="metric-inline-spark">${barSpark(metrics.bounceDays, "inline-spark bounce-spark", "bounce", 5)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">Время</div><div class="metric-value ${timeClass(metrics.timeSec)}">${formatTime(metrics.timeSec)}</div><div class="metric-inline-spark">${barSpark(metrics.timeDays, "inline-spark time-spark", "time", 5)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">IVT</div><div class="metric-value ${ivtClass(metrics.ivt)}">${formatOptionalPercent(metrics.ivt)}</div><div class="metric-inline-spark">${barSpark(metrics.ivtDays && metrics.ivtDays.length ? metrics.ivtDays : [metrics.ivt || 0], "inline-spark ivt-spark", "ivt", 5)}</div></div>
         <div class="metric"><div class="metric-label">Показы</div>${formatFactWithDelta(metrics.impressions, metrics.impressionsPlanRatio)}</div>
         <div class="metric"><div class="metric-label">Клики</div>${formatFactWithDelta(metrics.clicks, metrics.clicksPlanRatio)}</div>
         <div class="metric"><div class="metric-label">CTR</div>${formatFactWithDelta(metrics.ctr, metrics.ctrPlanRatio, formatCtr)}</div>
         <div class="metric cost-metric"><div class="metric-label">Бюджет</div>${formatFactWithDelta(metrics.factBudget, metrics.budgetPlanRatio, formatMoney)}</div>
         <div class="metric cost-metric"><div class="metric-label">CPM</div>${formatFactWithDelta(metrics.factCpm, metrics.cpmPlanRatio, formatCost, true)}</div>
         <div class="metric cost-metric"><div class="metric-label">CPC</div>${formatFactWithDelta(metrics.factCpc, metrics.cpcPlanRatio, formatCost, true)}</div>
-        <div class="metric-chart-group" aria-label="Динамика визитов, отказов, среднего времени на сайте и IVT">
-          <div class="spark-cell">${barSpark(metrics.days, "sparkline", "visits", 5)}</div>
-          <div class="spark-cell small">${barSpark(metrics.bounceDays, "sparkline bounce-spark", "bounce", 5)}</div>
-          <div class="spark-cell small">${barSpark(metrics.timeDays, "sparkline time-spark", "time", 5)}</div>
-          <div class="spark-cell small">${barSpark(metrics.ivtDays && metrics.ivtDays.length ? metrics.ivtDays : [metrics.ivt || 0], "sparkline ivt-spark", "ivt", 5)}</div>
-        </div>
       `;
     }
 
     function metricHtmlCompact(metrics) {
       return `
-        <div class="metric"><div class="metric-label">Визиты</div><div class="metric-value">${formatNumber(metrics.visits)}</div></div>
-        <div class="metric"><div class="metric-label">Отказы</div><div class="metric-value ${bounceClass(metrics.bounce)}">${formatPercent(metrics.bounce)}</div></div>
-        <div class="metric"><div class="metric-label">Время</div><div class="metric-value ${timeClass(metrics.timeSec)}">${formatTime(metrics.timeSec)}</div></div>
-        <div class="metric"><div class="metric-label">IVT</div><div class="metric-value ${ivtClass(metrics.ivt)}">${formatOptionalPercent(metrics.ivt)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">Визиты</div><div class="metric-value">${formatNumber(metrics.visits)}</div><div class="metric-inline-spark">${barSpark(metrics.days, "inline-spark", "visits", 5)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">Отказы</div><div class="metric-value ${bounceClass(metrics.bounce)}">${formatPercent(metrics.bounce)}</div><div class="metric-inline-spark">${barSpark(metrics.bounceDays, "inline-spark bounce-spark", "bounce", 5)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">Время</div><div class="metric-value ${timeClass(metrics.timeSec)}">${formatTime(metrics.timeSec)}</div><div class="metric-inline-spark">${barSpark(metrics.timeDays, "inline-spark time-spark", "time", 5)}</div></div>
+        <div class="metric metric-with-trend"><div class="metric-label">IVT</div><div class="metric-value ${ivtClass(metrics.ivt)}">${formatOptionalPercent(metrics.ivt)}</div><div class="metric-inline-spark">${barSpark(metrics.ivtDays && metrics.ivtDays.length ? metrics.ivtDays : [metrics.ivt || 0], "inline-spark ivt-spark", "ivt", 5)}</div></div>
         <div class="metric"><div class="metric-label">Показы</div>${formatFactWithDelta(metrics.impressions, metrics.impressionsPlanRatio)}</div>
         <div class="metric"><div class="metric-label">Клики</div>${formatFactWithDelta(metrics.clicks, metrics.clicksPlanRatio)}</div>
         <div class="metric"><div class="metric-label">CTR</div>${formatFactWithDelta(metrics.ctr, metrics.ctrPlanRatio, formatCtr)}</div>
@@ -6920,8 +7002,8 @@ body.help-open { overflow: hidden; }
             <thead>
               <tr>
                 <th>Формат</th>
-                <th class="num spark-head">Визиты</th>
-                <th class="num spark-head">Отказы</th>
+                <th class="num">Визиты</th>
+                <th class="num">Отказы</th>
                 <th class="num">Время</th>
                 <th class="num">IVT</th>
                 <th class="num">Показы</th>
@@ -6930,10 +7012,6 @@ body.help-open { overflow: hidden; }
                 <th class="num">Бюджет</th>
                 <th class="num">CPM</th>
                 <th class="num">CPC</th>
-                <th class="num spark-head">Визиты</th>
-                <th class="num spark-head">Отказы</th>
-                <th class="num spark-head">Время</th>
-                <th class="num spark-head">IVT</th>
               </tr>
             </thead>
             <tbody>${formatsHtml}</tbody>
@@ -6946,20 +7024,16 @@ body.help-open { overflow: hidden; }
       return `
         <tr>
           <td><span class="format-name">${format.name}</span></td>
-          <td class="num">${formatNumber(format.metrics.visits)}</td>
-          <td class="num ${bounceClass(format.metrics.bounce)}">${formatPercent(format.metrics.bounce)}</td>
-          <td class="num ${timeClass(format.metrics.timeSec)}">${formatTime(format.metrics.timeSec)}</td>
-          <td class="num ${ivtClass(format.metrics.ivt)}">${formatOptionalPercent(format.metrics.ivt)}</td>
+          <td class="num metric-trend-cell"><span>${formatNumber(format.metrics.visits)}</span>${barSpark(format.metrics.days, "mini-spark inline-table-spark", "visits", 7)}</td>
+          <td class="num metric-trend-cell ${bounceClass(format.metrics.bounce)}"><span>${formatPercent(format.metrics.bounce)}</span>${barSpark(format.metrics.bounceDays, "mini-spark inline-table-spark bounce-spark", "bounce", 7)}</td>
+          <td class="num metric-trend-cell ${timeClass(format.metrics.timeSec)}"><span>${formatTime(format.metrics.timeSec)}</span>${barSpark(format.metrics.timeDays, "mini-spark inline-table-spark time-spark", "time", 7)}</td>
+          <td class="num metric-trend-cell ${ivtClass(format.metrics.ivt)}"><span>${formatOptionalPercent(format.metrics.ivt)}</span>${barSpark(format.metrics.ivtDays && format.metrics.ivtDays.length ? format.metrics.ivtDays : [format.metrics.ivt || 0], "mini-spark inline-table-spark ivt-spark", "ivt", 7)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.impressions, format.metrics.impressionsPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.clicks, format.metrics.clicksPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.ctr, format.metrics.ctrPlanRatio, formatCtr)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.factBudget, format.metrics.budgetPlanRatio, formatMoney)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.factCpm, format.metrics.cpmPlanRatio, formatCost, true)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.factCpc, format.metrics.cpcPlanRatio, formatCost, true)}</td>
-          <td class="num spark-td">${barSpark(format.metrics.days, "mini-spark", "visits", 7)}</td>
-          <td class="num spark-td">${barSpark(format.metrics.bounceDays, "mini-spark bounce-spark", "bounce", 7)}</td>
-          <td class="num spark-td">${barSpark(format.metrics.timeDays, "mini-spark time-spark", "time", 7)}</td>
-          <td class="num spark-td">${barSpark(format.metrics.ivtDays && format.metrics.ivtDays.length ? format.metrics.ivtDays : [format.metrics.ivt || 0], "mini-spark ivt-spark", "ivt", 7)}</td>
         </tr>
       `;
     }
@@ -7008,8 +7082,8 @@ body.help-open { overflow: hidden; }
             <thead>
               <tr>
                 <th>Объект</th>
-                <th class="num spark-head">Визиты</th>
-                <th class="num spark-head">Отказы</th>
+                <th class="num">Визиты</th>
+                <th class="num">Отказы</th>
                 <th class="num">Время</th>
                 <th class="num">IVT</th>
                 <th class="num">Показы</th>
@@ -7018,10 +7092,6 @@ body.help-open { overflow: hidden; }
                 <th class="num">Бюджет</th>
                 <th class="num">CPM</th>
                 <th class="num">CPC</th>
-                <th class="num spark-head">Визиты</th>
-                <th class="num spark-head">Отказы</th>
-                <th class="num spark-head">Время</th>
-                <th class="num spark-head">IVT</th>
               </tr>
             </thead>
             <tbody>${projectsHtml}</tbody>
@@ -7052,20 +7122,16 @@ body.help-open { overflow: hidden; }
             <span class="nested-name">${project.name}${isCommercialProjectCode(project.code) ? `<span class="commercial-badge">Commercial</span>` : ""}</span>
             <span class="nested-code">${project.code}</span>
           </td>
-          <td class="num">${formatNumber(project.metrics.visits)}</td>
-          <td class="num ${bounceClass(project.metrics.bounce)}">${formatPercent(project.metrics.bounce)}</td>
-          <td class="num ${timeClass(project.metrics.timeSec)}">${formatTime(project.metrics.timeSec)}</td>
-          <td class="num ${ivtClass(project.metrics.ivt)}">${formatOptionalPercent(project.metrics.ivt)}</td>
+          <td class="num metric-trend-cell"><span>${formatNumber(project.metrics.visits)}</span>${barSpark(project.metrics.days, "mini-spark inline-table-spark", "visits", 7)}</td>
+          <td class="num metric-trend-cell ${bounceClass(project.metrics.bounce)}"><span>${formatPercent(project.metrics.bounce)}</span>${barSpark(project.metrics.bounceDays, "mini-spark inline-table-spark bounce-spark", "bounce", 7)}</td>
+          <td class="num metric-trend-cell ${timeClass(project.metrics.timeSec)}"><span>${formatTime(project.metrics.timeSec)}</span>${barSpark(project.metrics.timeDays, "mini-spark inline-table-spark time-spark", "time", 7)}</td>
+          <td class="num metric-trend-cell ${ivtClass(project.metrics.ivt)}"><span>${formatOptionalPercent(project.metrics.ivt)}</span>${barSpark(project.metrics.ivtDays && project.metrics.ivtDays.length ? project.metrics.ivtDays : [project.metrics.ivt || 0], "mini-spark inline-table-spark ivt-spark", "ivt", 7)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.impressions, displayMetrics.impressionsPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.clicks, displayMetrics.clicksPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.ctr, displayMetrics.ctrPlanRatio, formatCtr)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.factBudget, displayMetrics.budgetPlanRatio, formatMoney)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.factCpm, displayMetrics.cpmPlanRatio, formatCost, true)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.factCpc, displayMetrics.cpcPlanRatio, formatCost, true)}</td>
-          <td class="num spark-td">${barSpark(project.metrics.days, "mini-spark", "visits", 7)}</td>
-          <td class="num spark-td">${barSpark(project.metrics.bounceDays, "mini-spark bounce-spark", "bounce", 7)}</td>
-          <td class="num spark-td">${barSpark(project.metrics.timeDays, "mini-spark time-spark", "time", 7)}</td>
-          <td class="num spark-td">${barSpark(project.metrics.ivtDays && project.metrics.ivtDays.length ? project.metrics.ivtDays : [project.metrics.ivt || 0], "mini-spark ivt-spark", "ivt", 7)}</td>
         </tr>
       `;
     }
