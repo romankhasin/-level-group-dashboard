@@ -1,7 +1,7 @@
 {
   "version": 4,
-  "generatedAt": "2026-08-24T04:14:00.420565Z",
-  "dataThrough": "2026-08-23",
+  "generatedAt": "2026-08-25T04:08:30.719474Z",
+  "dataThrough": "2026-08-24",
   "refresh": "daily, previous 3 complete days",
   "campaignFilter": [
     "prg",
@@ -17,8 +17,8 @@
       "site": "level.ru",
       "permission": "view",
       "from": "2026-05-01",
-      "to": "2026-08-23",
-      "visits": 1965746,
+      "to": "2026-08-24",
+      "visits": 1992110,
       "files": [
         {
           "month": "2026-05",
@@ -45,30 +45,30 @@
           "month": "2026-08",
           "path": "53197618/2026-08.json",
           "from": "2026-08-01",
-          "to": "2026-08-23",
-          "visits": 413898
+          "to": "2026-08-24",
+          "visits": 440262
         }
       ],
       "periodMetrics": {
         "version": 4,
-        "from": "2026-05-26",
-        "to": "2026-08-23",
+        "from": "2026-05-27",
+        "to": "2026-08-24",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
         "method": "exact-period-metrics-v4-cookie-segments"
       },
       "clientIdPeriods": {
         "version": 4,
-        "from": "2026-05-26",
-        "to": "2026-08-23",
+        "from": "2026-05-27",
+        "to": "2026-08-24",
         "maxDays": 90,
         "pathTemplate": "53197618/clientid-periods/{from}.json",
         "method": "exact-period-metrics-v4-cookie-segments"
       },
       "sliceMetrics": {
         "version": 1,
-        "from": "2026-05-26",
-        "to": "2026-08-23",
+        "from": "2026-05-27",
+        "to": "2026-08-24",
         "maxDays": 90,
         "pathTemplate": "53197618/slices/{month}.json",
         "method": "safe-daily-slices-v1",
@@ -95,8 +95,8 @@
       "site": "business.level.ru",
       "permission": "view",
       "from": "2026-05-01",
-      "to": "2026-08-23",
-      "visits": 403614,
+      "to": "2026-08-24",
+      "visits": 409281,
       "files": [
         {
           "month": "2026-05",
@@ -123,30 +123,30 @@
           "month": "2026-08",
           "path": "100470605/2026-08.json",
           "from": "2026-08-01",
-          "to": "2026-08-23",
-          "visits": 113310
+          "to": "2026-08-24",
+          "visits": 118977
         }
       ],
       "periodMetrics": {
         "version": 4,
-        "from": "2026-05-26",
-        "to": "2026-08-23",
+        "from": "2026-05-27",
+        "to": "2026-08-24",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
         "method": "exact-period-metrics-v4-cookie-segments"
       },
       "clientIdPeriods": {
         "version": 4,
-        "from": "2026-05-26",
-        "to": "2026-08-23",
+        "from": "2026-05-27",
+        "to": "2026-08-24",
         "maxDays": 90,
         "pathTemplate": "100470605/clientid-periods/{from}.json",
         "method": "exact-period-metrics-v4-cookie-segments"
       },
       "sliceMetrics": {
         "version": 1,
-        "from": "2026-05-26",
-        "to": "2026-08-23",
+        "from": "2026-05-27",
+        "to": "2026-08-24",
         "maxDays": 90,
         "pathTemplate": "100470605/slices/{month}.json",
         "method": "safe-daily-slices-v1",
@@ -168,10 +168,10 @@
       }
     }
   ],
-  "periodMetricsGeneratedAt": "2026-08-24T04:16:15.365874Z",
+  "periodMetricsGeneratedAt": "2026-08-25T04:11:38.076103Z",
   "periodMetricsModel": "exact-period-metrics-v4-cookie-segments",
-  "clientIdPeriodsGeneratedAt": "2026-08-24T04:16:15.365874Z",
+  "clientIdPeriodsGeneratedAt": "2026-08-25T04:11:38.076103Z",
   "clientIdPeriodModel": "exact-period-metrics-v4-cookie-segments",
-  "sliceMetricsGeneratedAt": "2026-08-24T04:16:15.365874Z",
+  "sliceMetricsGeneratedAt": "2026-08-25T04:11:38.076103Z",
   "sliceMetricsModel": "safe-daily-slices-v1"
 }

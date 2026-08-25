@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-24T04:14:00.420565Z",
+  "generatedAt": "2026-08-25T04:08:30.719474Z",
   "period": {
     "from": "2026-05-01",
-    "to": "2026-08-23"
+    "to": "2026-08-24"
   },
   "counters": [
     {
@@ -10,18 +10,18 @@
       "status": "ok",
       "operations": [
         {
-          "requestId": 59058259,
-          "rawVisits": 132919,
-          "includedVisits": 71960,
-          "excludedVisits": 60959,
+          "requestId": 59103219,
+          "rawVisits": 141042,
+          "includedVisits": 75851,
+          "excludedVisits": 65191,
           "campaignFilter": [
             "prg",
             "med",
             "mrk"
           ],
-          "dailySourceRows": 64,
-          "from": "2026-08-21",
-          "to": "2026-08-23",
+          "dailySourceRows": 66,
+          "from": "2026-08-22",
+          "to": "2026-08-24",
           "month": "2026-08"
         }
       ]
@@ -31,18 +31,18 @@
       "status": "ok",
       "operations": [
         {
-          "requestId": 59058292,
-          "rawVisits": 21151,
-          "includedVisits": 16817,
-          "excludedVisits": 4334,
+          "requestId": 59103314,
+          "rawVisits": 21332,
+          "includedVisits": 16810,
+          "excludedVisits": 4522,
           "campaignFilter": [
             "prg",
             "med",
             "mrk"
           ],
           "dailySourceRows": 34,
-          "from": "2026-08-21",
-          "to": "2026-08-23",
+          "from": "2026-08-22",
+          "to": "2026-08-24",
           "month": "2026-08"
         }
       ]
