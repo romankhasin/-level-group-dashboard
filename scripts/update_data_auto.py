@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Refresh dashboard data with automatic Target Ads impressions and clicks.
 
-The dashboard's published verifier history is the incremental baseline. Each
-run fetches only dates not yet published through Moscow yesterday; when there
-is no gap, yesterday is re-fetched so a same-day re-run is idempotent and can
-pick up late corrections. Existing source-priority rules stay in
-``merge_verifier_rows``.
+The published verifier history is the normal incremental baseline. On the
+first run after restoring automation, the runner bootstraps from the last
+published dashboard that still contained automatic Target Ads data (through
+2026-08-10), then catches up the missing dates through Moscow yesterday.
+Existing source-priority rules stay in ``merge_verifier_rows``.
 """
 
 from __future__ import annotations
@@ -18,10 +18,15 @@ from pathlib import Path
 
 import update_data as base
 
+PRE_DISABLE_LATEST_URL = (
+    "https://raw.githubusercontent.com/romankhasin/-level-group-dashboard/"
+    "5f5f423f8b7ff656194729fd83df5fdd2a574176/data/latest.json"
+)
 
-def read_latest() -> dict:
+
+def read_json_object(path: Path) -> dict:
     try:
-        payload = json.loads(base.LATEST_PATH.read_text(encoding="utf-8"))
+        payload = json.loads(path.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
     return payload if isinstance(payload, dict) else {}
@@ -34,6 +39,28 @@ def parse_date(value: object) -> dt.date | None:
         return None
 
 
+def targetads_was_automatic(payload: dict) -> bool:
+    status = payload.get("status") or {}
+    targetads = status.get("targetads") or {}
+    return bool(targetads.get("enabled")) and str(targetads.get("mode") or "") != "manual_upload_only"
+
+
+def load_targetads_baseline(previous_latest: dict) -> tuple[dict, bool]:
+    """Return a baseline known to contain Target Ads media history."""
+    if targetads_was_automatic(previous_latest):
+        return previous_latest, False
+
+    bootstrap_path = base.ROOT / ".cache" / "targetads_pre_disable_latest.json"
+    bootstrap_path.parent.mkdir(parents=True, exist_ok=True)
+    base.download_file(PRE_DISABLE_LATEST_URL, bootstrap_path)
+    bootstrap = read_json_object(bootstrap_path)
+    bootstrap_rows = bootstrap.get("verifierRows") or []
+    bootstrap_to = parse_date((bootstrap.get("period") or {}).get("to"))
+    if not isinstance(bootstrap_rows, list) or not bootstrap_rows or not bootstrap_to:
+        raise RuntimeError("Could not load the pre-disable Target Ads dashboard baseline")
+    return bootstrap, True
+
+
 def targetads_incremental_rows(
     token: str,
     yesterday: dt.date,
@@ -43,11 +70,12 @@ def targetads_incremental_rows(
     base.validate_targetads_token(token, project_id)
     placements, creatives = base.fetch_targetads_metadata(token, project_id)
 
-    previous_rows = previous_latest.get("verifierRows") or []
+    baseline_latest, bootstrap_used = load_targetads_baseline(previous_latest)
+    previous_rows = baseline_latest.get("verifierRows") or []
     if not isinstance(previous_rows, list):
         previous_rows = []
 
-    previous_to = parse_date((previous_latest.get("period") or {}).get("to"))
+    previous_to = parse_date((baseline_latest.get("period") or {}).get("to"))
     if previous_to and previous_to < yesterday:
         fetch_from = previous_to + dt.timedelta(days=1)
     else:
@@ -70,9 +98,9 @@ def targetads_incremental_rows(
             fresh_rows.extend(chunk_rows)
             jobs.extend(chunk_status.get("jobs") or [])
 
-    # Drop the dates we have just refreshed. All older final verifier rows are
-    # safe to use as the baseline: current Google/Avito rows will be applied
-    # again below and retain their priority over Target Ads where configured.
+    # Drop only dates being refreshed. Older final verifier rows remain the
+    # baseline; current Google/Avito facts are applied again below and keep
+    # their priority wherever the agreed exceptions require it.
     baseline_rows = []
     for row in previous_rows:
         row_date = parse_date(row.get("interaction_dt")) if isinstance(row, dict) else None
@@ -91,6 +119,8 @@ def targetads_incremental_rows(
         "campaigns_available": len(placements),
         "creatives_available": len(creatives),
         "identity_field": "creative_name",
+        "bootstrap_used": bootstrap_used,
+        "bootstrap_through": previous_to.isoformat() if bootstrap_used and previous_to else None,
         "from": fetch_from.isoformat(),
         "to": yesterday.isoformat(),
         "as_of": yesterday.isoformat(),
@@ -119,7 +149,7 @@ def main() -> None:
         raise RuntimeError("Yesterday is earlier than the configured report start date")
 
     base.DATA_DIR.mkdir(parents=True, exist_ok=True)
-    previous_latest = read_latest()
+    previous_latest = read_json_object(base.LATEST_PATH)
 
     metrika_token = os.environ.get("YANDEX_METRIKA_TOKEN", "").strip()
     if args.skip_metrika:
@@ -226,6 +256,7 @@ def main() -> None:
                 "journalRows": len(journal_rows),
                 "targetAdsEnabled": True,
                 "targetAdsMode": "automatic_raw_v2_incremental",
+                "targetAdsBootstrap": targetads_status["bootstrap_used"],
                 "targetAdsFetchFrom": targetads_status["from"],
                 "targetAdsNewRows": targetads_status["new_rows"],
                 "targetAdsJobs": targetads_status["jobs_completed"],
