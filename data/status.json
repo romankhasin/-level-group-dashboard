@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-25T03:53:08.451961Z",
+  "generatedAt": "2026-08-26T03:57:12.827838Z",
   "metrika": {
-    "new_rows": 4751,
-    "total_rows": 93390,
+    "new_rows": 4822,
+    "total_rows": 94181,
     "ranges": {
       "53197618": {
-        "from": "2026-08-24",
-        "to": "2026-08-24",
-        "new_rows": 720,
+        "from": "2026-08-25",
+        "to": "2026-08-25",
+        "new_rows": 706,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-24",
-        "new_rows": 4031,
+        "to": "2026-08-25",
+        "new_rows": 4116,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 16972,
+    "metric_rows": 17073,
     "journal_rows": 392,
     "journal_platforms": [
       "AdsHeads",
@@ -46,14 +46,14 @@
     },
     "august_avito": {
       "sheet": "Данные_метрика",
-      "source_rows": 988,
+      "source_rows": 1027,
       "media_rows": 0,
       "metric_rows": 0
     },
     "august_prg": {
       "sheet": "Данные_метрика",
-      "source_rows": 3449,
-      "metric_rows": 1717,
+      "source_rows": 3655,
+      "metric_rows": 1818,
       "platforms": [
         "mts",
         "yandex"
