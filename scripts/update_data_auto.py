@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Refresh dashboard data with automatic Target Ads impressions and clicks.
 
-This runner intentionally reuses the source parsers and merge rules from
-``scripts/update_data.py`` while restoring Target Ads Raw Data API v2 as an
-automatic source. Google/Avito source priority remains governed by
-``merge_verifier_rows`` in the base module.
+The dashboard's published verifier history is the incremental baseline. Each
+run fetches only dates not yet published through Moscow yesterday; when there
+is no gap, yesterday is re-fetched so a same-day re-run is idempotent and can
+pick up late corrections. Existing source-priority rules stay in
+``merge_verifier_rows``.
 """
 
 from __future__ import annotations
@@ -16,6 +17,91 @@ import os
 from pathlib import Path
 
 import update_data as base
+
+
+def read_latest() -> dict:
+    try:
+        payload = json.loads(base.LATEST_PATH.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def parse_date(value: object) -> dt.date | None:
+    try:
+        return dt.date.fromisoformat(str(value or "")[:10])
+    except ValueError:
+        return None
+
+
+def targetads_incremental_rows(
+    token: str,
+    yesterday: dt.date,
+    previous_latest: dict,
+) -> tuple[list[dict], dict]:
+    project_id = base.targetads_project_id()
+    base.validate_targetads_token(token, project_id)
+    placements, creatives = base.fetch_targetads_metadata(token, project_id)
+
+    previous_rows = previous_latest.get("verifierRows") or []
+    if not isinstance(previous_rows, list):
+        previous_rows = []
+
+    previous_to = parse_date((previous_latest.get("period") or {}).get("to"))
+    if previous_to and previous_to < yesterday:
+        fetch_from = previous_to + dt.timedelta(days=1)
+    else:
+        # Re-running on the same day should replace, not duplicate, yesterday.
+        fetch_from = yesterday
+    fetch_from = max(fetch_from, base.START_DATE)
+
+    fresh_rows: list[dict] = []
+    jobs: list[dict] = []
+    if fetch_from <= yesterday:
+        for chunk_start, chunk_end in base.date_chunks(fetch_from, yesterday, days=3):
+            chunk_rows, chunk_status = base.fetch_targetads_period(
+                token,
+                project_id,
+                placements,
+                creatives,
+                chunk_start,
+                chunk_end,
+            )
+            fresh_rows.extend(chunk_rows)
+            jobs.extend(chunk_status.get("jobs") or [])
+
+    # Drop the dates we have just refreshed. All older final verifier rows are
+    # safe to use as the baseline: current Google/Avito rows will be applied
+    # again below and retain their priority over Target Ads where configured.
+    baseline_rows = []
+    for row in previous_rows:
+        row_date = parse_date(row.get("interaction_dt")) if isinstance(row, dict) else None
+        if row_date and fetch_from <= row_date <= yesterday:
+            continue
+        if isinstance(row, dict):
+            baseline_rows.append(row)
+
+    targetads_status = {
+        "enabled": True,
+        "configured": True,
+        "mode": "automatic_raw_v2_incremental",
+        "api": "raw_data_v2",
+        "project_id": project_id,
+        "token_valid": True,
+        "campaigns_available": len(placements),
+        "creatives_available": len(creatives),
+        "identity_field": "creative_name",
+        "from": fetch_from.isoformat(),
+        "to": yesterday.isoformat(),
+        "as_of": yesterday.isoformat(),
+        "media_metrics": ["impressions", "clicks"],
+        "new_rows": len(fresh_rows),
+        "baseline_rows": len(baseline_rows),
+        "jobs_completed": len(jobs),
+        "events_aggregated": sum(int(job.get("aggregated_events") or 0) for job in jobs),
+        "warning": None if placements and creatives else "Target Ads metadata is incomplete",
+    }
+    return [*baseline_rows, *fresh_rows], targetads_status
 
 
 def main() -> None:
@@ -33,6 +119,7 @@ def main() -> None:
         raise RuntimeError("Yesterday is earlier than the configured report start date")
 
     base.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    previous_latest = read_latest()
 
     metrika_token = os.environ.get("YANDEX_METRIKA_TOKEN", "").strip()
     if args.skip_metrika:
@@ -89,22 +176,16 @@ def main() -> None:
     targetads_token = os.environ.get("TARGETADS_TOKEN", "").strip()
     if not targetads_token:
         raise RuntimeError("TARGETADS_TOKEN is not configured")
-    targetads_rows, targetads_status = base.update_targetads(
-        targetads_token, yesterday
-    )
-    targetads_status.update(
-        {
-            "enabled": True,
-            "mode": "automatic_raw_v2",
-            "as_of": yesterday.isoformat(),
-            "media_metrics": ["impressions", "clicks"],
-        }
+    targetads_rows, targetads_status = targetads_incremental_rows(
+        targetads_token,
+        yesterday,
+        previous_latest,
     )
 
-    # Source priority is intentionally preserved:
-    # - Yandex/MTS PRG: Google facts win when present;
-    # - Avito MED/MRK: Google/Avito facts win when present;
-    # - everything else: Target Ads supplies impressions/clicks.
+    # Existing merge rules enforce the agreed exceptions:
+    # Yandex/MTS PRG -> Google when media facts exist;
+    # Avito MED/MRK -> Google/Avito when media facts exist;
+    # all other campaigns -> Target Ads impressions/clicks.
     verifier_rows = base.merge_verifier_rows(targetads_rows, google_rows)
 
     generated_at = now_utc.isoformat().replace("+00:00", "Z")
@@ -144,9 +225,10 @@ def main() -> None:
                 "verifierRows": len(verifier_rows),
                 "journalRows": len(journal_rows),
                 "targetAdsEnabled": True,
-                "targetAdsMode": "automatic_raw_v2",
-                "targetAdsRows": len(targetads_rows),
-                "targetAdsNewRows": targetads_status.get("new_rows", 0),
+                "targetAdsMode": "automatic_raw_v2_incremental",
+                "targetAdsFetchFrom": targetads_status["from"],
+                "targetAdsNewRows": targetads_status["new_rows"],
+                "targetAdsJobs": targetads_status["jobs_completed"],
             },
             ensure_ascii=False,
         )
