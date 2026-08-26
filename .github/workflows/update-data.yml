@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/update-data.yml"
       - "scripts/update_data.py"
+      - "scripts/update_data_auto.py"
       - "requirements.txt"
   schedule:
     # GitHub Actions uses UTC. 03:00 UTC = 06:00 Moscow.
@@ -23,7 +24,7 @@ jobs:
   update:
     runs-on: ubuntu-latest
     # Raw Data API v2 creates and processes jobs asynchronously. Initial
-    # backfills can contain several three-day windows.
+    # catch-up after restoring automation can contain several three-day windows.
     timeout-minutes: 90
 
     steps:
@@ -39,10 +40,21 @@ jobs:
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
 
+      - name: Restore Target Ads incremental snapshot if needed
+        run: |
+          if [ ! -f data/targetads.json ]; then
+            echo "Restoring the last automatic Target Ads snapshot from repository history"
+            curl --fail --location --retry 3 \
+              --output data/targetads.json \
+              https://raw.githubusercontent.com/romankhasin/-level-group-dashboard/49776deba139693195bb0e04f0128d16f635830c/data/targetads.json
+          fi
+
       - name: Download and update dashboard data
         env:
           YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
-        run: python scripts/update_data.py
+          TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
+          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
+        run: python scripts/update_data_auto.py
 
       - name: Commit refreshed files
         run: |
