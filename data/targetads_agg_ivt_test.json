@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-08-27T11:17:02.939667Z",
+  "projectId": 12787,
+  "endpoint": "https://api.targetads.io/v1/reports/agg_report",
+  "requestedMetrics": [
+    "Impressions",
+    "Clicks",
+    "GIVT",
+    "SIVT",
+    "PartOfGIVT"
+  ],
+  "ok": false,
+  "tests": [
+    {
+      "name": "august_1_16_day_campaign",
+      "period": {
+        "from": "2026-08-01",
+        "to": "2026-08-16"
+      },
+      "fields": [
+        "EventDate",
+        "MediaCampaign"
+      ],
+      "httpStatus": 200,
+      "ok": false,
+      "apiCount": null,
+      "rowCount": 0,
+      "metricFieldPresence": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "metricNonZeroRows": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "totals": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "sample": [],
+      "responseKeys": [
+        "Columns",
+        "CountRows",
+        "Rows"
+      ]
+    },
+    {
+      "name": "august_1_16_source_campaign",
+      "period": {
+        "from": "2026-08-01",
+        "to": "2026-08-16"
+      },
+      "fields": [
+        "MediaSource",
+        "MediaCampaign"
+      ],
+      "httpStatus": 200,
+      "ok": false,
+      "apiCount": null,
+      "rowCount": 0,
+      "metricFieldPresence": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "metricNonZeroRows": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "totals": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "sample": [],
+      "responseKeys": [
+        "Columns",
+        "CountRows",
+        "Rows"
+      ]
+    },
+    {
+      "name": "recent_25_26_day_campaign",
+      "period": {
+        "from": "2026-08-25",
+        "to": "2026-08-26"
+      },
+      "fields": [
+        "EventDate",
+        "MediaCampaign"
+      ],
+      "httpStatus": 200,
+      "ok": false,
+      "apiCount": null,
+      "rowCount": 0,
+      "metricFieldPresence": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "metricNonZeroRows": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "totals": {
+        "Impressions": 0,
+        "Clicks": 0,
+        "GIVT": 0,
+        "SIVT": 0,
+        "PartOfGIVT": 0
+      },
+      "sample": [],
+      "responseKeys": [
+        "Columns",
+        "CountRows",
+        "Rows"
+      ]
+    }
+  ]
+}
