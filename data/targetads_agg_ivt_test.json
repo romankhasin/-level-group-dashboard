@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-27T11:17:02.939667Z",
+  "generatedAt": "2026-08-27T11:19:46.281960Z",
   "projectId": 12787,
   "endpoint": "https://api.targetads.io/v1/reports/agg_report",
   "requestedMetrics": [
@@ -9,7 +9,7 @@
     "SIVT",
     "PartOfGIVT"
   ],
-  "ok": false,
+  "ok": true,
   "tests": [
     {
       "name": "august_1_16_day_campaign",
@@ -22,31 +22,114 @@
         "MediaCampaign"
       ],
       "httpStatus": 200,
-      "ok": false,
-      "apiCount": null,
-      "rowCount": 0,
+      "ok": true,
+      "apiCount": 4285,
+      "rowCount": 4285,
+      "columns": [
+        "EventDate",
+        "MediaCampaign",
+        "Impressions",
+        "Clicks",
+        "GIVT",
+        "SIVT",
+        "PartOfGivt"
+      ],
       "metricFieldPresence": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
+        "Impressions": 4285,
+        "Clicks": 4285,
+        "GIVT": 4285,
+        "SIVT": 4285,
         "PartOfGIVT": 0
       },
       "metricNonZeroRows": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
+        "Impressions": 2199,
+        "Clicks": 3682,
+        "GIVT": 1477,
+        "SIVT": 1131,
         "PartOfGIVT": 0
       },
       "totals": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
-        "PartOfGIVT": 0
+        "Impressions": 68928172.0,
+        "Clicks": 453264.0,
+        "GIVT": 1717159.0,
+        "SIVT": 3318312.0,
+        "PartOfGIVT": 0.0
       },
-      "sample": [],
+      "sample": [
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Group / Баннер / UrbanAds / Апрель 2026",
+          "Impressions": "3",
+          "Clicks": "0",
+          "GIVT": "1",
+          "SIVT": "0",
+          "PartOfGivt": "33.333333333333336"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Group / Видео / Яндекс / Декабрь 2025",
+          "Impressions": "0",
+          "Clicks": "7",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Group / Видео / Яндекс / Январь 2026",
+          "Impressions": "0",
+          "Clicks": "6",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Group / Видео Остатки / Яндекс / Декабрь 2025",
+          "Impressions": "0",
+          "Clicks": "4",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Group / Видео Остатки / Яндекс / Январь 2026",
+          "Impressions": "0",
+          "Clicks": "2",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Войковская / Баннер / UrbanAds / Апрель 2026",
+          "Impressions": "1",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Мичуринский / Баннер / UrbanAds / Апрель 2026",
+          "Impressions": "1",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-01",
+          "MediaCampaign": "Level Павелецкая Сити / Баннер / UrbanAds / Апрель 2026",
+          "Impressions": "2",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        }
+      ],
+      "rawRowSample": null,
       "responseKeys": [
         "Columns",
         "CountRows",
@@ -64,31 +147,114 @@
         "MediaCampaign"
       ],
       "httpStatus": 200,
-      "ok": false,
-      "apiCount": null,
-      "rowCount": 0,
+      "ok": true,
+      "apiCount": 344,
+      "rowCount": 344,
+      "columns": [
+        "MediaSource",
+        "MediaCampaign",
+        "Impressions",
+        "Clicks",
+        "GIVT",
+        "SIVT",
+        "PartOfGivt"
+      ],
       "metricFieldPresence": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
+        "Impressions": 344,
+        "Clicks": 344,
+        "GIVT": 344,
+        "SIVT": 344,
         "PartOfGIVT": 0
       },
       "metricNonZeroRows": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
+        "Impressions": 229,
+        "Clicks": 284,
+        "GIVT": 146,
+        "SIVT": 90,
         "PartOfGIVT": 0
       },
       "totals": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
-        "PartOfGIVT": 0
+        "Impressions": 68928172.0,
+        "Clicks": 453264.0,
+        "GIVT": 1717159.0,
+        "SIVT": 3318312.0,
+        "PartOfGIVT": 0.0
       },
-      "sample": [],
+      "sample": [
+        {
+          "MediaSource": "Adheads",
+          "MediaCampaign": "Мичуринский // Adheads // август 2026",
+          "Impressions": "763159",
+          "Clicks": "5154",
+          "GIVT": "26348",
+          "SIVT": "10490",
+          "PartOfGivt": "3.4524915515639596"
+        },
+        {
+          "MediaSource": "Adheads",
+          "MediaCampaign": "Нижегородская w // Adheads // август 2026",
+          "Impressions": "406708",
+          "Clicks": "2748",
+          "GIVT": "16604",
+          "SIVT": "5387",
+          "PartOfGivt": "4.082535873403031"
+        },
+        {
+          "MediaSource": "Adspector",
+          "MediaCampaign": "Войковская // Adspector // июнь 2026",
+          "Impressions": "0",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "MediaSource": "Adspector",
+          "MediaCampaign": "Воронцовская // Adspector // июнь 2026",
+          "Impressions": "1",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "MediaSource": "Adspector",
+          "MediaCampaign": "Мичуринский // Adspector // август 2026",
+          "Impressions": "931643",
+          "Clicks": "17817",
+          "GIVT": "2572",
+          "SIVT": "26965",
+          "PartOfGivt": "0.27607141362088267"
+        },
+        {
+          "MediaSource": "Adspector",
+          "MediaCampaign": "Мичуринский // Adspector // июль 2026",
+          "Impressions": "23",
+          "Clicks": "0",
+          "GIVT": "1",
+          "SIVT": "0",
+          "PartOfGivt": "4.3478260869565215"
+        },
+        {
+          "MediaSource": "Adspector",
+          "MediaCampaign": "Павелецкая сити // Adspector // август 2026",
+          "Impressions": "710481",
+          "Clicks": "13375",
+          "GIVT": "2086",
+          "SIVT": "20058",
+          "PartOfGivt": "0.2936039105901495"
+        },
+        {
+          "MediaSource": "Adspector",
+          "MediaCampaign": "Свободы // Adspector // август 2026",
+          "Impressions": "725889",
+          "Clicks": "8142",
+          "GIVT": "3664",
+          "SIVT": "12296",
+          "PartOfGivt": "0.5047603696983974"
+        }
+      ],
+      "rawRowSample": null,
       "responseKeys": [
         "Columns",
         "CountRows",
@@ -106,31 +272,114 @@
         "MediaCampaign"
       ],
       "httpStatus": 200,
-      "ok": false,
-      "apiCount": null,
-      "rowCount": 0,
+      "ok": true,
+      "apiCount": 518,
+      "rowCount": 518,
+      "columns": [
+        "EventDate",
+        "MediaCampaign",
+        "Impressions",
+        "Clicks",
+        "GIVT",
+        "SIVT",
+        "PartOfGivt"
+      ],
       "metricFieldPresence": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
+        "Impressions": 518,
+        "Clicks": 518,
+        "GIVT": 518,
+        "SIVT": 518,
         "PartOfGIVT": 0
       },
       "metricNonZeroRows": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
+        "Impressions": 230,
+        "Clicks": 488,
+        "GIVT": 165,
+        "SIVT": 140,
         "PartOfGIVT": 0
       },
       "totals": {
-        "Impressions": 0,
-        "Clicks": 0,
-        "GIVT": 0,
-        "SIVT": 0,
-        "PartOfGIVT": 0
+        "Impressions": 12767970.0,
+        "Clicks": 80891.0,
+        "GIVT": 260784.0,
+        "SIVT": 625166.0,
+        "PartOfGIVT": 0.0
       },
-      "sample": [],
+      "sample": [
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Group / Видео / Яндекс / Декабрь 2025",
+          "Impressions": "0",
+          "Clicks": "7",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Group / Видео / Яндекс / Январь 2026",
+          "Impressions": "0",
+          "Clicks": "6",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Group / Видео Остатки / Яндекс / Декабрь 2025",
+          "Impressions": "0",
+          "Clicks": "4",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Group / Видео Остатки / Яндекс / Январь 2026",
+          "Impressions": "0",
+          "Clicks": "3",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Звенигородская / Баннер / Ozon / Февраль 2026",
+          "Impressions": "1",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Мичуринский  / Баннер / Ozon / Февраль 2026",
+          "Impressions": "1",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "Level Павелецкая Сити / Баннер / UrbanAds / Апрель 2026",
+          "Impressions": "6",
+          "Clicks": "0",
+          "GIVT": "0",
+          "SIVT": "2",
+          "PartOfGivt": "0"
+        },
+        {
+          "EventDate": "2026-08-25",
+          "MediaCampaign": "media yandex // Май 2026_",
+          "Impressions": "0",
+          "Clicks": "49",
+          "GIVT": "0",
+          "SIVT": "0",
+          "PartOfGivt": "0"
+        }
+      ],
+      "rawRowSample": null,
       "responseKeys": [
         "Columns",
         "CountRows",
