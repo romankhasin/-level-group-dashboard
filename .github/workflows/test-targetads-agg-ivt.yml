@@ -1,0 +1,47 @@
+name: Test Target Ads aggregated IVT
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/test-targetads-agg-ivt.yml"
+      - "scripts/test_targetads_agg_ivt.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: test-targetads-agg-ivt
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run aggregated IVT diagnostic
+        env:
+          TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
+          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
+        run: python scripts/test_targetads_agg_ivt.py
+
+      - name: Commit diagnostic result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/targetads_agg_ivt_test.json
+          if git diff --cached --quiet; then
+            echo "No diagnostic changes"
+          else
+            git commit -m "Test Target Ads aggregated IVT API"
+            git push
+          fi
