@@ -370,7 +370,7 @@ def workbook_rows(sheet) -> tuple[list[str], list[tuple]]:
 
 def read_google_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], list[dict], dict]:
     workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
-    required_sheets = {"Данные_метрика", "Дневник оптимизации"}
+    required_sheets = {"Данные_метрика"}
     missing = required_sheets.difference(workbook.sheetnames)
     if missing:
         raise RuntimeError(f"Google workbook is missing sheets: {sorted(missing)}")
@@ -418,6 +418,22 @@ def read_google_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], li
         # dashboard plans already include VAT. Add 22% VAT only to actual cost.
         item["cost"] += number(row[metric_index["cost"]]) * GOOGLE_ACTUAL_COST_VAT_MULTIPLIER
 
+    workbook.close()
+    return (
+        sorted(aggregated.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"])),
+        [],
+        {
+            "metric_rows": len(aggregated),
+        },
+    )
+
+
+def read_journal_workbook(path: Path) -> tuple[list[dict], dict]:
+    """Read the optimisation journal from the current reporting workbook."""
+    workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    if "Дневник оптимизации" not in workbook.sheetnames:
+        raise RuntimeError("Journal workbook is missing sheet: Дневник оптимизации")
+
     journal_headers, journal_source_rows = workbook_rows(workbook["Дневник оптимизации"])
     expected_journal_headers = [
         "Проект",
@@ -440,17 +456,9 @@ def read_google_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], li
             {header: str(values[index] or "").strip() for index, header in enumerate(expected_journal_headers)}
         )
 
-    workbook.close()
     platforms = sorted({row["Площадка"] for row in journal_rows if row["Площадка"]})
-    return (
-        sorted(aggregated.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"])),
-        journal_rows,
-        {
-            "metric_rows": len(aggregated),
-            "journal_rows": len(journal_rows),
-            "journal_platforms": platforms,
-        },
-    )
+    workbook.close()
+    return journal_rows, {"journal_rows": len(journal_rows), "journal_platforms": platforms}
 
 
 def read_august_prg_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], dict]:
@@ -1201,7 +1209,7 @@ def main() -> None:
     workbook_path = args.workbook or (ROOT / ".cache" / "level_group_report.xlsx")
     if args.workbook is None:
         download_file(GOOGLE_WORKBOOK_URL, workbook_path)
-    live_google_rows, journal_rows, google_status = read_google_workbook(workbook_path, yesterday)
+    live_google_rows, _, google_status = read_google_workbook(workbook_path, yesterday)
     avito_workbook_path = ROOT / ".cache" / "avito_media_report.xlsx"
     download_file(AVITO_GOOGLE_WORKBOOK_URL, avito_workbook_path)
     avito_google_rows, avito_status = read_avito_workbook(avito_workbook_path, yesterday)
@@ -1210,6 +1218,7 @@ def main() -> None:
     august_prg_google_rows, august_prg_status = read_august_prg_workbook(
         august_prg_workbook_path, yesterday
     )
+    journal_rows, journal_status = read_journal_workbook(august_prg_workbook_path)
     august_avito_google_rows, august_avito_status = read_august_avito_workbook(
         august_prg_workbook_path, yesterday
     )
@@ -1263,6 +1272,7 @@ def main() -> None:
         "status": {
             "metrika": metrika_status,
             "google": google_status,
+            "journal": journal_status,
             "targetads": targetads_status,
         },
     }
