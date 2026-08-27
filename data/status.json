@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-27T10:57:58.941724Z",
+  "generatedAt": "2026-08-27T13:57:23.888876Z",
   "metrika": {
-    "new_rows": 4918,
+    "new_rows": 4210,
     "total_rows": 94983,
     "ranges": {
       "53197618": {
-        "from": "2026-08-26",
+        "from": "2026-08-27",
         "to": "2026-08-26",
-        "new_rows": 708,
+        "new_rows": 0,
         "quality_calls_backfill": false
       },
       "100470605": {
@@ -20,24 +20,6 @@
   },
   "google": {
     "metric_rows": 17273,
-    "journal_rows": 392,
-    "journal_platforms": [
-      "AdsHeads",
-      "Adsepctor",
-      "Adspector",
-      "Astralab",
-      "Mobidriven",
-      "Qbid",
-      "Roxot",
-      "Rutube",
-      "SOLTA",
-      "VOX",
-      "qbid",
-      "МТС",
-      "МТС Баннеры",
-      "МТС баннеры",
-      "Яндекс"
-    ],
     "archive_rows": 7403,
     "live_rows": 7092,
     "avito": {
