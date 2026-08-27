@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-26T15:56:20.047158Z",
+  "generatedAt": "2026-08-27T10:57:58.941724Z",
   "metrika": {
-    "new_rows": 4115,
-    "total_rows": 94181,
+    "new_rows": 4918,
+    "total_rows": 94983,
     "ranges": {
       "53197618": {
         "from": "2026-08-26",
-        "to": "2026-08-25",
-        "new_rows": 0,
+        "to": "2026-08-26",
+        "new_rows": 708,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-25",
-        "new_rows": 4115,
+        "to": "2026-08-26",
+        "new_rows": 4210,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 17163,
+    "metric_rows": 17273,
     "journal_rows": 392,
     "journal_platforms": [
       "AdsHeads",
@@ -46,14 +46,14 @@
     },
     "august_avito": {
       "sheet": "Данные_метрика",
-      "source_rows": 1071,
+      "source_rows": 1108,
       "media_rows": 0,
       "metric_rows": 0
     },
     "august_prg": {
       "sheet": "Данные_метрика",
-      "source_rows": 3842,
-      "metric_rows": 1908,
+      "source_rows": 4063,
+      "metric_rows": 2018,
       "platforms": [
         "mts",
         "yandex"
@@ -63,97 +63,26 @@
   "targetads": {
     "enabled": true,
     "configured": true,
+    "mode": "automatic_raw_v2_incremental",
     "api": "raw_data_v2",
     "project_id": 12787,
     "token_valid": true,
-    "campaigns_available": 773,
-    "creatives_available": 7112,
+    "campaigns_available": 779,
+    "creatives_available": 7140,
     "identity_field": "creative_name",
-    "creative_backfill": false,
-    "new_rows": 17744,
-    "total_rows": 131950,
-    "from": "2026-08-11",
-    "to": "2026-08-25",
-    "jobs_completed": 10,
-    "events_aggregated": 73259609,
-    "job_details": [
-      {
-        "id": "103dd90d-4c5c-43bc-ad94-0a2b45bd011a",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 13436782,
-        "aggregated_events": 13436782
-      },
-      {
-        "id": "aa8072a2-bd8c-4105-bbb3-312069b8ff6a",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 82799,
-        "aggregated_events": 82799
-      },
-      {
-        "id": "979d1d0b-af76-483f-a2cc-1a650f322467",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 13380481,
-        "aggregated_events": 13380481
-      },
-      {
-        "id": "c3cefceb-2dcd-4138-8a5a-74ccef1ca098",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 94199,
-        "aggregated_events": 94199
-      },
-      {
-        "id": "8bd0fa01-55a5-4f17-98c3-40a86333d803",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 14705443,
-        "aggregated_events": 14705443
-      },
-      {
-        "id": "41ff6c55-0b7c-4817-968e-ec4ee5e6ec5f",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 100744,
-        "aggregated_events": 100744
-      },
-      {
-        "id": "00b82df5-5285-4a81-9898-421d9c752a9e",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 14523125,
-        "aggregated_events": 14523125
-      },
-      {
-        "id": "bfb96e69-e438-4988-a69a-ba6e43a71458",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 109636,
-        "aggregated_events": 109636
-      },
-      {
-        "id": "b531ca1f-e6b6-4f04-8b2e-55948439426e",
-        "type": "Impression",
-        "status": "DONE",
-        "api_row_count": 16709725,
-        "aggregated_events": 16709725
-      },
-      {
-        "id": "b0afb210-598c-43c2-8886-62f7b436a05f",
-        "type": "Click",
-        "status": "DONE",
-        "api_row_count": 116675,
-        "aggregated_events": 116675
-      }
-    ],
-    "warning": null,
-    "mode": "automatic_raw_v2",
-    "as_of": "2026-08-25",
+    "bootstrap_used": false,
+    "bootstrap_through": null,
+    "from": "2026-08-26",
+    "to": "2026-08-26",
+    "as_of": "2026-08-26",
     "media_metrics": [
       "impressions",
       "clicks"
-    ]
+    ],
+    "new_rows": 1166,
+    "baseline_rows": 116032,
+    "jobs_completed": 2,
+    "events_aggregated": 6409399,
+    "warning": null
   }
 }
