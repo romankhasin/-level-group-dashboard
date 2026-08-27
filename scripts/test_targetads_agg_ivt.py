@@ -26,6 +26,51 @@ def number(value: object) -> float:
         return 0.0
 
 
+def column_name(column: object, index: int) -> str:
+    if isinstance(column, str):
+        return column
+    if isinstance(column, dict):
+        for key in ("Name", "name", "Field", "field", "Column", "column", "Key", "key"):
+            value = column.get(key)
+            if value:
+                return str(value)
+    return f"column_{index}"
+
+
+def normalize_rows(parsed: object) -> tuple[list[dict], list[str], object]:
+    if not isinstance(parsed, dict):
+        return [], [], None
+
+    documented = parsed.get("data")
+    if isinstance(documented, list):
+        rows = [row for row in documented if isinstance(row, dict)]
+        columns = sorted({key for row in rows for key in row.keys()})
+        return rows, columns, documented[:2]
+
+    raw_rows = parsed.get("Rows")
+    raw_columns = parsed.get("Columns")
+    if not isinstance(raw_rows, list):
+        return [], [], None
+
+    if raw_rows and all(isinstance(row, dict) for row in raw_rows):
+        rows = [row for row in raw_rows if isinstance(row, dict)]
+        columns = sorted({key for row in rows for key in row.keys()})
+        return rows, columns, raw_rows[:2]
+
+    columns: list[str] = []
+    if isinstance(raw_columns, list):
+        columns = [column_name(column, index) for index, column in enumerate(raw_columns)]
+
+    rows: list[dict] = []
+    for raw_row in raw_rows:
+        if not isinstance(raw_row, (list, tuple)):
+            continue
+        if not columns:
+            columns = [f"column_{index}" for index in range(len(raw_row))]
+        rows.append({columns[index] if index < len(columns) else f"column_{index}": value for index, value in enumerate(raw_row)})
+    return rows, columns, raw_rows[:2]
+
+
 def run_query(token: str, project_id: int, name: str, date_from: str, date_to: str, fields: list[str]) -> dict:
     payload = {
         "ResponseType": "JSON",
@@ -67,7 +112,7 @@ def run_query(token: str, project_id: int, name: str, date_from: str, date_to: s
             "ok": False,
             "error": parsed,
         }
-    except Exception as error:  # diagnostic: preserve the failure in JSON
+    except Exception as error:
         return {
             "name": name,
             "period": {"from": date_from, "to": date_to},
@@ -89,29 +134,34 @@ def run_query(token: str, project_id: int, name: str, date_from: str, date_to: s
             "error": {"message": "Non-JSON response", "raw": body[:2000]},
         }
 
-    data = parsed.get("data") if isinstance(parsed, dict) else None
-    rows = data if isinstance(data, list) else []
-    totals = {metric: sum(number(row.get(metric)) for row in rows if isinstance(row, dict)) for metric in METRICS}
+    rows, columns, raw_sample = normalize_rows(parsed)
+    totals = {metric: sum(number(row.get(metric)) for row in rows) for metric in METRICS}
     present = {
-        metric: sum(1 for row in rows if isinstance(row, dict) and metric in row and row.get(metric) is not None)
+        metric: sum(1 for row in rows if metric in row and row.get(metric) is not None)
         for metric in METRICS
     }
     nonzero = {
-        metric: sum(1 for row in rows if isinstance(row, dict) and number(row.get(metric)) != 0)
+        metric: sum(1 for row in rows if number(row.get(metric)) != 0)
         for metric in METRICS
     }
+    api_count = None
+    if isinstance(parsed, dict):
+        api_count = parsed.get("count", parsed.get("CountRows"))
+
     return {
         "name": name,
         "period": {"from": date_from, "to": date_to},
         "fields": fields,
         "httpStatus": status,
-        "ok": status == 200 and isinstance(data, list),
-        "apiCount": parsed.get("count") if isinstance(parsed, dict) else None,
+        "ok": status == 200 and isinstance(parsed, dict),
+        "apiCount": api_count,
         "rowCount": len(rows),
+        "columns": columns,
         "metricFieldPresence": present,
         "metricNonZeroRows": nonzero,
         "totals": totals,
         "sample": rows[:8],
+        "rawRowSample": raw_sample if not rows else None,
         "responseKeys": sorted(parsed.keys()) if isinstance(parsed, dict) else [],
     }
 
