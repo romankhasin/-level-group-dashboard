@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T13:07:33.390530Z",
+  "generatedAt": "2026-08-28T15:11:48.485510Z",
   "metrika": {
     "new_rows": 4296,
     "total_rows": 95810,
@@ -49,8 +49,8 @@
     "api": "raw_data_v2",
     "project_id": 12787,
     "token_valid": true,
-    "campaigns_available": 779,
-    "creatives_available": 7140,
+    "campaigns_available": 780,
+    "creatives_available": 7141,
     "identity_field": "creative_name",
     "bootstrap_used": false,
     "bootstrap_through": null,
