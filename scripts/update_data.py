@@ -29,6 +29,7 @@ LATEST_PATH = DATA_DIR / "latest.json"
 LATEST_SUMMARY_PATH = DATA_DIR / "latest-summary.json"
 STATUS_PATH = DATA_DIR / "status.json"
 GOOGLE_ARCHIVE_PATH = DATA_DIR / "google_archive.json"
+JOURNAL_ARCHIVE_PATH = DATA_DIR / "journal_archive.json"
 JOURNAL_PATH = ROOT / "journal.html"
 
 START_DATE = dt.date(2026, 5, 1)
@@ -448,13 +449,16 @@ def read_journal_workbook(path: Path) -> tuple[list[dict], dict]:
         raise RuntimeError("Дневник оптимизации has an unexpected header layout")
 
     journal_rows = []
+    seen_journal_rows: set[tuple[str, ...]] = set()
     for source_row in journal_source_rows:
         values = list(source_row[:7])
         if not any(value not in (None, "") for value in values):
             continue
-        journal_rows.append(
-            {header: str(values[index] or "").strip() for index, header in enumerate(expected_journal_headers)}
-        )
+        journal_row = {header: str(values[index] or "").strip() for index, header in enumerate(expected_journal_headers)}
+        journal_key = tuple(journal_row[header] for header in expected_journal_headers)
+        if journal_key not in seen_journal_rows:
+            seen_journal_rows.add(journal_key)
+            journal_rows.append(journal_row)
 
     platforms = sorted({row["Площадка"] for row in journal_rows if row["Площадка"]})
     workbook.close()
@@ -1219,6 +1223,8 @@ def main() -> None:
         august_prg_workbook_path, yesterday
     )
     journal_rows, journal_status = read_journal_workbook(august_prg_workbook_path)
+    # Keep verified historical cards that are not present in the live source.
+    journal_rows = [*read_json_rows(JOURNAL_ARCHIVE_PATH), *journal_rows]
     august_avito_google_rows, august_avito_status = read_august_avito_workbook(
         august_prg_workbook_path, yesterday
     )
