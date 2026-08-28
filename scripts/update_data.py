@@ -1285,7 +1285,13 @@ def main() -> None:
     write_json(LATEST_PATH, latest)
     write_json(LATEST_SUMMARY_PATH, build_startup_summary(latest))
     write_json(STATUS_PATH, {"generatedAt": generated_at, **latest["status"]})
-    JOURNAL_PATH.write_text(journal_html(journal_rows, generated_at), encoding="utf-8")
+    # A transient Drive download/read failure must never replace the published
+    # history with an empty page. Keep the last verified journal until the
+    # source returns at least one live row again.
+    if journal_status["journal_rows"]:
+        JOURNAL_PATH.write_text(journal_html(journal_rows, generated_at), encoding="utf-8")
+    else:
+        print("Journal source is empty; preserving the published journal.html")
 
     print(
         json.dumps(
