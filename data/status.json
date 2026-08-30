@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-08-29T09:53:51.896878Z",
+  "generatedAt": "2026-08-30T09:04:46.365151Z",
   "metrika": {
-    "new_rows": 5080,
-    "total_rows": 96594,
+    "new_rows": 5120,
+    "total_rows": 97332,
     "ranges": {
       "53197618": {
-        "from": "2026-08-28",
-        "to": "2026-08-28",
-        "new_rows": 698,
+        "from": "2026-08-29",
+        "to": "2026-08-29",
+        "new_rows": 656,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-28",
-        "new_rows": 4382,
+        "to": "2026-08-29",
+        "new_rows": 4464,
         "quality_calls_backfill": false
       }
     }
@@ -54,17 +54,17 @@
     "identity_field": "creative_name",
     "bootstrap_used": false,
     "bootstrap_through": null,
-    "from": "2026-08-28",
-    "to": "2026-08-28",
-    "as_of": "2026-08-28",
+    "from": "2026-08-29",
+    "to": "2026-08-29",
+    "as_of": "2026-08-29",
     "media_metrics": [
       "impressions",
       "clicks"
     ],
-    "new_rows": 1171,
-    "baseline_rows": 118418,
+    "new_rows": 1223,
+    "baseline_rows": 119581,
     "jobs_completed": 2,
-    "events_aggregated": 6337464,
+    "events_aggregated": 6495655,
     "warning": null
   }
 }
