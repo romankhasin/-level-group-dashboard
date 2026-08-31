@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-31T08:13:06.311505Z",
+  "generatedAt": "2026-08-31T09:32:34.724796Z",
   "metrika": {
-    "new_rows": 5197,
+    "new_rows": 4545,
     "total_rows": 98065,
     "ranges": {
       "53197618": {
-        "from": "2026-08-30",
+        "from": "2026-08-31",
         "to": "2026-08-30",
-        "new_rows": 652,
+        "new_rows": 0,
         "quality_calls_backfill": false
       },
       "100470605": {
@@ -62,7 +62,7 @@
       "clicks"
     ],
     "new_rows": 1133,
-    "baseline_rows": 120796,
+    "baseline_rows": 120797,
     "jobs_completed": 2,
     "events_aggregated": 5931774,
     "warning": null
