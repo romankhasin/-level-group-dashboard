@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-30T09:04:46.365151Z",
+  "generatedAt": "2026-08-31T08:13:06.311505Z",
   "metrika": {
-    "new_rows": 5120,
-    "total_rows": 97332,
+    "new_rows": 5197,
+    "total_rows": 98065,
     "ranges": {
       "53197618": {
-        "from": "2026-08-29",
-        "to": "2026-08-29",
-        "new_rows": 656,
+        "from": "2026-08-30",
+        "to": "2026-08-30",
+        "new_rows": 652,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-29",
-        "new_rows": 4464,
+        "to": "2026-08-30",
+        "new_rows": 4545,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 17396,
+    "metric_rows": 17709,
     "archive_rows": 7403,
     "live_rows": 7092,
     "avito": {
@@ -28,14 +28,14 @@
     },
     "august_avito": {
       "sheet": "Данные_метрика",
-      "source_rows": 1145,
+      "source_rows": 1241,
       "media_rows": 0,
       "metric_rows": 0
     },
     "august_prg": {
       "sheet": "Данные_метрика",
-      "source_rows": 4305,
-      "metric_rows": 2141,
+      "source_rows": 4931,
+      "metric_rows": 2454,
       "platforms": [
         "mts",
         "yandex"
@@ -54,17 +54,17 @@
     "identity_field": "creative_name",
     "bootstrap_used": false,
     "bootstrap_through": null,
-    "from": "2026-08-29",
-    "to": "2026-08-29",
-    "as_of": "2026-08-29",
+    "from": "2026-08-30",
+    "to": "2026-08-30",
+    "as_of": "2026-08-30",
     "media_metrics": [
       "impressions",
       "clicks"
     ],
-    "new_rows": 1223,
-    "baseline_rows": 119581,
+    "new_rows": 1133,
+    "baseline_rows": 120796,
     "jobs_completed": 2,
-    "events_aggregated": 6495655,
+    "events_aggregated": 5931774,
     "warning": null
   }
 }
