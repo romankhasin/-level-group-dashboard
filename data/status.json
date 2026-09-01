@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-08-31T09:32:34.724796Z",
+  "generatedAt": "2026-09-01T08:29:09.769745Z",
   "metrika": {
-    "new_rows": 4545,
-    "total_rows": 98065,
+    "new_rows": 5365,
+    "total_rows": 98885,
     "ranges": {
       "53197618": {
         "from": "2026-08-31",
-        "to": "2026-08-30",
-        "new_rows": 0,
+        "to": "2026-08-31",
+        "new_rows": 734,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-08-30",
-        "new_rows": 4545,
+        "to": "2026-08-31",
+        "new_rows": 4631,
         "quality_calls_backfill": false
       }
     }
   },
   "google": {
-    "metric_rows": 17709,
+    "metric_rows": 17817,
     "archive_rows": 7403,
     "live_rows": 7092,
     "avito": {
@@ -28,14 +28,14 @@
     },
     "august_avito": {
       "sheet": "Данные_метрика",
-      "source_rows": 1241,
+      "source_rows": 1272,
       "media_rows": 0,
       "metric_rows": 0
     },
     "august_prg": {
       "sheet": "Данные_метрика",
-      "source_rows": 4931,
-      "metric_rows": 2454,
+      "source_rows": 5128,
+      "metric_rows": 2562,
       "platforms": [
         "mts",
         "yandex"
@@ -49,22 +49,22 @@
     "api": "raw_data_v2",
     "project_id": 12787,
     "token_valid": true,
-    "campaigns_available": 793,
-    "creatives_available": 7155,
+    "campaigns_available": 893,
+    "creatives_available": 8341,
     "identity_field": "creative_name",
     "bootstrap_used": false,
     "bootstrap_through": null,
-    "from": "2026-08-30",
-    "to": "2026-08-30",
-    "as_of": "2026-08-30",
+    "from": "2026-08-31",
+    "to": "2026-08-31",
+    "as_of": "2026-08-31",
     "media_metrics": [
       "impressions",
       "clicks"
     ],
-    "new_rows": 1133,
-    "baseline_rows": 120797,
+    "new_rows": 1252,
+    "baseline_rows": 121922,
     "jobs_completed": 2,
-    "events_aggregated": 5931774,
+    "events_aggregated": 5634601,
     "warning": null
   }
 }
