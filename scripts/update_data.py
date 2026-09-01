@@ -1193,6 +1193,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--skip-metrika", action="store_true", help="Local validation only")
     parser.add_argument("--workbook", type=Path, help="Use a local workbook instead of downloading")
+    parser.add_argument("--journal-only", action="store_true", help="Refresh only journal.html from the reporting workbook")
     args = parser.parse_args()
 
     now_utc = dt.datetime.now(dt.timezone.utc)
@@ -1201,6 +1202,21 @@ def main() -> None:
         raise RuntimeError("Yesterday is earlier than the configured report start date")
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+    if args.journal_only:
+        workbook_path = args.workbook or (ROOT / ".cache" / "august_prg_media_report.xlsx")
+        if args.workbook is None:
+            download_file(AUGUST_PRG_GOOGLE_WORKBOOK_URL, workbook_path)
+        journal_rows, journal_status = read_journal_workbook(workbook_path)
+        if not journal_status["journal_rows"]:
+            print("Journal source is empty; preserving the published journal.html")
+            return
+        journal_rows = [*read_json_rows(JOURNAL_ARCHIVE_PATH), *journal_rows]
+        generated_at = now_utc.isoformat().replace("+00:00", "Z")
+        journal = "\n".join(line.rstrip() for line in journal_html(journal_rows, generated_at).splitlines()) + "\n"
+        JOURNAL_PATH.write_text(journal, encoding="utf-8")
+        print(json.dumps({"generatedAt": generated_at, "journalRows": len(journal_rows)}, ensure_ascii=False))
+        return
+
     token = os.environ.get("YANDEX_METRIKA_TOKEN", "").strip()
     if args.skip_metrika:
         metrika_rows = read_json_rows(METRIKA_HISTORY_PATH)
@@ -1289,7 +1305,8 @@ def main() -> None:
     # history with an empty page. Keep the last verified journal until the
     # source returns at least one live row again.
     if journal_status["journal_rows"]:
-        JOURNAL_PATH.write_text(journal_html(journal_rows, generated_at), encoding="utf-8")
+        journal = "\n".join(line.rstrip() for line in journal_html(journal_rows, generated_at).splitlines()) + "\n"
+        JOURNAL_PATH.write_text(journal, encoding="utf-8")
     else:
         print("Journal source is empty; preserving the published journal.html")
 
