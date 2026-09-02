@@ -10419,14 +10419,21 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       }
     }
 
+    function rowsForClientExport(rows, dateField) {
+      if (!Array.isArray(rows) || (!PERIOD_FILTER.from && !PERIOD_FILTER.to)) return rows;
+      return rows.filter(row => isDateInPeriod(row && row[dateField]));
+    }
+
     function makeClientExportHtml() {
       if ((!RAW_ROWS || !RAW_ROWS.length) && REPORT_MODE !== "artcl") {
         alert("Сначала загрузите файл Метрики, затем экспортируйте отчёт.");
         return null;
       }
       const payload = RAW_ROWS && RAW_ROWS.length ? {
-          rawRows: RAW_ROWS,
-          verifierRows: VERIFIER_ROWS,
+          // A standalone report must contain the selected period, not the
+          // complete in-browser history collected for the dashboard.
+          rawRows: rowsForClientExport(RAW_ROWS, "Дата визита"),
+          verifierRows: rowsForClientExport(VERIFIER_ROWS, "interaction_dt"),
           sourceFile: SOURCE_FILE,
           verifierFile: VERIFIER_FILE,
           periodFilter: PERIOD_FILTER,
