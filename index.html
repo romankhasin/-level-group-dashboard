@@ -3594,7 +3594,7 @@ body.help-open { overflow: hidden; }
           <div>
             <h2>Медиаплан</h2>
             <p>Загрузите Excel с плановыми показами, кликами и бюджетами. Дашборд рассчитает плановые CPM/CPC и фактический расход по показам Target Ads.</p>
-            <div class="status" id="mediaPlanStatus">Используется единый план августа 2026 с разбивкой PRG и MED/MRK.</div>
+            <div class="status" id="mediaPlanStatus">Для факта сентября используются Метрика и Target Ads; для плановых KPI загрузите медиаплан сентября. Пока встроен план августа 2026.</div>
           </div>
           <div class="upload-actions vertical">
             <label class="file-button" for="mediaPlanFile">Загрузить медиаплан</label>
@@ -4188,10 +4188,11 @@ body.help-open { overflow: hidden; }
     let SOURCE_FILE = "";
     let VERIFIER_FILE = "";
     let currentProjects = [];
-    let PERIOD_FILTER = {
-      from: "",
-      to: ""
+    const DEFAULT_REPORT_PERIOD = {
+      from: "2026-09-01",
+      to: "2026-09-30"
     };
+    let PERIOD_FILTER = { ...DEFAULT_REPORT_PERIOD };
     let RANGE_PICKER_STATE = {
       draftFrom: "",
       draftTo: "",
@@ -9379,6 +9380,7 @@ body.help-open { overflow: hidden; }
         VERIFIER_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => !cols.date || isDateInPeriod(row[cols.date]))
+          .filter(row => !cols.date || campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
@@ -9548,6 +9550,7 @@ body.help-open { overflow: hidden; }
         VERIFIER_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => !cols.date || isDateInPeriod(row[cols.date]))
+          .filter(row => !cols.date || campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
@@ -10391,12 +10394,13 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         ARCHIVE_VERIFIER_FILES = [];
         SOURCE_FILE = payload.sourceFile || "Автоматическая выгрузка Яндекс Метрики";
         VERIFIER_FILE = payload.verifierFile || "Автоматические данные площадок";
-        PERIOD_FILTER = { from: "", to: "" };
+        PERIOD_FILTER = { ...DEFAULT_REPORT_PERIOD };
 
         const fromInput = document.getElementById("periodFrom");
         const toInput = document.getElementById("periodTo");
-        if (fromInput) fromInput.value = "";
-        if (toInput) toInput.value = "";
+        if (fromInput) fromInput.value = PERIOD_FILTER.from;
+        if (toInput) toInput.value = PERIOD_FILTER.to;
+        syncPeriodRangeUi();
 
         refreshDashboard();
 
