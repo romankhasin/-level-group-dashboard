@@ -5,7 +5,7 @@
   "month": "2026-08",
   "from": "2026-08-01",
   "to": "2026-08-31",
-  "generatedAt": "2026-09-01T08:51:00.945804Z",
+  "generatedAt": "2026-09-02T08:03:52.027639Z",
   "source": "Yandex Metrica Logs API",
   "campaignFilter": [
     "prg",
@@ -56091,17 +56091,17 @@
         "suspiciousVisits": 203,
         "suspiciousShare": 0.07995273729814888,
         "confidence": "Высокая",
-        "comment": "203 визитов требуют внимания: 0 высокого риска и 203 требуют проверки. Основные причины — очень короткие визиты с отказом и концентрация одного IP.",
+        "comment": "203 визитов требуют внимания: 0 высокого риска и 203 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
         "reasons": [
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 203,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 203,
             "shareOfSuspicious": 1.0
           }
@@ -57407,7 +57407,7 @@
         "share": 0.1746031746031746
       },
       "topProfile": {
-        "key": "yandexsearch 20.85 · android_10 · 2 · 360x800",
+        "key": "yandexsearch 26.80 · android_16 · 2 · 375x814",
         "value": 4,
         "share": 0.06349206349206349
       },
@@ -57795,17 +57795,17 @@
         "suspiciousVisits": 108,
         "suspiciousShare": 0.06545454545454546,
         "confidence": "Высокая",
-        "comment": "108 визитов требуют внимания: 0 высокого риска и 108 требуют проверки. Основные причины — очень короткие визиты с отказом и концентрация одного IP.",
+        "comment": "108 визитов требуют внимания: 0 высокого риска и 108 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
         "reasons": [
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 108,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 108,
             "shareOfSuspicious": 1.0
           }
@@ -58735,12 +58735,12 @@
         "share": 0.3333333333333333
       },
       "topResolution": {
-        "key": "360x782",
+        "key": "360x780",
         "value": 1,
         "share": 0.1111111111111111
       },
       "topProfile": {
-        "key": "chromemobile 152 · android_16 · 2 · 360x782",
+        "key": "chromemobile 151 · android_13 · 2 · 360x780",
         "value": 1,
         "share": 0.1111111111111111
       },

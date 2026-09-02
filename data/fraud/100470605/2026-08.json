@@ -5,7 +5,7 @@
   "month": "2026-08",
   "from": "2026-08-01",
   "to": "2026-08-31",
-  "generatedAt": "2026-09-01T08:51:00.945804Z",
+  "generatedAt": "2026-09-02T08:03:52.027639Z",
   "source": "Yandex Metrica Logs API",
   "campaignFilter": [
     "prg",
@@ -27534,17 +27534,17 @@
         "suspiciousVisits": 107,
         "suspiciousShare": 0.11053719008264463,
         "confidence": "Высокая",
-        "comment": "107 визитов требуют внимания: 0 высокого риска и 107 требуют проверки. Основные причины — очень короткие визиты с отказом и концентрация одного IP.",
+        "comment": "107 визитов требуют внимания: 0 высокого риска и 107 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
         "reasons": [
           {
-            "code": "short_bounce",
-            "label": "очень короткие визиты с отказом",
+            "code": "concentrated_ip",
+            "label": "концентрация одного IP",
             "visits": 107,
             "shareOfSuspicious": 1.0
           },
           {
-            "code": "concentrated_ip",
-            "label": "концентрация одного IP",
+            "code": "short_bounce",
+            "label": "очень короткие визиты с отказом",
             "visits": 107,
             "shareOfSuspicious": 1.0
           }
@@ -27599,7 +27599,7 @@
         "share": 0.125
       },
       "topProfile": {
-        "key": "samsung_internet 30 · android_16 · 2 · 360x780",
+        "key": "opera_mobile 100.4 · android_15 · 2 · 360x780",
         "value": 2,
         "share": 0.041666666666666664
       },
@@ -28391,7 +28391,7 @@
         "share": 0.07894736842105263
       },
       "topProfile": {
-        "key": "yandex_browser 26.8 · android_16 · 2 · 320x712",
+        "key": "chromemobile 151 · android_12 · 2 · 360x760",
         "value": 2,
         "share": 0.02631578947368421
       },
@@ -28479,7 +28479,7 @@
         "share": 0.14977973568281938
       },
       "topProfile": {
-        "key": "chromemobile 151 · android_16 · 2 · 377x831",
+        "key": "chromemobile 151 · android_14 · 2 · 360x800",
         "value": 4,
         "share": 0.01762114537444934
       },
@@ -28821,7 +28821,7 @@
         "primary": 0.0
       },
       "topBrowser": {
-        "key": "chromemobile 151",
+        "key": "yandex_browser 26.8",
         "value": 14,
         "share": 0.15555555555555556
       },
@@ -28885,7 +28885,7 @@
         "visits": 849,
         "users": 843,
         "bounce": 0.2921083627797409,
-        "time": 36.23792697290931,
+        "time": 36.773851590106005,
         "newShare": 0.9776207302709069,
         "quality": 0.0,
         "primary": 0.0
@@ -28894,7 +28894,7 @@
         "visits": 849,
         "users": 843,
         "bounce": 0.2921083627797409,
-        "time": 36.23792697290931,
+        "time": 36.773851590106005,
         "newShare": 0.9776207302709069,
         "quality": 0.0,
         "primary": 0.0
@@ -28903,7 +28903,7 @@
         "visits": 849,
         "users": 843,
         "bounce": 0.2921083627797409,
-        "time": 36.23792697290931,
+        "time": 36.773851590106005,
         "newShare": 0.9776207302709069,
         "quality": 0.0,
         "primary": 0.0
@@ -29219,14 +29219,8 @@
         "suspiciousVisits": 4,
         "suspiciousShare": 0.0392156862745098,
         "confidence": "Низкая",
-        "comment": "4 визитов требуют внимания: 0 высокого риска и 4 требуют проверки. Основные причины — повторные визиты одного ClientID и концентрация одного IP.",
+        "comment": "4 визитов требуют внимания: 0 высокого риска и 4 требуют проверки. Основные причины — концентрация одного IP и очень короткие визиты с отказом.",
         "reasons": [
-          {
-            "code": "repeated_clientid",
-            "label": "повторные визиты одного ClientID",
-            "visits": 4,
-            "shareOfSuspicious": 1.0
-          },
           {
             "code": "concentrated_ip",
             "label": "концентрация одного IP",
@@ -29236,6 +29230,12 @@
           {
             "code": "short_bounce",
             "label": "очень короткие визиты с отказом",
+            "visits": 4,
+            "shareOfSuspicious": 1.0
+          },
+          {
+            "code": "repeated_clientid",
+            "label": "повторные визиты одного ClientID",
             "visits": 4,
             "shareOfSuspicious": 1.0
           }
