@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-09-02T07:47:46.884245Z",
+  "generatedAt": "2026-09-03T07:56:22.323973Z",
   "metrika": {
-    "new_rows": 4717,
-    "total_rows": 99773,
+    "new_rows": 5556,
+    "total_rows": 100612,
     "ranges": {
       "53197618": {
         "from": "2026-09-02",
-        "to": "2026-09-01",
-        "new_rows": 0,
+        "to": "2026-09-02",
+        "new_rows": 766,
         "quality_calls_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-09-01",
-        "new_rows": 4717,
+        "to": "2026-09-02",
+        "new_rows": 4790,
         "quality_calls_backfill": false
       }
     }
@@ -50,21 +50,21 @@
     "project_id": 12787,
     "token_valid": true,
     "campaigns_available": 893,
-    "creatives_available": 8391,
+    "creatives_available": 8397,
     "identity_field": "creative_name",
     "bootstrap_used": false,
     "bootstrap_through": null,
-    "from": "2026-09-01",
-    "to": "2026-09-01",
-    "as_of": "2026-09-01",
+    "from": "2026-09-02",
+    "to": "2026-09-02",
+    "as_of": "2026-09-02",
     "media_metrics": [
       "impressions",
       "clicks"
     ],
-    "new_rows": 1223,
-    "baseline_rows": 123167,
+    "new_rows": 1225,
+    "baseline_rows": 124386,
     "jobs_completed": 2,
-    "events_aggregated": 2137634,
+    "events_aggregated": 2921347,
     "warning": null
   }
 }
