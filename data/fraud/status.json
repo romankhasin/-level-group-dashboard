@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-09-03T08:13:44.660893Z",
+  "generatedAt": "2026-09-04T08:08:36.058874Z",
   "period": {
     "from": "2026-05-01",
-    "to": "2026-09-02"
+    "to": "2026-09-03"
   },
   "counters": [
     {
@@ -10,33 +10,18 @@
       "status": "ok",
       "operations": [
         {
-          "requestId": 59538033,
-          "rawVisits": 39644,
-          "includedVisits": 15884,
-          "excludedVisits": 23760,
+          "requestId": 59589186,
+          "rawVisits": 124931,
+          "includedVisits": 51843,
+          "excludedVisits": 73088,
           "campaignFilter": [
             "prg",
             "med",
             "mrk"
           ],
-          "dailySourceRows": 22,
-          "from": "2026-08-31",
-          "to": "2026-08-31",
-          "month": "2026-08"
-        },
-        {
-          "requestId": 59538072,
-          "rawVisits": 79351,
-          "includedVisits": 30696,
-          "excludedVisits": 48655,
-          "campaignFilter": [
-            "prg",
-            "med",
-            "mrk"
-          ],
-          "dailySourceRows": 40,
+          "dailySourceRows": 59,
           "from": "2026-09-01",
-          "to": "2026-09-02",
+          "to": "2026-09-03",
           "month": "2026-09"
         }
       ]
@@ -46,33 +31,18 @@
       "status": "ok",
       "operations": [
         {
-          "requestId": 59538132,
-          "rawVisits": 4515,
-          "includedVisits": 2720,
-          "excludedVisits": 1795,
+          "requestId": 59589235,
+          "rawVisits": 14731,
+          "includedVisits": 8944,
+          "excludedVisits": 5787,
           "campaignFilter": [
             "prg",
             "med",
             "mrk"
           ],
-          "dailySourceRows": 10,
-          "from": "2026-08-31",
-          "to": "2026-08-31",
-          "month": "2026-08"
-        },
-        {
-          "requestId": 59538204,
-          "rawVisits": 9620,
-          "includedVisits": 5966,
-          "excludedVisits": 3654,
-          "campaignFilter": [
-            "prg",
-            "med",
-            "mrk"
-          ],
-          "dailySourceRows": 17,
+          "dailySourceRows": 25,
           "from": "2026-09-01",
-          "to": "2026-09-02",
+          "to": "2026-09-03",
           "month": "2026-09"
         }
       ]
