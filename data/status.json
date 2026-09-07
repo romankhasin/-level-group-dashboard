@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-09-07T07:07:38.941025Z",
+  "generatedAt": "2026-09-07T08:07:08.717421Z",
   "metrika": {
-    "new_rows": 5707,
+    "new_rows": 5040,
     "total_rows": 103762,
     "ranges": {
       "53197618": {
-        "from": "2026-09-06",
+        "from": "2026-09-07",
         "to": "2026-09-06",
-        "new_rows": 667,
+        "new_rows": 0,
         "quality_calls_backfill": false
       },
       "100470605": {
