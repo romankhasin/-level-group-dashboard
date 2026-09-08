@@ -3985,7 +3985,8 @@ body.help-open { overflow: hidden; }
       date: ["дата визита", "дата", "date", "period", "период"],
       visits: ["визиты", "визит", "visits"],
       bounce: ["отказы", "bounce"],
-      time: ["время на сайте", "время", "time", "avg visit duration", "среднее время"]
+      time: ["время на сайте", "время", "time", "avg visit duration", "среднее время"],
+      landing: ["посадочная", "landing page", "landing", "starturl", "start url"]
     };
 
     const VERIFIER_ALIASES = {
@@ -4126,6 +4127,11 @@ body.help-open { overflow: hidden; }
     const ARCHIVE_STORAGE_KEY = "level_group_unified_archive_v1";
     const REPORT_MODE_STORAGE_KEY = "level_group_unified_report_mode_v1";
     let REPORT_MODE = "prg";
+    const TARGETING_LANDING_HOSTS = {
+      lv: "vojkovskaya.level.ru",
+      lwnizh: "work-nizhegorodskaya.level.ru",
+      pc: "pavcity.level.ru"
+    };
 
     function campaignChannel(campaign) {
       const parts = String(campaign || "").trim().toLowerCase().split("_").filter(Boolean);
@@ -4133,6 +4139,22 @@ body.help-open { overflow: hidden; }
       if (parts.includes("med")) return "med";
       if (parts.includes("mrk")) return "mrk";
       return "other";
+    }
+
+    function hasTargetingLandingSplit(parsed) {
+      if (!TARGETING_LANDING_HOSTS[parsed.projectCode]) return false;
+      return (parsed.platformCode === "mts" && parsed.formatCode === "video")
+        || parsed.platformCode === "ozon"
+        || (parsed.platformCode === "yandex" && parsed.formatCode === "banner");
+    }
+
+    function targetingLandingVariant(parsed, value) {
+      if (!hasTargetingLandingSplit(parsed)) return null;
+      const hostname = String(value || "").trim().toLowerCase();
+      const alternativeHost = TARGETING_LANDING_HOSTS[parsed.projectCode];
+      return hostname === alternativeHost
+        ? { code: "alternative", host: alternativeHost }
+        : { code: "primary", host: hostname || "level.ru" };
     }
 
     function channelMatchesMode(channel, mode = REPORT_MODE) {
@@ -9244,6 +9266,9 @@ body.help-open { overflow: hidden; }
     }
 
     function hasVisibleTargetingNode(node) {
+      // Посадочные показываем парой: даже пока у альтернативной нет визитов,
+      // строка остаётся на месте и станет заполняться при первом трафике.
+      if (node && node.landingSplit) return true;
       if (!hasEnoughTargetingVisits(node)) return false;
       const childList = ["platforms", "formats", "audiences", "creatives"]
         .map(key => node && node[key])
@@ -9314,16 +9339,29 @@ body.help-open { overflow: hidden; }
         return project.platforms[parsed.platformCode];
       }
 
-      function ensureFormat(platform, parsed) {
-        if (!platform.formats[parsed.formatCode]) {
-          platform.formats[parsed.formatCode] = {
-            code: parsed.formatCode,
-            name: parsed.format,
+      function ensureFormat(platform, parsed, landing = null) {
+        const hasLandingSplit = Boolean(landing && hasTargetingLandingSplit(parsed));
+        const code = hasLandingSplit ? `${parsed.formatCode}__${landing.code}` : parsed.formatCode;
+        const name = hasLandingSplit ? `${parsed.format} (${landing.host})` : parsed.format;
+        if (!platform.formats[code]) {
+          platform.formats[code] = {
+            code,
+            name,
             metric: createTargetingMetric(),
-            audiences: {}
+            audiences: {},
+            landingSplit: hasLandingSplit
           };
         }
-        return platform.formats[parsed.formatCode];
+        return platform.formats[code];
+      }
+
+      function ensureLandingFormats(platform, parsed) {
+        if (!hasTargetingLandingSplit(parsed)) return;
+        ensureFormat(platform, parsed, { code: "primary", host: "level.ru" });
+        ensureFormat(platform, parsed, {
+          code: "alternative",
+          host: TARGETING_LANDING_HOSTS[parsed.projectCode]
+        });
       }
 
       function ensureAudience(format, parsed) {
@@ -9332,7 +9370,8 @@ body.help-open { overflow: hidden; }
             code: parsed.audienceCode,
             name: parsed.audience,
             metric: createTargetingMetric(),
-            creatives: {}
+            creatives: {},
+            landingSplit: Boolean(format.landingSplit)
           };
         }
         return format.audiences[parsed.audienceCode];
@@ -9343,20 +9382,33 @@ body.help-open { overflow: hidden; }
           audience.creatives[parsed.creativeCode] = {
             code: parsed.creativeCode,
             name: parsed.creative,
-            metric: createTargetingMetric()
+            metric: createTargetingMetric(),
+            landingSplit: Boolean(audience.landingSplit)
           };
         }
         return audience.creatives[parsed.creativeCode];
       }
 
-      function addToAll(parsed, addFn, item) {
+      function addToAll(parsed, addFn, item, landing = null) {
         const project = ensureProject(parsed);
         const platform = ensurePlatform(project, parsed);
-        const format = ensureFormat(platform, parsed);
+        ensureLandingFormats(platform, parsed);
+        const format = ensureFormat(platform, parsed, landing);
         const audience = ensureAudience(format, parsed);
         const creative = ensureCreative(audience, parsed);
 
         [project.metric, platform.metric, format.metric, audience.metric, creative.metric].forEach(metric => addFn(metric, item));
+      }
+
+      function addVerifierToAll(parsed, item) {
+        if (!hasTargetingLandingSplit(parsed)) {
+          addToAll(parsed, addTargetingVerifier, item);
+          return;
+        }
+        const project = ensureProject(parsed);
+        const platform = ensurePlatform(project, parsed);
+        ensureLandingFormats(platform, parsed);
+        [project.metric, platform.metric].forEach(metric => addTargetingVerifier(metric, item));
       }
 
       if (RAW_ROWS && RAW_ROWS.length) {
@@ -9369,11 +9421,11 @@ body.help-open { overflow: hidden; }
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
 
-                addToAll(parsed, addTargetingMetrika, {
+            addToAll(parsed, addTargetingMetrika, {
               visits: Math.round(parseNumber(row[cols.visits])),
               bounce: parseBounce(row[cols.bounce]),
               timeSec: parseTime(row[cols.time])
-            });
+            }, targetingLandingVariant(parsed, cols.landing ? row[cols.landing] : ""));
           });
       }
 
@@ -9395,7 +9447,7 @@ body.help-open { overflow: hidden; }
               ? Boolean(row.has_actual_cost)
               : Boolean(cols.cost);
 
-            addToAll(parsed, addTargetingVerifier, {
+            addVerifierToAll(parsed, {
               impressions,
               clicks: parseNumber(row[cols.clicks]),
               givt: parseNumber(row[cols.givt]),
@@ -9414,7 +9466,8 @@ body.help-open { overflow: hidden; }
         const result = {
           code: node.code,
           name: node.name,
-          metrics: finalizeTargetingMetric(node.metric)
+          metrics: finalizeTargetingMetric(node.metric),
+          landingSplit: Boolean(node.landingSplit)
         };
 
         if (childKey && node[childKey]) {
@@ -9438,16 +9491,17 @@ body.help-open { overflow: hidden; }
         .sort((a, b) => (b.metrics.visits || 0) - (a.metrics.visits || 0));
     }
 
-    function targetingMetricHtml(metrics) {
+    function targetingMetricHtml(metrics, hideDelivery = false) {
+      const delivery = value => hideDelivery ? "—" : value;
       return `
         <div class="tc-metrics">
           <div><span>Визиты</span><b>${formatNumber(metrics.visits)}</b></div>
           <div><span>Отказы</span><b class="${bounceClass(metrics.bounce)}">${formatPercent(metrics.bounce)}</b></div>
           <div><span>Время</span><b class="${timeClass(metrics.timeSec)}">${formatTime(metrics.timeSec)}</b></div>
-          <div><span>Показы</span><b>${formatNumber(metrics.impressions)}</b></div>
-          <div><span>Клики</span><b>${formatNumber(metrics.clicks)}</b></div>
-          <div><span>CTR</span><b>${formatCtr(metrics.ctr)}</b></div>
-          <div><span>IVT</span><b class="${ivtClass(metrics.ivt)}">${formatOptionalPercent(metrics.ivt)}</b></div>
+          <div><span>Показы</span><b>${delivery(formatNumber(metrics.impressions))}</b></div>
+          <div><span>Клики</span><b>${delivery(formatNumber(metrics.clicks))}</b></div>
+          <div><span>CTR</span><b>${delivery(formatCtr(metrics.ctr))}</b></div>
+          <div><span>IVT</span><b class="${ivtClass(metrics.ivt)}">${delivery(formatOptionalPercent(metrics.ivt))}</b></div>
         </div>
       `;
     }
@@ -9475,7 +9529,7 @@ body.help-open { overflow: hidden; }
               <div class="tc-name">${node.name}</div>
               <div class="tc-sub">${levelNames[level]} · ${node.code}</div>
             </div>
-            ${targetingMetricHtml(node.metrics)}
+            ${targetingMetricHtml(node.metrics, node.landingSplit)}
           </div>
         `;
       }
@@ -9488,9 +9542,9 @@ body.help-open { overflow: hidden; }
           <summary>
             <div>
               <div class="tc-name">${node.name}</div>
-              <div class="tc-sub">${levelNames[level]} · ${node.code} · ${next.length} элемент(а)</div>
+              <div class="tc-sub">${levelNames[level]} · ${node.code}${node.landingSplit ? " · Метрика по посадочной" : ""} · ${next.length} элемент(а)</div>
             </div>
-            ${targetingMetricHtml(node.metrics)}
+            ${targetingMetricHtml(node.metrics, node.landingSplit)}
           </summary>
           <div class="tc-children">
             ${next.map(child => targetingNodeHtml(child, childLevel)).join("")}
