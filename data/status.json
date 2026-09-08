@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-09-08T11:54:16.705775Z",
+  "generatedAt": "2026-09-08T12:01:42.684250Z",
   "metrika": {
-    "new_rows": 6157,
+    "new_rows": 5588,
     "total_rows": 106270,
     "ranges": {
       "53197618": {
@@ -19,23 +19,23 @@
         "targeting_landing_backfill": false
       },
       "110064588": {
-        "from": "2026-05-01",
+        "from": "2026-07-01",
         "to": "2026-09-07",
-        "new_rows": 304,
+        "new_rows": 284,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
       "110064048": {
-        "from": "2026-05-01",
+        "from": "2026-07-01",
         "to": "2026-09-07",
-        "new_rows": 346,
+        "new_rows": 324,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
       "102348376": {
-        "from": "2026-05-01",
+        "from": "2026-07-01",
         "to": "2026-09-07",
-        "new_rows": 1099,
+        "new_rows": 572,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       }
