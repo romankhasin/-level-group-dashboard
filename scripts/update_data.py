@@ -204,13 +204,26 @@ def dimension_text(value: object) -> str:
     return str(value or "").strip()
 
 
+def landing_host(value: object) -> str:
+    """Keep only the landing hostname needed for the dashboard experiment."""
+    raw = dimension_text(value)
+    if not raw:
+        return ""
+    parsed = urllib.parse.urlsplit(raw)
+    return (parsed.hostname or raw.split("?", 1)[0]).lower().strip()
+
+
 def fetch_metrika_period(
     token: str,
     counter_id: int,
     start: dt.date,
     end: dt.date,
 ) -> list[dict]:
-    rows: list[dict] = []
+    # ``startURL`` includes the complete query string. The campaign tag is the
+    # same for the two landing variants, so retaining every query variation
+    # would bloat the data file without adding a reporting dimension. Combine
+    # them by hostname as soon as the API response is read.
+    aggregated: dict[tuple[str, str, str], dict] = {}
     offset = 1
     limit = 100_000
     goal_id = METRIKA_QUALITY_CALL_GOAL_IDS[counter_id]
@@ -242,28 +255,40 @@ def fetch_metrika_period(
                 continue
             report_date = dimension_text(dimensions[0])
             campaign = dimension_text(dimensions[1])
-            landing_url = dimension_text(dimensions[2])
+            landing = landing_host(dimensions[2])
             visits = int(round(float(metrics[0] or 0)))
             if not report_date or not campaign or visits <= 0:
                 continue
-            rows.append(
+            key = (report_date, campaign, landing)
+            item = aggregated.setdefault(
+                key,
                 {
                     "counter_id": counter_id,
                     "Дата визита": report_date,
                     "UTM Campaign": campaign,
-                    "Посадочная": landing_url,
-                    "Визиты": visits,
-                    "Отказы": float(metrics[1] or 0),
-                    "Время на сайте": float(metrics[2] or 0),
-                    METRIKA_QUALITY_CALL_FIELD: int(round(float(metrics[3] or 0))),
-                }
+                    "Посадочная": landing,
+                    "Визиты": 0,
+                    "_bounce_weight": 0.0,
+                    "_time_weight": 0.0,
+                    METRIKA_QUALITY_CALL_FIELD: 0,
+                },
             )
+            item["Визиты"] += visits
+            item["_bounce_weight"] += float(metrics[1] or 0) * visits
+            item["_time_weight"] += float(metrics[2] or 0) * visits
+            item[METRIKA_QUALITY_CALL_FIELD] += int(round(float(metrics[3] or 0)))
 
         total_rows = int(payload.get("total_rows") or len(page))
         if not page or offset - 1 + len(page) >= total_rows:
             break
         offset += len(page)
 
+    rows = []
+    for item in aggregated.values():
+        visits = item["Визиты"]
+        item["Отказы"] = item.pop("_bounce_weight") / visits
+        item["Время на сайте"] = item.pop("_time_weight") / visits
+        rows.append(item)
     return rows
 
 
