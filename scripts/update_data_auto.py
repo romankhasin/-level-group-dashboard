@@ -163,7 +163,7 @@ def main() -> None:
     workbook_path = args.workbook or (base.ROOT / ".cache" / "level_group_report.xlsx")
     if args.workbook is None:
         base.download_file(base.GOOGLE_WORKBOOK_URL, workbook_path)
-    live_google_rows, journal_rows, google_status = base.read_google_workbook(
+    live_google_rows, _, google_status = base.read_google_workbook(
         workbook_path, yesterday
     )
 
@@ -181,6 +181,7 @@ def main() -> None:
     august_avito_google_rows, august_avito_status = base.read_august_avito_workbook(
         august_prg_workbook_path, yesterday
     )
+    journals, journal_status = base.refresh_journals()
 
     archived_google_rows = base.read_json_rows(base.GOOGLE_ARCHIVE_PATH)
     google_rows = base.merge_google_rows(
@@ -233,6 +234,7 @@ def main() -> None:
         "status": {
             "metrika": metrika_status,
             "google": google_status,
+            "journal": journal_status,
             "targetads": targetads_status,
         },
     }
@@ -242,9 +244,7 @@ def main() -> None:
         base.STATUS_PATH,
         {"generatedAt": generated_at, **latest["status"]},
     )
-    base.JOURNAL_PATH.write_text(
-        base.journal_html(journal_rows, generated_at), encoding="utf-8"
-    )
+    base.JOURNAL_PATH.write_text(base.journal_html(journals, generated_at), encoding="utf-8")
 
     print(
         json.dumps(
@@ -253,7 +253,7 @@ def main() -> None:
                 "periodTo": yesterday.isoformat(),
                 "metrikaRows": len(metrika_rows),
                 "verifierRows": len(verifier_rows),
-                "journalRows": len(journal_rows),
+                "journalRows": {journal_type: len(rows) for journal_type, rows in journals.items()},
                 "targetAdsEnabled": True,
                 "targetAdsMode": "automatic_raw_v2_incremental",
                 "targetAdsBootstrap": targetads_status["bootstrap_used"],

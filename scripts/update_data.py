@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import csv
 import datetime as dt
 import gzip
 import html
@@ -53,6 +54,14 @@ AVITO_GOOGLE_WORKBOOK_URL = (
 AUGUST_PRG_GOOGLE_WORKBOOK_URL = (
     "https://drive.usercontent.google.com/download?"
     "id=1zT8E9gAQSSXmW1e1T9-Wy1V9-C4esm3C&export=download"
+)
+PRG_JOURNAL_URL = (
+    "https://docs.google.com/spreadsheets/d/"
+    "1zT8E9gAQSSXmW1e1T9-Wy1V9-C4esm3C/export?format=csv&gid=712313802"
+)
+MED_JOURNAL_URL = (
+    "https://docs.google.com/spreadsheets/d/"
+    "15lJoU_ylnP10SCyWpg6LV0zwXGV5SIxy/export?format=csv&gid=725628696"
 )
 # The supplied August media report is the authoritative source only for the
 # two agreed PRG platforms.  Keep other programmatic platforms on their own
@@ -516,6 +525,108 @@ def read_journal_workbook(path: Path) -> tuple[list[dict], dict]:
     platforms = sorted({row["Площадка"] for row in journal_rows if row["Площадка"]})
     workbook.close()
     return journal_rows, {"journal_rows": len(journal_rows), "journal_platforms": platforms}
+
+
+JOURNAL_HEADERS = [
+    "Проект",
+    "Канал",
+    "Площадка",
+    "Период РК",
+    "Период оптимизационных действий",
+    "Комментарии по оптимизации",
+    "Какие действия предпринимаем дальше",
+]
+
+
+def read_journal_csv(path: Path, journal_type: str) -> tuple[list[dict], dict]:
+    """Read one explicitly selected journal tab exported as CSV."""
+    with path.open(encoding="utf-8-sig", newline="") as source:
+        source_rows = list(csv.DictReader(source))
+
+    if journal_type == "prg":
+        if list(source_rows[0] if source_rows else {}) != JOURNAL_HEADERS:
+            raise RuntimeError("PRG journal has an unexpected header layout")
+        rows = [
+            {header: str(row.get(header) or "").strip() for header in JOURNAL_HEADERS}
+            for row in source_rows
+            if any(str(row.get(header) or "").strip() for header in JOURNAL_HEADERS)
+        ]
+    elif journal_type == "med":
+        headers = list(source_rows[0] if source_rows else {})
+        required_headers = {"Проект", "Площадка", "Период РК"}
+        comment_headers = [header for header in headers if header.startswith("Комментарии по оптимизации от ")]
+        if not required_headers.issubset(headers) or not comment_headers:
+            raise RuntimeError("MED journal has an unexpected header layout")
+
+        rows = []
+        for source_row in source_rows:
+            project = str(source_row.get("Проект") or "").strip()
+            platform = str(source_row.get("Площадка") or "").strip()
+            if not project and not platform or project.casefold() == "проект":
+                continue
+            for index, comment_header in enumerate(comment_headers):
+                comment = str(source_row.get(comment_header) or "").strip()
+                if not comment:
+                    continue
+                action_header = next(
+                    (
+                        header
+                        for header in headers[headers.index(comment_header) + 1 :]
+                        if header.startswith("Оптимизации от ")
+                    ),
+                    "",
+                )
+                next_steps = str(source_row.get(action_header) or "").strip()
+                if index == len(comment_headers) - 1:
+                    recommendations = str(source_row.get("Реко на сл. запуски ") or "").strip()
+                    if recommendations:
+                        next_steps = "\n\n".join(
+                            part for part in (next_steps, f"Рекомендации на следующие запуски: {recommendations}") if part
+                        )
+                rows.append(
+                    {
+                        "Проект": project,
+                        "Канал": "Med",
+                        "Площадка": platform,
+                        "Период РК": str(source_row.get("Период РК") or "").strip(),
+                        "Период оптимизационных действий": comment_header.rsplit(" ", 1)[-1],
+                        "Комментарии по оптимизации": comment,
+                        "Какие действия предпринимаем дальше": next_steps,
+                    }
+                )
+    else:
+        raise ValueError(f"Unsupported journal type: {journal_type}")
+
+    unique_rows = []
+    seen = set()
+    for row in rows:
+        key = tuple(row[header] for header in JOURNAL_HEADERS)
+        if key not in seen:
+            seen.add(key)
+            unique_rows.append(row)
+    return unique_rows, {
+        "journal_rows": len(unique_rows),
+        "journal_platforms": sorted({row["Площадка"] for row in unique_rows if row["Площадка"]}),
+    }
+
+
+def refresh_journals() -> tuple[dict[str, list[dict]], dict]:
+    """Fetch PRG and MED journals from their designated source tabs only."""
+    journal_paths = {
+        "prg": ROOT / ".cache" / "journal_prg.csv",
+        "med": ROOT / ".cache" / "journal_med.csv",
+    }
+    download_file(PRG_JOURNAL_URL, journal_paths["prg"])
+    download_file(MED_JOURNAL_URL, journal_paths["med"])
+    prg_rows, prg_status = read_journal_csv(journal_paths["prg"], "prg")
+    med_rows, med_status = read_journal_csv(journal_paths["med"], "med")
+    if not prg_status["journal_rows"] or not med_status["journal_rows"]:
+        raise RuntimeError("One of the journal sources is empty; keeping the published journal unchanged")
+    # The archive contains verified historical PRG cards from before the live tab.
+    return {"prg": [*read_json_rows(JOURNAL_ARCHIVE_PATH), *prg_rows], "med": med_rows}, {
+        "prg": prg_status,
+        "med": med_status,
+    }
 
 
 def read_august_prg_workbook(path: Path, yesterday: dt.date) -> tuple[list[dict], dict]:
@@ -1126,7 +1237,7 @@ def merge_google_rows(archive_rows: list[dict], live_rows: list[dict]) -> list[d
     return sorted(merged.values(), key=lambda row: (row["interaction_dt"], row["placement_nm"]))
 
 
-def journal_html(rows: list[dict], generated_at: str) -> str:
+def journal_section_html(rows: list[dict]) -> str:
     def text(value: object, fallback: str = "") -> str:
         value_text = str(value or "").strip()
         return value_text or fallback
@@ -1208,6 +1319,12 @@ def journal_html(rows: list[dict], generated_at: str) -> str:
             """
         )
 
+    return ''.join(period_blocks) if period_blocks else '<p>Записи пока отсутствуют.</p>'
+
+
+def journal_html(journals: dict[str, list[dict]], generated_at: str) -> str:
+    prg_rows = journals.get("prg") or []
+    med_rows = journals.get("med") or []
     return f"""<!doctype html>
 <html lang="ru">
 <head>
@@ -1221,6 +1338,7 @@ def journal_html(rows: list[dict], generated_at: str) -> str:
     header>div,main{{max-width:1180px;margin:auto}} h1{{margin:0 0 8px;font-size:clamp(28px,5vw,52px)}}
     header p{{margin:0;color:var(--muted);line-height:1.6}} .back{{display:inline-block;margin-top:18px;color:var(--ink);font-weight:700}}
     main{{padding:28px 20px 60px;display:grid;gap:18px}} summary{{cursor:pointer;list-style:none}} summary::-webkit-details-marker{{display:none}}
+    .journal-tabs{{display:flex;gap:8px;flex-wrap:wrap}} .journal-tab{{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 16px;border-radius:999px;font:700 14px Arial;cursor:pointer}} .journal-tab[aria-selected="true"]{{background:var(--ink);color:#fff;border-color:var(--ink)}} .journal-panel[hidden]{{display:none}}
     .period-group{{background:#fff;border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 12px 34px rgba(32,35,58,.06)}}
     .period-group>summary,.platform-group>summary{{display:flex;justify-content:space-between;align-items:center;gap:16px;font-weight:800}}
     .period-group>summary{{padding:22px 24px;font-size:22px;background:linear-gradient(135deg,#fff,var(--blue))}}
@@ -1235,8 +1353,22 @@ def journal_html(rows: list[dict], generated_at: str) -> str:
   </style>
 </head>
 <body>
-  <header><div><h1>Журнал оптимизаций</h1><p>Все площадки · обновлено {html.escape(generated_at)}</p><a class="back" href="./">← Вернуться в дашборд</a></div></header>
-  <main>{''.join(period_blocks) if period_blocks else '<p>Записи пока отсутствуют.</p>'}</main>
+  <header><div><h1>Журнал оптимизаций</h1><p>PRG и Med · обновлено {html.escape(generated_at)}</p><a class="back" href="./">← Вернуться в дашборд</a></div></header>
+  <main>
+    <nav class="journal-tabs" aria-label="Тип журнала">
+      <button class="journal-tab" type="button" data-journal="prg" aria-selected="true">PRG · {len(prg_rows)} записей</button>
+      <button class="journal-tab" type="button" data-journal="med" aria-selected="false">Med · {len(med_rows)} записей</button>
+    </nav>
+    <section class="journal-panel" data-panel="prg">{journal_section_html(prg_rows)}</section>
+    <section class="journal-panel" data-panel="med" hidden>{journal_section_html(med_rows)}</section>
+  </main>
+  <script>
+    document.querySelectorAll('.journal-tab').forEach(button => button.addEventListener('click', () => {{
+      const selected = button.dataset.journal;
+      document.querySelectorAll('.journal-tab').forEach(tab => tab.setAttribute('aria-selected', String(tab === button)));
+      document.querySelectorAll('.journal-panel').forEach(panel => {{ panel.hidden = panel.dataset.panel !== selected; }});
+    }}));
+  </script>
 </body>
 </html>
 """
@@ -1256,18 +1388,11 @@ def main() -> None:
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     if args.journal_only:
-        workbook_path = args.workbook or (ROOT / ".cache" / "august_prg_media_report.xlsx")
-        if args.workbook is None:
-            download_file(AUGUST_PRG_GOOGLE_WORKBOOK_URL, workbook_path)
-        journal_rows, journal_status = read_journal_workbook(workbook_path)
-        if not journal_status["journal_rows"]:
-            print("Journal source is empty; preserving the published journal.html")
-            return
-        journal_rows = [*read_json_rows(JOURNAL_ARCHIVE_PATH), *journal_rows]
+        journals, journal_status = refresh_journals()
         generated_at = now_utc.isoformat().replace("+00:00", "Z")
-        journal = "\n".join(line.rstrip() for line in journal_html(journal_rows, generated_at).splitlines()) + "\n"
+        journal = "\n".join(line.rstrip() for line in journal_html(journals, generated_at).splitlines()) + "\n"
         JOURNAL_PATH.write_text(journal, encoding="utf-8")
-        print(json.dumps({"generatedAt": generated_at, "journalRows": len(journal_rows)}, ensure_ascii=False))
+        print(json.dumps({"generatedAt": generated_at, "journal": journal_status}, ensure_ascii=False))
         return
 
     token = os.environ.get("YANDEX_METRIKA_TOKEN", "").strip()
@@ -1291,9 +1416,7 @@ def main() -> None:
     august_prg_google_rows, august_prg_status = read_august_prg_workbook(
         august_prg_workbook_path, yesterday
     )
-    journal_rows, journal_status = read_journal_workbook(august_prg_workbook_path)
-    # Keep verified historical cards that are not present in the live source.
-    journal_rows = [*read_json_rows(JOURNAL_ARCHIVE_PATH), *journal_rows]
+    journals, journal_status = refresh_journals()
     august_avito_google_rows, august_avito_status = read_august_avito_workbook(
         august_prg_workbook_path, yesterday
     )
@@ -1357,11 +1480,8 @@ def main() -> None:
     # A transient Drive download/read failure must never replace the published
     # history with an empty page. Keep the last verified journal until the
     # source returns at least one live row again.
-    if journal_status["journal_rows"]:
-        journal = "\n".join(line.rstrip() for line in journal_html(journal_rows, generated_at).splitlines()) + "\n"
-        JOURNAL_PATH.write_text(journal, encoding="utf-8")
-    else:
-        print("Journal source is empty; preserving the published journal.html")
+    journal = "\n".join(line.rstrip() for line in journal_html(journals, generated_at).splitlines()) + "\n"
+    JOURNAL_PATH.write_text(journal, encoding="utf-8")
 
     print(
         json.dumps(
@@ -1369,7 +1489,7 @@ def main() -> None:
                 "generatedAt": generated_at,
                 "metrikaRows": len(metrika_rows),
                 "verifierRows": len(verifier_rows),
-                "journalRows": len(journal_rows),
+                "journalRows": {journal_type: len(rows) for journal_type, rows in journals.items()},
                 "targetAdsEnabled": False,
                 "targetAdsMode": "manual_upload_only",
             },
