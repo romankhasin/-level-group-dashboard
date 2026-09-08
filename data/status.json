@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08T10:09:31.985305Z",
+  "generatedAt": "2026-09-08T11:23:05.676891Z",
   "metrika": {
     "new_rows": 4408,
     "total_rows": 104547,
@@ -9,14 +9,14 @@
         "to": "2026-09-07",
         "new_rows": 0,
         "quality_calls_backfill": false,
-        "landing_url_backfill": false
+        "targeting_landing_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
         "to": "2026-09-07",
         "new_rows": 4408,
         "quality_calls_backfill": false,
-        "landing_url_backfill": false
+        "targeting_landing_backfill": false
       }
     }
   },
