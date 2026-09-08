@@ -5242,6 +5242,12 @@ body.help-open { overflow: hidden; }
         formats: {}
       };
 
+      // Target Ads / media reports contain delivery and fraud for a campaign,
+      // not the landing URL reached by a visitor. As the UTM is intentionally
+      // the same for the two variants, showing these aggregate facts in a
+      // single-landing slice would duplicate them and imply attribution that
+      // the source does not provide.
+      if (LANDING_FILTER !== "all") return empty;
       if (!rawRows || !rawRows.length) return empty;
 
       const columns = Object.keys(rawRows[0] || {});
@@ -7890,9 +7896,16 @@ body.help-open { overflow: hidden; }
       const unknownProjects = DATA.projects.filter(project => project.name.startsWith("Не распознано"));
       const warningBox = document.getElementById("warningBox");
 
+      const warnings = [];
       if (unknownProjects.length) {
+        warnings.push(`<strong>Проверьте метки:</strong> есть нераспознанные коды объектов — ${unknownProjects.map(project => project.code).join(", ")}. Их можно добавить в словарь проектов.`);
+      }
+      if (LANDING_FILTER !== "all") {
+        warnings.push("<strong>Важно:</strong> показы, клики, стоимость и IVT не выводятся в срезе одной посадочной: Target Ads отдаёт их на уровне кампании, а метка для основной и альтернативной страницы одинаковая.");
+      }
+      if (warnings.length) {
         warningBox.style.display = "block";
-        warningBox.innerHTML = `<strong>Проверьте метки:</strong> есть нераспознанные коды объектов — ${unknownProjects.map(project => project.code).join(", ")}. Их можно добавить в словарь проектов.`;
+        warningBox.innerHTML = warnings.join("<br>");
       } else {
         warningBox.style.display = "none";
       }

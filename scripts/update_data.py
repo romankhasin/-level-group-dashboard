@@ -333,7 +333,12 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
                 if key[0] == counter_id and fetch_from.isoformat() <= key[1] <= yesterday.isoformat():
                     del keyed[key]
 
-        for chunk_start, chunk_end in date_chunks(fetch_from, yesterday):
+        # Adding landing URL increases the cardinality of the report
+        # considerably.  Fetching this one-off September backfill one day at a
+        # time keeps every Metrika response comfortably within its grouping
+        # limits, while the normal incremental refresh remains monthly.
+        chunk_days = 1 if needs_landing_url_backfill else 31
+        for chunk_start, chunk_end in date_chunks(fetch_from, yesterday, days=chunk_days):
             new_rows = fetch_metrika_period(token, counter_id, chunk_start, chunk_end)
             for row in new_rows:
                 key = (
