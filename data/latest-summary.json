@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-08T11:23:05.676891Z",
+  "generatedAt": "2026-09-08T11:54:16.705775Z",
   "period": {
     "from": "2026-05-01",
     "to": "2026-09-07"
@@ -13,7 +13,7 @@
     }
   },
   "counts": {
-    "metrikaRows": 104547,
+    "metrikaRows": 106270,
     "verifierRows": 131455
   },
   "detailUrl": "data/latest.json"
