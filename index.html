@@ -9341,18 +9341,18 @@ body.help-open { overflow: hidden; }
 
       function ensureFormat(platform, parsed, landing = null) {
         const hasLandingSplit = Boolean(landing && hasTargetingLandingSplit(parsed));
-        const code = hasLandingSplit ? `${parsed.formatCode}__${landing.code}` : parsed.formatCode;
+        const key = hasLandingSplit ? `${parsed.formatCode}__${landing.code}` : parsed.formatCode;
         const name = hasLandingSplit ? `${parsed.format} (${landing.host})` : parsed.format;
-        if (!platform.formats[code]) {
-          platform.formats[code] = {
-            code,
+        if (!platform.formats[key]) {
+          platform.formats[key] = {
+            code: parsed.formatCode,
             name,
             metric: createTargetingMetric(),
             audiences: {},
             landingSplit: hasLandingSplit
           };
         }
-        return platform.formats[code];
+        return platform.formats[key];
       }
 
       function ensureLandingFormats(platform, parsed) {
