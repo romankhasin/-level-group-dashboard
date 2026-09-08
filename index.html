@@ -9306,9 +9306,18 @@ body.help-open { overflow: hidden; }
     }
 
     function targetingFindColumns(rows, aliases) {
-      const cols = Object.keys(rows[0] || {});
       const out = {};
-      Object.keys(aliases).forEach(key => out[key] = findColumn(cols, aliases[key]));
+      Object.keys(aliases).forEach(key => {
+        let column = null;
+        // Старые строки Метрики не содержат поле «Посадочная», тогда как
+        // строки из добавленных счётчиков содержат. Ищем заголовок в первом
+        // подходящем объекте, а не только в самой первой исторической строке.
+        for (const row of rows) {
+          column = findColumn(Object.keys(row || {}), aliases[key]);
+          if (column) break;
+        }
+        out[key] = column;
+      });
       return out;
     }
 
