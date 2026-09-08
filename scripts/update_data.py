@@ -36,7 +36,7 @@ JOURNAL_PATH = ROOT / "journal.html"
 START_DATE = dt.date(2026, 5, 1)
 VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
 VOLGA_PROJECT_TOKEN = "lvol"
-LANDING_URL_BACKFILL_START_DATE = dt.date(2026, 9, 1)
+METRIKA_ROLLUP_BACKFILL_START_DATE = dt.date(2026, 9, 1)
 COUNTER_IDS = (53197618, 100470605)
 METRIKA_QUALITY_CALL_GOAL_IDS = {
     53197618: 411053186,
@@ -213,26 +213,13 @@ def dimension_text(value: object) -> str:
     return str(value or "").strip()
 
 
-def landing_host(value: object) -> str:
-    """Keep only the landing hostname needed for the dashboard experiment."""
-    raw = dimension_text(value)
-    if not raw:
-        return ""
-    parsed = urllib.parse.urlsplit(raw)
-    return (parsed.hostname or raw.split("?", 1)[0]).lower().strip()
-
-
 def fetch_metrika_period(
     token: str,
     counter_id: int,
     start: dt.date,
     end: dt.date,
 ) -> list[dict]:
-    # ``startURL`` includes the complete query string. The campaign tag is the
-    # same for the two landing variants, so retaining every query variation
-    # would bloat the data file without adding a reporting dimension. Combine
-    # them by hostname as soon as the API response is read.
-    aggregated: dict[tuple[str, str, str], dict] = {}
+    rows: list[dict] = []
     offset = 1
     limit = 100_000
     goal_id = METRIKA_QUALITY_CALL_GOAL_IDS[counter_id]
@@ -242,7 +229,7 @@ def fetch_metrika_period(
             "ids": str(counter_id),
             "date1": start.isoformat(),
             "date2": end.isoformat(),
-            "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign,ym:s:startURL",
+            "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign",
             "metrics": (
                 "ym:s:visits,"
                 "ym:s:bounceRate,"
@@ -260,57 +247,42 @@ def fetch_metrika_period(
         for item in page:
             dimensions = item.get("dimensions") or []
             metrics = item.get("metrics") or []
-            if len(dimensions) < 3 or len(metrics) < 4:
+            if len(dimensions) < 2 or len(metrics) < 4:
                 continue
             report_date = dimension_text(dimensions[0])
             campaign = dimension_text(dimensions[1])
-            landing = landing_host(dimensions[2])
             visits = int(round(float(metrics[0] or 0)))
             if not report_date or not campaign or visits <= 0:
                 continue
-            key = (report_date, campaign, landing)
-            item = aggregated.setdefault(
-                key,
+            rows.append(
                 {
                     "counter_id": counter_id,
                     "Дата визита": report_date,
                     "UTM Campaign": campaign,
-                    "Посадочная": landing,
-                    "Визиты": 0,
-                    "_bounce_weight": 0.0,
-                    "_time_weight": 0.0,
-                    METRIKA_QUALITY_CALL_FIELD: 0,
-                },
+                    "Визиты": visits,
+                    "Отказы": float(metrics[1] or 0),
+                    "Время на сайте": float(metrics[2] or 0),
+                    METRIKA_QUALITY_CALL_FIELD: int(round(float(metrics[3] or 0))),
+                }
             )
-            item["Визиты"] += visits
-            item["_bounce_weight"] += float(metrics[1] or 0) * visits
-            item["_time_weight"] += float(metrics[2] or 0) * visits
-            item[METRIKA_QUALITY_CALL_FIELD] += int(round(float(metrics[3] or 0)))
 
         total_rows = int(payload.get("total_rows") or len(page))
         if not page or offset - 1 + len(page) >= total_rows:
             break
         offset += len(page)
 
-    rows = []
-    for item in aggregated.values():
-        visits = item["Визиты"]
-        item["Отказы"] = item.pop("_bounce_weight") / visits
-        item["Время на сайте"] = item.pop("_time_weight") / visits
-        rows.append(item)
     return rows
 
 
 def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     existing = read_json_rows(METRIKA_HISTORY_PATH)
-    keyed: dict[tuple[int, str, str, str], dict] = {}
+    keyed: dict[tuple[int, str, str], dict] = {}
     for row in existing:
         try:
             key = (
                 int(row.get("counter_id") or 0),
                 str(row.get("Дата визита") or ""),
                 str(row.get("UTM Campaign") or ""),
-                str(row.get("Посадочная") or ""),
             )
         except (TypeError, ValueError):
             continue
@@ -325,10 +297,10 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             and METRIKA_QUALITY_CALL_FIELD not in row
             for key, row in keyed.items()
         )
-        needs_landing_url_backfill = any(
+        needs_rollup_backfill = any(
             key[0] == counter_id
-            and key[1] >= LANDING_URL_BACKFILL_START_DATE.isoformat()
-            and "Посадочная" not in row
+            and key[1] >= METRIKA_ROLLUP_BACKFILL_START_DATE.isoformat()
+            and "Посадочная" in row
             for key, row in keyed.items()
         )
         counter_dates = [
@@ -350,36 +322,30 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
         )
         if not has_volga_rows:
             fetch_from = min(fetch_from, VOLGA_FACTS_START_DATE)
-        if needs_landing_url_backfill:
-            fetch_from = min(fetch_from, LANDING_URL_BACKFILL_START_DATE)
+        if needs_rollup_backfill:
+            fetch_from = min(fetch_from, METRIKA_ROLLUP_BACKFILL_START_DATE)
         ranges[str(counter_id)] = {
             "from": fetch_from.isoformat(),
             "to": yesterday.isoformat(),
             "new_rows": 0,
             "quality_calls_backfill": needs_quality_calls_backfill,
-            "landing_url_backfill": needs_landing_url_backfill,
+            "rollup_backfill": needs_rollup_backfill,
         }
         if fetch_from > yesterday:
             continue
 
-        if needs_landing_url_backfill:
+        if needs_rollup_backfill:
             for key in list(keyed):
                 if key[0] == counter_id and fetch_from.isoformat() <= key[1] <= yesterday.isoformat():
                     del keyed[key]
 
-        # Adding landing URL increases the cardinality of the report
-        # considerably.  Fetching this one-off September backfill one day at a
-        # time keeps every Metrika response comfortably within its grouping
-        # limits, while the normal incremental refresh remains monthly.
-        chunk_days = 1 if needs_landing_url_backfill else 31
-        for chunk_start, chunk_end in date_chunks(fetch_from, yesterday, days=chunk_days):
+        for chunk_start, chunk_end in date_chunks(fetch_from, yesterday):
             new_rows = fetch_metrika_period(token, counter_id, chunk_start, chunk_end)
             for row in new_rows:
                 key = (
                     counter_id,
                     row["Дата визита"],
                     row["UTM Campaign"],
-                    row["Посадочная"],
                 )
                 keyed[key] = row
             fetched_count += len(new_rows)
