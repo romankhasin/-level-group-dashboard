@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-07T08:07:08.717421Z",
+  "generatedAt": "2026-09-08T07:57:39.303355Z",
   "period": {
     "from": "2026-05-01",
-    "to": "2026-09-06"
+    "to": "2026-09-07"
   },
   "sourceFile": "Автоматическая выгрузка Яндекс Метрики",
   "status": {
@@ -13,8 +13,8 @@
     }
   },
   "counts": {
-    "metrikaRows": 103762,
-    "verifierRows": 130326
+    "metrikaRows": 104525,
+    "verifierRows": 131455
   },
   "detailUrl": "data/latest.json"
 }
