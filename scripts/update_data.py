@@ -35,6 +35,7 @@ JOURNAL_PATH = ROOT / "journal.html"
 START_DATE = dt.date(2026, 5, 1)
 VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
 VOLGA_PROJECT_TOKEN = "lvol"
+LANDING_URL_BACKFILL_START_DATE = dt.date(2026, 9, 1)
 COUNTER_IDS = (53197618, 100470605)
 METRIKA_QUALITY_CALL_GOAL_IDS = {
     53197618: 411053186,
@@ -219,7 +220,7 @@ def fetch_metrika_period(
             "ids": str(counter_id),
             "date1": start.isoformat(),
             "date2": end.isoformat(),
-            "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign",
+            "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign,ym:s:startURL",
             "metrics": (
                 "ym:s:visits,"
                 "ym:s:bounceRate,"
@@ -237,10 +238,11 @@ def fetch_metrika_period(
         for item in page:
             dimensions = item.get("dimensions") or []
             metrics = item.get("metrics") or []
-            if len(dimensions) < 2 or len(metrics) < 4:
+            if len(dimensions) < 3 or len(metrics) < 4:
                 continue
             report_date = dimension_text(dimensions[0])
             campaign = dimension_text(dimensions[1])
+            landing_url = dimension_text(dimensions[2])
             visits = int(round(float(metrics[0] or 0)))
             if not report_date or not campaign or visits <= 0:
                 continue
@@ -249,6 +251,7 @@ def fetch_metrika_period(
                     "counter_id": counter_id,
                     "Дата визита": report_date,
                     "UTM Campaign": campaign,
+                    "Посадочная": landing_url,
                     "Визиты": visits,
                     "Отказы": float(metrics[1] or 0),
                     "Время на сайте": float(metrics[2] or 0),
@@ -266,13 +269,14 @@ def fetch_metrika_period(
 
 def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     existing = read_json_rows(METRIKA_HISTORY_PATH)
-    keyed: dict[tuple[int, str, str], dict] = {}
+    keyed: dict[tuple[int, str, str, str], dict] = {}
     for row in existing:
         try:
             key = (
                 int(row.get("counter_id") or 0),
                 str(row.get("Дата визита") or ""),
                 str(row.get("UTM Campaign") or ""),
+                str(row.get("Посадочная") or ""),
             )
         except (TypeError, ValueError):
             continue
@@ -285,6 +289,12 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
         needs_quality_calls_backfill = any(
             key[0] == counter_id
             and METRIKA_QUALITY_CALL_FIELD not in row
+            for key, row in keyed.items()
+        )
+        needs_landing_url_backfill = any(
+            key[0] == counter_id
+            and key[1] >= LANDING_URL_BACKFILL_START_DATE.isoformat()
+            and "Посадочная" not in row
             for key, row in keyed.items()
         )
         counter_dates = [
@@ -306,19 +316,32 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
         )
         if not has_volga_rows:
             fetch_from = min(fetch_from, VOLGA_FACTS_START_DATE)
+        if needs_landing_url_backfill:
+            fetch_from = min(fetch_from, LANDING_URL_BACKFILL_START_DATE)
         ranges[str(counter_id)] = {
             "from": fetch_from.isoformat(),
             "to": yesterday.isoformat(),
             "new_rows": 0,
             "quality_calls_backfill": needs_quality_calls_backfill,
+            "landing_url_backfill": needs_landing_url_backfill,
         }
         if fetch_from > yesterday:
             continue
 
+        if needs_landing_url_backfill:
+            for key in list(keyed):
+                if key[0] == counter_id and fetch_from.isoformat() <= key[1] <= yesterday.isoformat():
+                    del keyed[key]
+
         for chunk_start, chunk_end in date_chunks(fetch_from, yesterday):
             new_rows = fetch_metrika_period(token, counter_id, chunk_start, chunk_end)
             for row in new_rows:
-                key = (counter_id, row["Дата визита"], row["UTM Campaign"])
+                key = (
+                    counter_id,
+                    row["Дата визита"],
+                    row["UTM Campaign"],
+                    row["Посадочная"],
+                )
                 keyed[key] = row
             fetched_count += len(new_rows)
             ranges[str(counter_id)]["new_rows"] += len(new_rows)

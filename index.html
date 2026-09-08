@@ -3799,6 +3799,11 @@ body.help-open { overflow: hidden; }
 
       <div class="toolbar">
         <input class="search" id="searchInput" placeholder="Поиск по ЖК, площадке или формату" />
+        <select class="button" id="landingFilter" aria-label="Тип посадочной">
+          <option value="all">Все посадочные</option>
+          <option value="standard">Основные посадочные</option>
+          <option value="alternative">Альтернативные посадочные</option>
+        </select>
         
         <button class="button" id="toggleHierarchy">Сортировка по Площадкам</button>
         <button class="button compare-periods-button" id="openPeriodComparison" type="button">Сравнение периодов</button>
@@ -3986,7 +3991,8 @@ body.help-open { overflow: hidden; }
       date: ["дата визита", "дата", "date", "period", "период"],
       visits: ["визиты", "визит", "visits"],
       bounce: ["отказы", "bounce"],
-      time: ["время на сайте", "время", "time", "avg visit duration", "среднее время"]
+      time: ["время на сайте", "время", "time", "avg visit duration", "среднее время"],
+      landing: ["посадочная", "landing page", "landing", "starturl", "start url"]
     };
 
     const VERIFIER_ALIASES = {
@@ -4127,6 +4133,12 @@ body.help-open { overflow: hidden; }
     const ARCHIVE_STORAGE_KEY = "level_group_unified_archive_v1";
     const REPORT_MODE_STORAGE_KEY = "level_group_unified_report_mode_v1";
     let REPORT_MODE = "prg";
+    const LANDING_EXPERIMENTS = {
+      lv: "vojkovskaya.level.ru",
+      lwnizh: "work-nizhegorodskaya.level.ru",
+      pc: "pavcity.level.ru"
+    };
+    let LANDING_FILTER = "all";
 
     function campaignChannel(campaign) {
       const parts = String(campaign || "").trim().toLowerCase().split("_").filter(Boolean);
@@ -4134,6 +4146,24 @@ body.help-open { overflow: hidden; }
       if (parts.includes("med")) return "med";
       if (parts.includes("mrk")) return "mrk";
       return "other";
+    }
+
+    function landingVariant(parsed, landingUrl) {
+      const alternativeHost = LANDING_EXPERIMENTS[parsed.projectCode];
+      const isExperimentPlatform = ["mts", "ozon", "yandex"].includes(parsed.platformCode)
+        && (parsed.platformCode !== "yandex" || parsed.formatCode === "banner");
+      if (!alternativeHost || !isExperimentPlatform) return "not-applicable";
+
+      try {
+        const hostname = new URL(String(landingUrl || "")).hostname.toLowerCase();
+        return hostname === alternativeHost ? "alternative" : "standard";
+      } catch (error) {
+        return "unknown";
+      }
+    }
+
+    function landingMatchesFilter(variant) {
+      return LANDING_FILTER === "all" || variant === LANDING_FILTER;
     }
 
     function channelMatchesMode(channel, mode = REPORT_MODE) {
@@ -5950,6 +5980,7 @@ body.help-open { overflow: hidden; }
       const visitsColumn = findColumn(columns, FIELD_ALIASES.visits);
       const bounceColumn = findColumn(columns, FIELD_ALIASES.bounce);
       const timeColumn = findColumn(columns, FIELD_ALIASES.time);
+      const landingColumn = findColumn(columns, FIELD_ALIASES.landing);
 
       if (!campaignColumn) throw new Error('Не найдена колонка "UTM Campaign".');
       if (!dateColumn) throw new Error('Не найдена колонка "Дата визита".');
@@ -5972,11 +6003,13 @@ body.help-open { overflow: hidden; }
             bounce: parseBounce(row[bounceColumn]),
             timeSec: parseTime(row[timeColumn]),
             channel: campaignChannel(campaign),
-            ...parsed
+            ...parsed,
+            landingVariant: landingVariant(parsed, landingColumn ? row[landingColumn] : "")
           };
         })
         .filter(row => row.date && row.visits > 0)
-        .filter(row => isDateInPeriod(row.date));
+        .filter(row => isDateInPeriod(row.date))
+        .filter(row => landingMatchesFilter(row.landingVariant));
 
       if (!rows.length) {
         throw new Error(`В выбранной выгрузке не найдены данные режима ${reportModeLabel()} за выбранный период.`);
@@ -7849,7 +7882,10 @@ body.help-open { overflow: hidden; }
 
       const start = formatDate(DATA.dates[0]);
       const end = formatDate(DATA.dates[DATA.dates.length - 1]);
-      document.getElementById("periodBadge").textContent = `${reportModeLabel()} · ${start} — ${end} · Метрика${VERIFIER_ROWS ? " + Target Ads" : ""}`;
+      const landingLabel = LANDING_FILTER === "all"
+        ? ""
+        : ` · ${LANDING_FILTER === "alternative" ? "альтернативные" : "основные"} посадочные`;
+      document.getElementById("periodBadge").textContent = `${reportModeLabel()} · ${start} — ${end} · Метрика${VERIFIER_ROWS ? " + Target Ads" : ""}${landingLabel}`;
 
       const unknownProjects = DATA.projects.filter(project => project.name.startsWith("Не распознано"));
       const warningBox = document.getElementById("warningBox");
@@ -10790,6 +10826,11 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     });
 
     document.getElementById("searchInput").addEventListener("input", render);
+
+    document.getElementById("landingFilter").addEventListener("change", event => {
+      LANDING_FILTER = event.target.value;
+      refreshDashboard();
+    });
 
     document.getElementById("toggleHierarchy").addEventListener("click", () => {
       hierarchyMode = hierarchyMode === "project" ? "platform" : "project";
