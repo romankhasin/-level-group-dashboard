@@ -1,22 +1,22 @@
 {
-  "generatedAt": "2026-09-08T09:36:50.999962Z",
+  "generatedAt": "2026-09-08T09:50:05.268859Z",
   "metrika": {
-    "new_rows": 10296,
+    "new_rows": 4408,
     "total_rows": 104547,
     "ranges": {
       "53197618": {
-        "from": "2026-09-01",
+        "from": "2026-09-08",
         "to": "2026-09-07",
-        "new_rows": 5171,
+        "new_rows": 0,
         "quality_calls_backfill": false,
-        "landing_url_backfill": true
+        "landing_url_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
         "to": "2026-09-07",
-        "new_rows": 5125,
+        "new_rows": 4408,
         "quality_calls_backfill": false,
-        "landing_url_backfill": true
+        "landing_url_backfill": false
       }
     }
   },
@@ -41,6 +41,46 @@
       "platforms": [
         "mts",
         "yandex"
+      ]
+    }
+  },
+  "journal": {
+    "prg": {
+      "journal_rows": 451,
+      "journal_platforms": [
+        "AdsHeads",
+        "Adsepctor",
+        "Adspector",
+        "Asdheads",
+        "Astralab",
+        "Mobidriven",
+        "Qbid",
+        "Roxot",
+        "Rutube",
+        "SOLTA",
+        "Soloway",
+        "VOX",
+        "qbid",
+        "МТС",
+        "МТС Баннеры",
+        "МТС баннеры",
+        "Яндекс"
+      ]
+    },
+    "med": {
+      "journal_rows": 75,
+      "journal_platforms": [
+        "Ozon",
+        "Авито",
+        "ВБ",
+        "Озон",
+        "Озон \n(Баннер \"Заказ выполнен\")",
+        "Озон \n(Баннер на Главной)\n\n(Баннер \"Заказ выполнен\")",
+        "Озон \nВидеобаннер",
+        "Пятерочка",
+        "Яндекс ГО",
+        "Яндекс Го",
+        "Яндекс Маркет"
       ]
     }
   },
