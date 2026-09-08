@@ -37,7 +37,22 @@ START_DATE = dt.date(2026, 5, 1)
 VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
 VOLGA_PROJECT_TOKEN = "lvol"
 TARGETING_LANDING_BACKFILL_START_DATE = dt.date(2026, 9, 1)
-COUNTER_IDS = (53197618, 100470605)
+ALTERNATIVE_LANDING_HOSTS = frozenset({
+    "vojkovskaya.level.ru",
+    "work-nizhegorodskaya.level.ru",
+    "pavcity.level.ru",
+})
+COUNTER_CONFIGS = {
+    # The legacy counters remain the source for their own domains.  The three
+    # alternative landings have their own counters and must not be counted a
+    # second time when they also appear in the level.ru counter.
+    53197618: {"exclude_landing_hosts": ALTERNATIVE_LANDING_HOSTS},
+    100470605: {},
+    110064588: {"landing_host": "vojkovskaya.level.ru"},
+    110064048: {"landing_host": "work-nizhegorodskaya.level.ru"},
+    102348376: {"landing_host": "pavcity.level.ru"},
+}
+COUNTER_IDS = tuple(COUNTER_CONFIGS)
 METRIKA_QUALITY_CALL_GOAL_IDS = {
     53197618: 411053186,
     100470605: 411053614,
@@ -231,7 +246,8 @@ def fetch_metrika_period(
     aggregated: dict[tuple[str, str, str], dict] = {}
     offset = 1
     limit = 100_000
-    goal_id = METRIKA_QUALITY_CALL_GOAL_IDS[counter_id]
+    goal_id = METRIKA_QUALITY_CALL_GOAL_IDS.get(counter_id)
+    counter_config = COUNTER_CONFIGS[counter_id]
 
     while True:
         params = {
@@ -239,11 +255,13 @@ def fetch_metrika_period(
             "date1": start.isoformat(),
             "date2": end.isoformat(),
             "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign,ym:s:startURL",
-            "metrics": (
-                "ym:s:visits,"
-                "ym:s:bounceRate,"
-                "ym:s:avgVisitDurationSeconds,"
-                f"ym:s:goal{goal_id}reaches"
+            "metrics": ",".join(
+                metric for metric in (
+                    "ym:s:visits",
+                    "ym:s:bounceRate",
+                    "ym:s:avgVisitDurationSeconds",
+                    f"ym:s:goal{goal_id}reaches" if goal_id else None,
+                ) if metric
             ),
             "accuracy": "full",
             "limit": str(limit),
@@ -256,11 +274,14 @@ def fetch_metrika_period(
         for item in page:
             dimensions = item.get("dimensions") or []
             metrics = item.get("metrics") or []
-            if len(dimensions) < 3 or len(metrics) < 4:
+            if len(dimensions) < 3 or len(metrics) < 3:
                 continue
             report_date = dimension_text(dimensions[0])
             campaign = dimension_text(dimensions[1])
             landing = landing_host(dimensions[2])
+            if landing in counter_config.get("exclude_landing_hosts", frozenset()):
+                continue
+            landing = counter_config.get("landing_host") or landing
             visits = int(round(float(metrics[0] or 0)))
             if not report_date or not campaign or visits <= 0:
                 continue
@@ -281,7 +302,8 @@ def fetch_metrika_period(
             item["Визиты"] += visits
             item["_bounce_weight"] += float(metrics[1] or 0) * visits
             item["_time_weight"] += float(metrics[2] or 0) * visits
-            item[METRIKA_QUALITY_CALL_FIELD] += int(round(float(metrics[3] or 0)))
+            if goal_id:
+                item[METRIKA_QUALITY_CALL_FIELD] += int(round(float(metrics[3] or 0)))
 
         total_rows = int(payload.get("total_rows") or len(page))
         if not page or offset - 1 + len(page) >= total_rows:
@@ -312,6 +334,15 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             continue
         if key[0] and key[1] and key[2]:
             keyed[key] = row
+
+    # Old counters can contain duplicate hits from the alternative landing
+    # domains.  Their dedicated counters are authoritative for those domains.
+    for key, row in list(keyed.items()):
+        config = COUNTER_CONFIGS.get(key[0], {})
+        if str(row.get("Посадочная") or "").lower() in config.get(
+            "exclude_landing_hosts", frozenset()
+        ):
+            del keyed[key]
 
     fetched_count = 0
     ranges: dict[str, dict[str, str | int]] = {}
