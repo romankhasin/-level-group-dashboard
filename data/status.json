@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-09-09T08:00:23.082230Z",
+  "generatedAt": "2026-09-09T09:27:09.343439Z",
   "metrika": {
-    "new_rows": 6352,
+    "new_rows": 5677,
     "total_rows": 107034,
     "ranges": {
       "53197618": {
-        "from": "2026-09-08",
+        "from": "2026-09-09",
         "to": "2026-09-08",
-        "new_rows": 675,
+        "new_rows": 0,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
@@ -67,7 +67,7 @@
   },
   "journal": {
     "prg": {
-      "journal_rows": 451,
+      "journal_rows": 452,
       "journal_platforms": [
         "AdsHeads",
         "Adsepctor",
