@@ -1,41 +1,41 @@
 {
-  "generatedAt": "2026-09-08T12:01:42.684250Z",
+  "generatedAt": "2026-09-09T08:00:23.082230Z",
   "metrika": {
-    "new_rows": 5588,
-    "total_rows": 106270,
+    "new_rows": 6352,
+    "total_rows": 107034,
     "ranges": {
       "53197618": {
         "from": "2026-09-08",
-        "to": "2026-09-07",
-        "new_rows": 0,
+        "to": "2026-09-08",
+        "new_rows": 675,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
       "100470605": {
         "from": "2026-07-01",
-        "to": "2026-09-07",
-        "new_rows": 4408,
+        "to": "2026-09-08",
+        "new_rows": 4477,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
       "110064588": {
         "from": "2026-07-01",
-        "to": "2026-09-07",
-        "new_rows": 284,
+        "to": "2026-09-08",
+        "new_rows": 288,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
       "110064048": {
         "from": "2026-07-01",
-        "to": "2026-09-07",
-        "new_rows": 324,
+        "to": "2026-09-08",
+        "new_rows": 330,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       },
       "102348376": {
         "from": "2026-07-01",
-        "to": "2026-09-07",
-        "new_rows": 572,
+        "to": "2026-09-08",
+        "new_rows": 582,
         "quality_calls_backfill": false,
         "targeting_landing_backfill": false
       }
@@ -117,17 +117,17 @@
     "identity_field": "creative_name",
     "bootstrap_used": false,
     "bootstrap_through": null,
-    "from": "2026-09-07",
-    "to": "2026-09-07",
-    "as_of": "2026-09-07",
+    "from": "2026-09-08",
+    "to": "2026-09-08",
+    "as_of": "2026-09-08",
     "media_metrics": [
       "impressions",
       "clicks"
     ],
-    "new_rows": 1129,
-    "baseline_rows": 130326,
+    "new_rows": 1145,
+    "baseline_rows": 131455,
     "jobs_completed": 2,
-    "events_aggregated": 3796109,
+    "events_aggregated": 2871671,
     "warning": null
   }
 }
