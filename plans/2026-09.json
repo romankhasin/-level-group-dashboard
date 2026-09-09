@@ -1,0 +1,1333 @@
+{
+  "version": 1,
+  "month": "2026-09",
+  "source": "Level_MI_Медиаплан_Сентябрь_2026",
+  "sourceSheet": "Общие данные",
+  "sourceRange": "A1:K120",
+  "generatedAt": "2026-09-07",
+  "totals": {
+    "budget": 33694372.63,
+    "impressions": 155387331,
+    "clicks": 642673
+  },
+  "sourceTotals": {
+    "budget": 33694372.63,
+    "impressions": 155387331,
+    "clicks": 642673
+  },
+  "rows": [
+    {
+      "channel": "med",
+      "projectCode": "last",
+      "projectName": "Остатки",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1200000,
+      "clicks": 720,
+      "budget": 322080,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "2gis",
+      "platformName": "2GIS",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 114481,
+      "clicks": 716,
+      "budget": 49776,
+      "sourceFormats": [
+        "Баннеры"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "dzen",
+      "platformName": "Дзен",
+      "formatCode": "article",
+      "formatName": "Статья",
+      "impressions": 2227200,
+      "clicks": 24499,
+      "budget": 296716.49,
+      "sourceFormats": [
+        "Статьи"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "dzen",
+      "platformName": "Дзен",
+      "formatCode": "native",
+      "formatName": "Нативный формат",
+      "impressions": 1205476,
+      "clicks": 4822,
+      "budget": 137655.72,
+      "sourceFormats": [
+        "Сообщество, группа или профиль // Подписка на сообщество"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 0,
+      "sourceFormats": [
+        "Видеобаннер"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "promopages",
+      "platformName": "Яндекс Промостраницы",
+      "formatCode": "article",
+      "formatName": "Статья",
+      "impressions": 6655685,
+      "clicks": 86524,
+      "budget": 2440527.76,
+      "sourceFormats": [
+        "Статьи"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "rutube",
+      "platformName": "Rutube",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 2000000,
+      "clicks": 15000,
+      "budget": 585600,
+      "sourceFormats": [
+        "OLV: Видеобаннер (пре-, мид-, пост-ролл)",
+        "Баннер в блоке рекомендаций"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "avito-ads",
+      "platformName": "Авито Ads",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 350000,
+      "clicks": 455,
+      "budget": 122549,
+      "sourceFormats": [
+        "Премиум HTML5 300х900"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1533333,
+      "clicks": 920,
+      "budget": 617319.87,
+      "sourceFormats": [
+        "Видеобаннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "promopages",
+      "platformName": "Яндекс Промостраницы",
+      "formatCode": "article",
+      "formatName": "Статья",
+      "impressions": 1411581,
+      "clicks": 14116,
+      "budget": 447759.52,
+      "sourceFormats": [
+        "Статьи"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "wildberries",
+      "platformName": "Wildberries",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 12000000,
+      "clicks": 12000,
+      "budget": 439200,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "yandexmarket",
+      "platformName": "Яндекс Маркет",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 600000,
+      "clicks": 900,
+      "budget": 329400,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "avito-ads",
+      "platformName": "Авито Ads",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 220000,
+      "clicks": 352,
+      "budget": 83204,
+      "sourceFormats": [
+        "Баннер в профиле продавца"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 400000,
+      "clicks": 320,
+      "budget": 170800,
+      "sourceFormats": [
+        "Баннер \"Заказ выполнен\""
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "wildberries",
+      "platformName": "Wildberries",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 10000000,
+      "clicks": 10000,
+      "budget": 366000,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "yandexeda",
+      "platformName": "Яндекс Еда",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 200000,
+      "clicks": 260,
+      "budget": 81252,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)",
+        "Сквозной баннер (горизонтальный, вертикальный баннеры) кастомный креатив"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "yandexgo",
+      "platformName": "Яндекс Go",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 340000,
+      "clicks": 442,
+      "budget": 158112,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)",
+        "Сквозной баннер (горизонтальный, вертикальный баннеры) кастомный креатив"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lv",
+      "projectName": "Войковская",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1334607,
+      "clicks": 1068,
+      "budget": 569877.02,
+      "sourceFormats": [
+        "Баннер \"Заказ выполнен\""
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lv",
+      "projectName": "Войковская",
+      "platformCode": "wildberries",
+      "platformName": "Wildberries",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 11000000,
+      "clicks": 11500,
+      "budget": 732000,
+      "sourceFormats": [
+        "Баннер на главной",
+        "Баннер на странице Доставок",
+        "Баннер в ЛК"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lv",
+      "projectName": "Войковская",
+      "platformCode": "yandexgo",
+      "platformName": "Яндекс Go",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1559000,
+      "clicks": 2026,
+      "budget": 715292.11,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lvol-rnn",
+      "projectName": "Волга",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 750000,
+      "clicks": 600,
+      "budget": 201300,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lvol-rnn",
+      "projectName": "Волга",
+      "platformCode": "yandexmarket",
+      "platformName": "Яндекс Маркет",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 300000,
+      "clicks": 300,
+      "budget": 157014,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "2gis",
+      "platformName": "2GIS",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 37223,
+      "clicks": 1995,
+      "budget": 56815,
+      "sourceFormats": [
+        "Баннеры"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "amberdata",
+      "platformName": "Amberdata",
+      "formatCode": "data",
+      "formatName": "Данные",
+      "impressions": 500000,
+      "clicks": 0,
+      "budget": 24400,
+      "sourceFormats": [
+        "Использование данных"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "tbank",
+      "platformName": "Т-Банк",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1785715,
+      "clicks": 14286,
+      "budget": 1830000.73,
+      "sourceFormats": [
+        "Баннер на главной Тбанк"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lwsv",
+      "projectName": "Свободы Коммерция",
+      "platformCode": "2gis",
+      "platformName": "2GIS",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 31646,
+      "clicks": 1845,
+      "budget": 53212,
+      "sourceFormats": [
+        "Баннеры"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "lwsv",
+      "projectName": "Свободы Коммерция",
+      "platformCode": "alfamobile",
+      "platformName": "Альфа-Мобайл",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1200000,
+      "clicks": 1800,
+      "budget": 1317600,
+      "sourceFormats": [
+        "Баннер-растяжка в истории операций"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "pc",
+      "projectName": "Павелецкая Сити",
+      "platformCode": "tbank",
+      "platformName": "Т-Банк",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 589166,
+      "clicks": 766,
+      "budget": 500272.63,
+      "sourceFormats": [
+        "Витрина"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "pc",
+      "projectName": "Павелецкая Сити",
+      "platformCode": "yandexgo",
+      "platformName": "Яндекс Go",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 800000,
+      "clicks": 1040,
+      "budget": 353556,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sel",
+      "projectName": "Селигерская",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1200000,
+      "clicks": 720,
+      "budget": 322080,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sel",
+      "projectName": "Селигерская",
+      "platformCode": "yandexmarket",
+      "platformName": "Яндекс Маркет",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 700000,
+      "clicks": 1050,
+      "budget": 372771,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sp",
+      "projectName": "Южнопортовая",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1500000,
+      "clicks": 900,
+      "budget": 402600,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sp",
+      "projectName": "Южнопортовая",
+      "platformCode": "promopages",
+      "platformName": "Яндекс Промостраницы",
+      "formatCode": "article",
+      "formatName": "Статья",
+      "impressions": 3083565,
+      "clicks": 35461,
+      "budget": 811603,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sp",
+      "projectName": "Южнопортовая",
+      "platformCode": "tbank",
+      "platformName": "Т-Банк",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 590833,
+      "clicks": 768,
+      "budget": 501688.12,
+      "sourceFormats": [
+        "Витрина"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sp",
+      "projectName": "Южнопортовая",
+      "platformCode": "wildberries",
+      "platformName": "Wildberries",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 12000000,
+      "clicks": 12000,
+      "budget": 439200,
+      "sourceFormats": [
+        "Баннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "sp",
+      "projectName": "Южнопортовая",
+      "platformCode": "yandexgo",
+      "platformName": "Яндекс Go",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 550000,
+      "clicks": 715,
+      "budget": 301950,
+      "sourceFormats": [
+        "Сквозной баннер (горизонтальный, вертикальный баннеры)"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "vr",
+      "projectName": "Коммерция Воронцовская",
+      "platformCode": "2gis",
+      "platformName": "2GIS",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 43055,
+      "clicks": 2695,
+      "budget": 64710,
+      "sourceFormats": [
+        "Баннеры"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "zv",
+      "projectName": "Звенигородская",
+      "platformCode": "ozon",
+      "platformName": "Ozon",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1066666,
+      "clicks": 1280,
+      "budget": 429439.73,
+      "sourceFormats": [
+        "Видеобаннер на главной"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "zv",
+      "projectName": "Звенигородская",
+      "platformCode": "perekrestok",
+      "platformName": "Перекрёсток",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 950000,
+      "clicks": 1330,
+      "budget": 625860,
+      "sourceFormats": [
+        "Баннер на главной \"Царь\" (карусель 1) 1-ое крео"
+      ]
+    },
+    {
+      "channel": "med",
+      "projectCode": "zv",
+      "projectName": "Звенигородская",
+      "platformCode": "tbank",
+      "platformName": "Т-Банк",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 589166,
+      "clicks": 766,
+      "budget": 500272.63,
+      "sourceFormats": [
+        "Витрина"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "ak",
+      "projectName": "Академический",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 3500000,
+      "clicks": 28000,
+      "budget": 683200,
+      "sourceFormats": [
+        "OLV: Multi-roll (15 сек)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "ak",
+      "projectName": "Академический",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 9650.2,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "gvl",
+      "projectName": "Лесной",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 2422000,
+      "clicks": 19376,
+      "budget": 472774.4,
+      "sourceFormats": [
+        "OLV: Multi-roll 15 сек"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "gvl",
+      "projectName": "Лесной",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 6677.94,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "last",
+      "projectName": "Остатки",
+      "platformCode": "astralab",
+      "platformName": "Astralab",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1500000,
+      "clicks": 4500,
+      "budget": 439200,
+      "sourceFormats": [
+        "AstraBrandformance light (1280х720, 320x480, 300x300, 240x400, 300x600, 300x250, 336x280)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "last",
+      "projectName": "Остатки",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 40990.37,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "last",
+      "projectName": "Остатки",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 3500000,
+      "clicks": 4900,
+      "budget": 405650,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "last",
+      "projectName": "Остатки",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 2000000,
+      "clicks": 3600,
+      "budget": 732000,
+      "sourceFormats": [
+        "OLV: In-stream + Out-stream"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 51567.48,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 4500000,
+      "clicks": 9300,
+      "budget": 704550,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)",
+        "Прайм - баннер"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lg",
+      "projectName": "Левел Групп",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 2000000,
+      "clicks": 7000,
+      "budget": 634400,
+      "sourceFormats": [
+        "OLV: Пропускаемое видео 15 сек in-stream + out-stream"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lg_prem",
+      "projectName": "Премиум",
+      "platformCode": "astralab",
+      "platformName": "Astralab",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 3000000,
+      "clicks": 9000,
+      "budget": 1171200,
+      "sourceFormats": [
+        "Баннеры AttentionSmart light: (1280х720, 320x480, 300x300, 240x400, 300x600, 300x250, 336x280)",
+        "OLV: Видео Smart Tube"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lg_prem",
+      "projectName": "Премиум",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 8271.6,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "adspector",
+      "platformName": "Adspector",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 2500000,
+      "clicks": 25000,
+      "budget": 378200,
+      "sourceFormats": [
+        "OLV: Cross-Stream Video"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 4500000,
+      "clicks": 36000,
+      "budget": 878400,
+      "sourceFormats": [
+        "OLV: Multi-roll"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 73019.85,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 4000000,
+      "clicks": 8000,
+      "budget": 390400,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lm",
+      "projectName": "Мичуринский",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1000000,
+      "clicks": 3000,
+      "budget": 324520,
+      "sourceFormats": [
+        "OLV: Пропускаемое видео instream + outstream"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 2800000,
+      "clicks": 16800,
+      "budget": 546560,
+      "sourceFormats": [
+        "OLV: Multi-roll (15 сек)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 46210.67,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1500000,
+      "clicks": 2700,
+      "budget": 155550,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lmech",
+      "projectName": "Мечникова",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1300000,
+      "clicks": 3250,
+      "budget": 396500,
+      "sourceFormats": [
+        "OLV: Пропускаемое видео instream + outstream"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lv",
+      "projectName": "Войковская",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 38307.45,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lvol-rnn",
+      "projectName": "Волга",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1500000,
+      "clicks": 12000,
+      "budget": 292800,
+      "sourceFormats": [
+        "OLV: (in-stream+out-stream)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lvol-rnn",
+      "projectName": "Волга",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 7030.86,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 11328.43,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "vox",
+      "platformName": "VOX",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1000000,
+      "clicks": 2500,
+      "budget": 305000,
+      "sourceFormats": [
+        "VOX Combo"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "yabbi",
+      "platformName": "Yabbi",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 285733,
+      "clicks": 8572,
+      "budget": 366024.4,
+      "sourceFormats": [
+        "Interstitial (Fullscreen Banner)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwnizh",
+      "projectName": "Нижегородская Коммерция",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 500000,
+      "clicks": 750,
+      "budget": 54900,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwsv",
+      "projectName": "Свободы Коммерция",
+      "platformCode": "adspector",
+      "platformName": "Adspector",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 0,
+      "sourceFormats": [
+        "OLV: // Cross-Stream/ до 30' (1280x720, 1920x1080)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwsv",
+      "projectName": "Свободы Коммерция",
+      "platformCode": "astralab",
+      "platformName": "Astralab",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 0,
+      "sourceFormats": [
+        "OLV: Видео Smart Tube"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwsv",
+      "projectName": "Свободы Коммерция",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 4000000,
+      "clicks": 32000,
+      "budget": 780800,
+      "sourceFormats": [
+        "OLV: Multi-roll (15 сек)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "lwsv",
+      "projectName": "Свободы Коммерция",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 14424.69,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "pc",
+      "projectName": "Павелецкая Сити",
+      "platformCode": "astralab",
+      "platformName": "Astralab",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1650000,
+      "clicks": 4950,
+      "budget": 628910,
+      "sourceFormats": [
+        "Баннеры AttentionSmart light: (1280х720, 320x480, 300x300, 240x400, 300x600, 300x250, 336x280)",
+        "OLV: Видео Smart Tube"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "pc",
+      "projectName": "Павелецкая Сити",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 5000000,
+      "clicks": 40000,
+      "budget": 976000,
+      "sourceFormats": [
+        "OLV: In-stream + Out-stream"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "pc",
+      "projectName": "Павелецкая Сити",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 26301.39,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "pc",
+      "projectName": "Павелецкая Сити",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 1500000,
+      "clicks": 2851,
+      "budget": 237900,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "sav",
+      "projectName": "Саввинская",
+      "platformCode": "astralab",
+      "platformName": "Astralab",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 1500000,
+      "clicks": 6000,
+      "budget": 677100,
+      "sourceFormats": [
+        "OLV: Видео Smart Tube"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "sav",
+      "projectName": "Саввинская",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 4135.8,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "sel",
+      "projectName": "Селигерская",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 4000000,
+      "clicks": 24000,
+      "budget": 780800,
+      "sourceFormats": [
+        "Multi-roll 15 сек"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "sel",
+      "projectName": "Селигерская",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 27296.28,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "sel",
+      "projectName": "Селигерская",
+      "platformCode": "yandex",
+      "platformName": "Яндекс",
+      "formatCode": "banner",
+      "formatName": "Баннер",
+      "impressions": 4000000,
+      "clicks": 7200,
+      "budget": 390400,
+      "sourceFormats": [
+        "Баннеры (728×90, 300×250, 336×280, 240×400, 300×300, 300×500, 300×600, 240×600, 320×480, 480×320, 970×250)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "sp",
+      "projectName": "Южнопортовая",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 40367.7,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "vr",
+      "projectName": "Коммерция Воронцовская",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 3800000,
+      "clicks": 30400,
+      "budget": 741760,
+      "sourceFormats": [
+        "OLV: Multi-roll (15 сек)"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "vr",
+      "projectName": "Коммерция Воронцовская",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 10596.07,
+      "sourceFormats": [
+        "-"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "zv",
+      "projectName": "Звенигородская",
+      "platformCode": "mts",
+      "platformName": "MTS",
+      "formatCode": "video",
+      "formatName": "Видео",
+      "impressions": 4011200,
+      "clicks": 24067,
+      "budget": 782986.24,
+      "sourceFormats": [
+        "OLV: Multi-roll 15 сек"
+      ]
+    },
+    {
+      "channel": "prg",
+      "projectCode": "zv",
+      "projectName": "Звенигородская",
+      "platformCode": "targetads",
+      "platformName": "Target Ads",
+      "formatCode": "verification",
+      "formatName": "Верификация",
+      "impressions": 0,
+      "clicks": 0,
+      "budget": 18244.48,
+      "sourceFormats": [
+        "-"
+      ]
+    }
+  ]
+}
