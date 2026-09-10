@@ -3775,6 +3775,7 @@ body.help-open { overflow: hidden; }
           <span class="action-group-label">Аналитика</span>
           <a class="journal-link journal-link-strong" href="journal.html" id="openJournal" target="_blank" rel="noopener">Журнал оптимизаций</a>
           <button class="export-link" id="openTargetingCreative" type="button">Таргетинги и креативы</button>
+          <button class="export-link" id="openDevices" type="button">Устройства</button>
           <button class="export-link diagnostic-link" id="openDiagnostics" type="button">Диагностика данных</button>
         </div>
         <div class="action-group">
@@ -3986,6 +3987,7 @@ body.help-open { overflow: hidden; }
       visits: ["визиты", "визит", "visits"],
       bounce: ["отказы", "bounce"],
       time: ["время на сайте", "время", "time", "avg visit duration", "среднее время"],
+      device: ["тип устройства", "device category", "devicecategory", "device type", "device", "устройство"],
       landing: ["посадочная", "landing page", "landing", "starturl", "start url"]
     };
 
@@ -10157,6 +10159,191 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     }
 
 
+    function deviceCategoryLabel(value) {
+      const raw = String(value || "").trim();
+      const key = raw.toLowerCase();
+      if (/(desktop|десктоп)/.test(key)) return "Десктоп";
+      if (/(mobile|смартфон|мобайл|мобиль)/.test(key)) return "Мобайл";
+      if (/(tablet|планшет)/.test(key)) return "Планшет";
+      return raw || "Не указан";
+    }
+
+    function createDeviceMetric(dates) {
+      return {
+        visits: 0,
+        bounceWeighted: 0,
+        timeWeighted: 0,
+        days: Object.fromEntries((dates || []).map(date => [date, 0])),
+        bounceDays: {},
+        timeDays: {}
+      };
+    }
+
+    function addDeviceMetric(metric, row) {
+      const visits = Math.round(row.visits || 0);
+      const date = dateKey(row.date);
+      metric.visits += visits;
+      metric.bounceWeighted += (row.bounce || 0) * visits;
+      metric.timeWeighted += (row.timeSec || 0) * visits;
+      if (date) {
+        metric.days[date] = (metric.days[date] || 0) + visits;
+        metric.bounceDays[date] = metric.bounceDays[date] || { visits: 0, weighted: 0 };
+        metric.timeDays[date] = metric.timeDays[date] || { visits: 0, weighted: 0 };
+        metric.bounceDays[date].visits += visits;
+        metric.bounceDays[date].weighted += (row.bounce || 0) * visits;
+        metric.timeDays[date].visits += visits;
+        metric.timeDays[date].weighted += (row.timeSec || 0) * visits;
+      }
+    }
+
+    function finalizeDeviceMetric(metric, dates) {
+      const visits = metric.visits || 0;
+      return {
+        visits,
+        bounce: visits ? metric.bounceWeighted / visits : 0,
+        timeSec: visits ? metric.timeWeighted / visits : 0,
+        days: (dates || []).map(date => metric.days[date] || 0),
+        bounceDays: (dates || []).map(date => {
+          const item = metric.bounceDays[date] || { visits: 0, weighted: 0 };
+          return item.visits ? item.weighted / item.visits : 0;
+        }),
+        timeDays: (dates || []).map(date => {
+          const item = metric.timeDays[date] || { visits: 0, weighted: 0 };
+          return item.visits ? item.weighted / item.visits : 0;
+        })
+      };
+    }
+
+    function buildDevicesHierarchy() {
+      const dates = DATA && DATA.dates ? DATA.dates : [];
+      const store = {};
+      const columns = Object.keys(RAW_ROWS && RAW_ROWS[0] || {});
+      const campaignColumn = findColumn(columns, FIELD_ALIASES.campaign);
+      const dateColumn = findColumn(columns, FIELD_ALIASES.date);
+      const visitsColumn = findColumn(columns, FIELD_ALIASES.visits);
+      const bounceColumn = findColumn(columns, FIELD_ALIASES.bounce);
+      const timeColumn = findColumn(columns, FIELD_ALIASES.time);
+      const deviceColumn = findColumn(columns, FIELD_ALIASES.device);
+      if (!campaignColumn || !dateColumn || !visitsColumn || !deviceColumn) return { hierarchy: [], hasDeviceColumn: false };
+
+      function node(container, code, name, childrenKey) {
+        if (!container[code]) {
+          container[code] = { code, name, metric: createDeviceMetric(dates), [childrenKey]: {} };
+        }
+        return container[code];
+      }
+
+      RAW_ROWS
+        .filter(row => shouldKeepCampaign(row[campaignColumn]))
+        .filter(row => isDateInPeriod(row[dateColumn]))
+        .filter(row => campaignMatchesReportingMonth(row[campaignColumn], row[dateColumn]))
+        .forEach(row => {
+          const parsed = parseCampaign(String(row[campaignColumn] || ""));
+          const project = node(store, parsed.projectCode, parsed.project, "platforms");
+          const platform = node(project.platforms, parsed.platformCode, parsed.platform, "formats");
+          const format = node(platform.formats, parsed.formatCode, parsed.format, "devices");
+          const deviceName = deviceCategoryLabel(row[deviceColumn]);
+          const device = node(format.devices, deviceName.toLowerCase(), deviceName, "children");
+          const metricRow = {
+            date: row[dateColumn],
+            visits: parseNumber(row[visitsColumn]),
+            bounce: parseBounce(row[bounceColumn]),
+            timeSec: parseTime(row[timeColumn])
+          };
+          [project.metric, platform.metric, format.metric, device.metric].forEach(metric => addDeviceMetric(metric, metricRow));
+        });
+
+      function mapNode(source, childKey, outputKey) {
+        const result = { code: source.code, name: source.name, metrics: finalizeDeviceMetric(source.metric, dates) };
+        if (childKey) {
+          result[outputKey] = Object.values(source[childKey] || {})
+            .map(child => mapNode(child, childKey === "platforms" ? "formats" : childKey === "formats" ? "devices" : null, childKey === "platforms" ? "formats" : childKey === "formats" ? "devices" : null))
+            .filter(child => child.metrics.visits > 0)
+            .sort((a, b) => b.metrics.visits - a.metrics.visits);
+        }
+        return result;
+      }
+
+      return {
+        hasDeviceColumn: true,
+        hierarchy: Object.values(store)
+          .map(project => mapNode(project, "platforms", "platforms"))
+          .filter(project => project.metrics.visits > 0)
+          .sort((a, b) => b.metrics.visits - a.metrics.visits)
+      };
+    }
+
+    function deviceMetricHtml(metrics) {
+      return `<div class="dv-metrics"><div><span>Визиты</span><b>${formatNumber(metrics.visits)}</b></div><div><span>Отказы</span><b class="${bounceClass(metrics.bounce)}">${formatPercent(metrics.bounce)}</b></div><div><span>Время</span><b class="${timeClass(metrics.timeSec)}">${formatTime(metrics.timeSec)}</b></div></div>`;
+    }
+
+    function deviceNodeHtml(node, level) {
+      const levelNames = { project: "ЖК", platform: "Площадка", format: "Формат", device: "Устройство" };
+      const childMap = { project: ["platforms", "platform"], platform: ["formats", "format"], format: ["devices", "device"] };
+      if (level === "device") {
+        return `<div class="dv-leaf"><div><div class="dv-name">${node.name}</div><div class="dv-sub">${levelNames[level]}</div></div>${deviceMetricHtml(node.metrics)}</div>`;
+      }
+      const [childKey, childLevel] = childMap[level];
+      const children = node[childKey] || [];
+      return `<details class="dv-node dv-${level}"><summary><div><div class="dv-name">${node.name}</div><div class="dv-sub">${levelNames[level]} · ${node.code} · ${children.length} элемент(а)</div></div>${deviceMetricHtml(node.metrics)}</summary><div class="dv-children">${children.map(child => deviceNodeHtml(child, childLevel)).join("")}</div></details>`;
+    }
+
+    function deviceTrendHtml(label, values, formatter, tone) {
+      const max = Math.max(...values, 0);
+      const bars = values.map((value, index) => `<i title="${formatDate(DATA.dates[index])}: ${formatter(value)}" style="height:${max ? Math.max(5, value / max * 100) : 5}%"></i>`).join("");
+      return `<article class="dv-trend ${tone}"><span>${label}</span><b>${formatter(values[values.length - 1] || 0)}</b><div class="dv-bars">${bars}</div></article>`;
+    }
+
+    function buildDevicesPageHtml() {
+      const result = buildDevicesHierarchy();
+      const hierarchy = result.hierarchy;
+      const dates = DATA && DATA.dates ? DATA.dates : [];
+      const totalMetric = hierarchy.reduce((total, project) => {
+        const m = project.metrics;
+        total.visits += m.visits;
+        total.bounceWeighted += m.bounce * m.visits;
+        total.timeWeighted += m.timeSec * m.visits;
+        m.days.forEach((value, index) => total.days[index] += value);
+        m.bounceDays.forEach((value, index) => { total.bounceWeightedDays[index] += value * m.days[index]; });
+        m.timeDays.forEach((value, index) => { total.timeWeightedDays[index] += value * m.days[index]; });
+        return total;
+      }, { visits: 0, bounceWeighted: 0, timeWeighted: 0, days: dates.map(() => 0), bounceWeightedDays: dates.map(() => 0), timeWeightedDays: dates.map(() => 0) });
+      const totals = {
+        visits: totalMetric.visits,
+        bounce: totalMetric.visits ? totalMetric.bounceWeighted / totalMetric.visits : 0,
+        timeSec: totalMetric.visits ? totalMetric.timeWeighted / totalMetric.visits : 0,
+        days: totalMetric.days,
+        bounceDays: totalMetric.days.map((visits, index) => visits ? totalMetric.bounceWeightedDays[index] / visits : 0),
+        timeDays: totalMetric.days.map((visits, index) => visits ? totalMetric.timeWeightedDays[index] / visits : 0)
+      };
+      const period = dates.length ? `${formatDate(dates[0])} — ${formatDate(dates[dates.length - 1])}` : "выбранный период";
+      const content = !result.hasDeviceColumn
+        ? '<div class="dv-empty"><b>В текущей выгрузке Метрики ещё нет типа устройства.</b><br>Он появится после ближайшего автоматического обновления данных; затем откройте этот раздел снова.</div>'
+        : hierarchy.length ? hierarchy.map(project => deviceNodeHtml(project, "project")).join("") : '<div class="dv-empty">Нет данных по устройствам за выбранный период.</div>';
+      return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Устройства — Level Group</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;850&display=swap" rel="stylesheet"><style>
+:root{--ink:#20233A;--muted:#747782;--line:#E9E4DA;--gold:#C7A05A;--bronze:#9C6B43;--sky:#DDECF6;--green:#2F7D5A;--amber:#C8A44A;--orange:#C86B2D;--shadow:0 24px 72px rgba(32,35,58,.10);--soft-shadow:0 12px 38px rgba(32,35,58,.07)}*{box-sizing:border-box}body{margin:0;font-family:Montserrat,Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,#fff 0%,#F7F4EF 100%)}.dv-hero{padding:34px 22px 68px;background:radial-gradient(circle at 10% 5%,rgba(221,236,246,.9),transparent 30%),radial-gradient(circle at 90% 0%,rgba(199,160,90,.22),transparent 28%),#fff;border-bottom:1px solid var(--line)}.dv-hero-in{max-width:1280px;margin:auto;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end}.dv-brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:26px}.dv-hero h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em}.dv-hero p{max-width:760px;margin:20px 0 0;color:var(--muted);font-size:16px;line-height:1.6;font-weight:600}.dv-period{min-width:280px;padding:18px 20px;border:1px solid var(--line);background:rgba(255,255,255,.8);border-radius:28px;box-shadow:var(--soft-shadow);font-size:16px;font-weight:800}.dv-period span{display:block;margin-bottom:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.dv-wrap{max-width:1280px;margin:-36px auto 0;padding:0 22px 64px}.dv-panel{padding:22px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow)}.dv-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.dv-kpi article,.dv-trend{border:1px solid var(--line);border-radius:22px;padding:16px;background:linear-gradient(145deg,#fff,rgba(247,244,239,.55))}.dv-kpi span,.dv-trend span,.dv-metrics span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.09em;font-weight:850}.dv-kpi b{display:block;margin-top:10px;font-size:26px;letter-spacing:-.05em}.dv-trends{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.dv-trend b{display:block;margin-top:8px;font-size:17px}.dv-bars{height:76px;display:flex;align-items:end;gap:3px;margin-top:12px}.dv-bars i{display:block;flex:1;min-width:3px;border-radius:4px 4px 1px 1px;background:linear-gradient(180deg,#5D91B4,#DDECF6)}.dv-trend.bounce .dv-bars i{background:linear-gradient(180deg,#C8A44A,#F7EBC6)}.dv-trend.time .dv-bars i{background:linear-gradient(180deg,#2F7D5A,#D8EEE3)}.dv-tools{display:grid;grid-template-columns:1fr auto auto;gap:12px;margin:16px 0}.dv-search{min-height:44px;border:1px solid var(--line);border-radius:999px;padding:0 18px;font:700 13px Montserrat;color:var(--ink)}.dv-button{min-height:44px;padding:0 18px;border:1px solid rgba(199,160,90,.3);border-radius:999px;background:linear-gradient(135deg,#F7F4EF,rgba(221,236,246,.55));font:850 13px Montserrat;color:var(--ink);cursor:pointer}.dv-node{margin:12px 0;border:1px solid var(--line);border-radius:26px;background:#fff;box-shadow:var(--soft-shadow);overflow:hidden}.dv-node summary{list-style:none;display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:18px;align-items:center;padding:18px 20px;cursor:pointer}.dv-node summary::-webkit-details-marker{display:none}.dv-node summary:before{content:'+';position:absolute;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(199,160,90,.13);color:var(--bronze);font-weight:850}.dv-node[open] summary:before{content:'−'}.dv-node summary>div:first-child{padding-left:38px}.dv-node[open]>summary{background:rgba(221,236,246,.17)}.dv-project{border-left:5px solid var(--gold)}.dv-platform,.dv-format{margin-left:18px;border-left:4px solid rgba(89,145,180,.34)}.dv-format{border-left-color:rgba(156,107,67,.34)}.dv-children{padding:0 14px 14px}.dv-leaf{margin:10px 0 10px 18px;padding:16px 18px;display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:18px;align-items:center;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,#fff,rgba(247,244,239,.42))}.dv-name{font-size:16px;font-weight:800;letter-spacing:-.025em}.dv-sub{margin-top:5px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800}.dv-metrics{display:grid;grid-template-columns:repeat(3,88px);gap:8px;text-align:right}.dv-metrics div{border-left:1px solid var(--line);padding-left:8px}.dv-metrics b{display:block;margin-top:5px;font-size:13px;white-space:nowrap}.value-good{color:var(--green)!important}.value-warn{color:var(--amber)!important}.value-bad{color:var(--orange)!important}.dv-empty{padding:28px;border:1px solid var(--line);border-radius:22px;background:#fff;color:var(--muted);line-height:1.6}@media(max-width:900px){.dv-hero-in{grid-template-columns:1fr}.dv-period{width:100%}.dv-wrap{padding:0 12px 44px}.dv-panel{padding:14px;border-radius:24px}.dv-kpi,.dv-trends{grid-template-columns:1fr}.dv-tools{grid-template-columns:1fr}.dv-button,.dv-search{width:100%}.dv-node summary,.dv-leaf{grid-template-columns:1fr}.dv-metrics{grid-template-columns:repeat(3,minmax(0,1fr));text-align:left}.dv-platform,.dv-format,.dv-leaf{margin-left:8px}}</style></head><body><header class="dv-hero"><div class="dv-hero-in"><div><div class="dv-brand">Level Group · Metrika analytics</div><h1>Устройства</h1><p>Иерархия: ЖК → Площадка → Формат → Тип устройства. Данные только из Яндекс Метрики: визиты, отказы и время на сайте.</p></div><div class="dv-period"><span>Период</span>${period}</div></div></header><main class="dv-wrap"><section class="dv-panel"><section class="dv-kpi"><article><span>Визиты</span><b>${formatNumber(totals.visits)}</b></article><article><span>Отказы</span><b class="${bounceClass(totals.bounce)}">${formatPercent(totals.bounce)}</b></article><article><span>Время на сайте</span><b class="${timeClass(totals.timeSec)}">${formatTime(totals.timeSec)}</b></article></section><section class="dv-trends">${deviceTrendHtml("Динамика визитов", totals.days, formatNumber, "visits")}${deviceTrendHtml("Динамика отказов", totals.bounceDays, formatPercent, "bounce")}${deviceTrendHtml("Динамика времени", totals.timeDays, formatTime, "time")}</section><div class="dv-tools"><input class="dv-search" id="dvSearch" placeholder="Поиск по ЖК, площадке, формату или устройству"><button class="dv-button" id="dvExpand">Развернуть всё</button><button class="dv-button" id="dvCollapse">Свернуть всё</button></div><section id="dvTree">${content}</section></section></main><script>(function(){const root=document.getElementById('dvTree');const search=document.getElementById('dvSearch');document.getElementById('dvExpand').addEventListener('click',()=>root.querySelectorAll('details').forEach(item=>item.open=true));document.getElementById('dvCollapse').addEventListener('click',()=>root.querySelectorAll('details').forEach(item=>item.open=false));search.addEventListener('input',()=>{const query=search.value.trim().toLowerCase();root.querySelectorAll('.dv-node,.dv-leaf').forEach(item=>{const match=!query||item.textContent.toLowerCase().includes(query);item.style.display=match?'':'none';if(match&&query){let parent=item.parentElement;while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}}});if(!query)root.querySelectorAll('details').forEach(item=>item.open=false)});root.querySelectorAll('details').forEach(item=>item.open=false)})();<\/script></body></html>`;
+    }
+
+    function openDevicesPage() {
+      if (!DATA || !RAW_ROWS || !RAW_ROWS.length) {
+        alert("Сначала загрузите данные Метрики.");
+        return;
+      }
+      const blob = new Blob([buildDevicesPageHtml()], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const opened = window.open(url, "_blank");
+      if (!opened) {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "Level_Group_Devices.html";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
+
+
     function decodeEmbeddedJournal() {
       if (!EMBEDDED_JOURNAL_B64) return "";
       const binary = atob(EMBEDDED_JOURNAL_B64);
@@ -10840,6 +11027,9 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
     const targetingCreativeButton = document.getElementById("openTargetingCreative");
     if (targetingCreativeButton) targetingCreativeButton.addEventListener("click", openTargetingCreativePage);
+
+    const devicesButton = document.getElementById("openDevices");
+    if (devicesButton) devicesButton.addEventListener("click", openDevicesPage);
 
     const diagnosticsButton = document.getElementById("openDiagnostics");
     if (diagnosticsButton) diagnosticsButton.addEventListener("click", openDiagnosticsPage);

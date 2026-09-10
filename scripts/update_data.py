@@ -37,6 +37,7 @@ START_DATE = dt.date(2026, 5, 1)
 VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
 VOLGA_PROJECT_TOKEN = "lvol"
 TARGETING_LANDING_BACKFILL_START_DATE = dt.date(2026, 9, 1)
+DEVICE_DIMENSION_BACKFILL_START_DATE = START_DATE
 ALTERNATIVE_LANDING_HOSTS = frozenset({
     "vojkovskaya.level.ru",
     "work-nizhegorodskaya.level.ru",
@@ -243,7 +244,7 @@ def fetch_metrika_period(
     start: dt.date,
     end: dt.date,
 ) -> list[dict]:
-    aggregated: dict[tuple[str, str, str], dict] = {}
+    aggregated: dict[tuple[str, str, str, str], dict] = {}
     offset = 1
     limit = 100_000
     goal_id = METRIKA_QUALITY_CALL_GOAL_IDS.get(counter_id)
@@ -254,7 +255,7 @@ def fetch_metrika_period(
             "ids": str(counter_id),
             "date1": start.isoformat(),
             "date2": end.isoformat(),
-            "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign,ym:s:startURL",
+            "dimensions": "ym:s:date,ym:s:lastsignUTMCampaign,ym:s:startURL,ym:s:deviceCategory",
             "metrics": ",".join(
                 metric for metric in (
                     "ym:s:visits",
@@ -274,18 +275,19 @@ def fetch_metrika_period(
         for item in page:
             dimensions = item.get("dimensions") or []
             metrics = item.get("metrics") or []
-            if len(dimensions) < 3 or len(metrics) < 3:
+            if len(dimensions) < 4 or len(metrics) < 3:
                 continue
             report_date = dimension_text(dimensions[0])
             campaign = dimension_text(dimensions[1])
             landing = landing_host(dimensions[2])
+            device = dimension_text(dimensions[3]) or "Не указан"
             if landing in counter_config.get("exclude_landing_hosts", frozenset()):
                 continue
             landing = counter_config.get("landing_host") or landing
             visits = int(round(float(metrics[0] or 0)))
             if not report_date or not campaign or visits <= 0:
                 continue
-            key = (report_date, campaign, landing)
+            key = (report_date, campaign, landing, device)
             item = aggregated.setdefault(
                 key,
                 {
@@ -293,6 +295,7 @@ def fetch_metrika_period(
                     "Дата визита": report_date,
                     "UTM Campaign": campaign,
                     "Посадочная": landing,
+                    "Тип устройства": device,
                     "Визиты": 0,
                     "_bounce_weight": 0.0,
                     "_time_weight": 0.0,
@@ -321,7 +324,7 @@ def fetch_metrika_period(
 
 def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
     existing = read_json_rows(METRIKA_HISTORY_PATH)
-    keyed: dict[tuple[int, str, str, str], dict] = {}
+    keyed: dict[tuple[int, str, str, str, str], dict] = {}
     for row in existing:
         try:
             key = (
@@ -329,6 +332,7 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
                 str(row.get("Дата визита") or ""),
                 str(row.get("UTM Campaign") or ""),
                 str(row.get("Посадочная") or ""),
+                str(row.get("Тип устройства") or ""),
             )
         except (TypeError, ValueError):
             continue
@@ -358,6 +362,10 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             and "Посадочная" not in row
             for key, row in keyed.items()
         )
+        needs_device_dimension_backfill = any(
+            key[0] == counter_id and not str(row.get("Тип устройства") or "").strip()
+            for key, row in keyed.items()
+        )
         counter_dates = [
             dt.date.fromisoformat(key[1])
             for key in keyed
@@ -379,17 +387,20 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             fetch_from = min(fetch_from, VOLGA_FACTS_START_DATE)
         if needs_targeting_landing_backfill:
             fetch_from = min(fetch_from, TARGETING_LANDING_BACKFILL_START_DATE)
+        if needs_device_dimension_backfill:
+            fetch_from = min(fetch_from, DEVICE_DIMENSION_BACKFILL_START_DATE)
         ranges[str(counter_id)] = {
             "from": fetch_from.isoformat(),
             "to": yesterday.isoformat(),
             "new_rows": 0,
             "quality_calls_backfill": needs_quality_calls_backfill,
             "targeting_landing_backfill": needs_targeting_landing_backfill,
+            "device_dimension_backfill": needs_device_dimension_backfill,
         }
         if fetch_from > yesterday:
             continue
 
-        if needs_targeting_landing_backfill:
+        if needs_targeting_landing_backfill or needs_device_dimension_backfill:
             for key in list(keyed):
                 if key[0] == counter_id and fetch_from.isoformat() <= key[1] <= yesterday.isoformat():
                     del keyed[key]
@@ -403,6 +414,7 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
                     row["Дата визита"],
                     row["UTM Campaign"],
                     row["Посадочная"],
+                    row["Тип устройства"],
                 )
                 keyed[key] = row
             fetched_count += len(new_rows)
