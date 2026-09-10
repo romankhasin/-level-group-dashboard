@@ -3773,7 +3773,7 @@ body.help-open { overflow: hidden; }
         </div>
         <div class="action-group">
           <span class="action-group-label">Аналитика</span>
-          <a class="journal-link journal-link-strong" href="journal.html" id="openJournal" target="_blank" rel="noopener">Журнал оптимизаций</a>
+          <a class="journal-link journal-link-strong" href="https://romankhasin.github.io/-level-group-dashboard/journal.html" id="openJournal" target="_blank" rel="noopener">Журнал оптимизаций</a>
           <button class="export-link" id="openTargetingCreative" type="button">Таргетинги и креативы</button>
           <button class="export-link" id="openDevices" type="button">Устройства</button>
           <button class="export-link diagnostic-link" id="openDiagnostics" type="button">Диагностика данных</button>
@@ -10994,11 +10994,6 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         const input = document.getElementById("metricFile");
         if (input) input.value = "";
       });
-    }
-
-    const journalButton = document.getElementById("openJournal");
-    if (journalButton && window.location.protocol === "file:") {
-      journalButton.addEventListener("click", openEmbeddedJournal);
     }
 
     document.addEventListener("click", event => {
