@@ -10291,7 +10291,57 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     function deviceTrendHtml(label, values, formatter, tone) {
       const max = Math.max(...values, 0);
       const bars = values.map((value, index) => `<i title="${formatDate(DATA.dates[index])}: ${formatter(value)}" style="height:${max ? Math.max(5, value / max * 100) : 5}%"></i>`).join("");
-      return `<article class="dv-trend ${tone}"><span>${label}</span><b>${formatter(values[values.length - 1] || 0)}</b><div class="dv-bars">${bars}</div></article>`;
+      return `<article class="dv-trend ${tone}"><span>${label} · последний день</span><b>${formatter(values[values.length - 1] || 0)}</b><div class="dv-bars">${bars}</div></article>`;
+    }
+
+    function deviceAttentionHtml(hierarchy) {
+      const alerts = [];
+      const safe = value => String(value || "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
+
+      (hierarchy || []).forEach(project => {
+        (project.platforms || []).forEach(platform => {
+          (platform.formats || []).forEach(format => {
+            const devices = format.devices || [];
+            const average = format.metrics || {};
+            if (devices.length < 2 || !average.visits) return;
+
+            // Small device samples can look extreme purely by chance. A device
+            // must have at least 100 visits and at least 5% of this format's
+            // traffic before it can create an attention signal.
+            const minimumVisits = Math.max(100, Math.ceil(average.visits * 0.05));
+            devices.forEach(device => {
+              const metrics = device.metrics || {};
+              if ((metrics.visits || 0) < minimumVisits) return;
+
+              const signals = [];
+              const bounceDelta = (metrics.bounce || 0) - (average.bounce || 0);
+              if (Math.abs(bounceDelta) >= 0.08) {
+                signals.push(`отказы ${bounceDelta > 0 ? "выше" : "ниже"} среднего на ${formatPercent(Math.abs(bounceDelta))}`);
+              }
+
+              const timeDelta = (metrics.timeSec || 0) - (average.timeSec || 0);
+              const timeDeltaShare = average.timeSec ? Math.abs(timeDelta) / average.timeSec : 0;
+              if (Math.abs(timeDelta) >= 15 && timeDeltaShare >= 0.25) {
+                signals.push(`время на сайте ${timeDelta > 0 ? "выше" : "ниже"} среднего на ${formatTime(Math.abs(timeDelta))}`);
+              }
+
+              if (!signals.length) return;
+              alerts.push({
+                weight: metrics.visits || 0,
+                html: `<li><b>${safe(project.name)} → ${safe(platform.name)} → ${safe(format.name)} · ${safe(device.name)}</b><span>${signals.join("; ")}. ${formatNumber(metrics.visits)} визитов — достаточный вес для сравнения.</span></li>`
+              });
+            });
+          });
+        });
+      });
+
+      const styles = `<style>.dv-trends-note{margin:0 0 18px;color:#747782;font:650 11px/1.5 Montserrat,Arial,sans-serif}.dv-attention{margin:0 0 16px;border:1px solid rgba(200,164,74,.42);border-radius:22px;background:linear-gradient(145deg,#fff,rgba(247,235,198,.32));overflow:hidden}.dv-attention summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 18px;cursor:pointer;font:850 15px Montserrat,Arial,sans-serif}.dv-attention summary::-webkit-details-marker{display:none}.dv-attention summary span:before{content:'+';display:inline-grid;place-items:center;width:22px;height:22px;margin-right:10px;border-radius:50%;background:rgba(200,164,74,.17);color:#9C6B43}.dv-attention[open] summary span:before{content:'−'}.dv-attention summary small{color:#9C6B43;font-size:11px}.dv-attention p,.dv-attention-copy{margin:0;padding:0 18px 14px;color:#747782;font:12px/1.55 Montserrat,Arial,sans-serif}.dv-attention ul{display:grid;gap:10px;margin:0;padding:0 18px 18px;list-style:none}.dv-attention li{padding:13px 14px;border:1px solid rgba(200,164,74,.25);border-radius:16px;background:rgba(255,255,255,.74);font:12px/1.5 Montserrat,Arial,sans-serif}.dv-attention li b,.dv-attention li span{display:block}.dv-attention li span{margin-top:5px;color:#747782}</style>`;
+      if (!alerts.length) {
+        return `${styles}<details class="dv-attention"><summary><span>Требует внимания</span><small>Значимых отклонений нет</small></summary><p>Устройства с малым количеством визитов не учитываются. Значимых отличий по отказам и времени на сайте среди устройств с достаточным весом не найдено.</p></details>`;
+      }
+      const visibleAlerts = alerts.sort((a, b) => b.weight - a.weight).slice(0, 12);
+      const alertWord = alerts.length === 1 ? "сигнал" : alerts.length < 5 ? "сигнала" : "сигналов";
+      return `${styles}<details class="dv-attention"><summary><span>Требует внимания</span><small>${alerts.length} ${alertWord}</small></summary><div class="dv-attention-copy">Показаны только устройства с минимум 100 визитами и долей не менее 5% в своём формате. Отклонение: отказы от 8 п.п. или время на сайте от 15 сек. и 25%.</div><ul>${visibleAlerts.map(item => item.html).join("")}</ul></details>`;
     }
 
     function buildDevicesPageHtml() {
@@ -10317,9 +10367,11 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         timeDays: totalMetric.days.map((visits, index) => visits ? totalMetric.timeWeightedDays[index] / visits : 0)
       };
       const period = dates.length ? `${formatDate(dates[0])} — ${formatDate(dates[dates.length - 1])}` : "выбранный период";
-      const content = !result.hasDeviceColumn
+      const attention = deviceAttentionHtml(hierarchy);
+      const treeContent = !result.hasDeviceColumn
         ? '<div class="dv-empty"><b>В текущей выгрузке Метрики ещё нет типа устройства.</b><br>Он появится после ближайшего автоматического обновления данных; затем откройте этот раздел снова.</div>'
         : hierarchy.length ? hierarchy.map(project => deviceNodeHtml(project, "project")).join("") : '<div class="dv-empty">Нет данных по устройствам за выбранный период.</div>';
+      const content = `${attention}${treeContent}`;
       return `<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Устройства — Level Group</title><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;850&display=swap" rel="stylesheet"><style>
 :root{--ink:#20233A;--muted:#747782;--line:#E9E4DA;--gold:#C7A05A;--bronze:#9C6B43;--sky:#DDECF6;--green:#2F7D5A;--amber:#C8A44A;--orange:#C86B2D;--shadow:0 24px 72px rgba(32,35,58,.10);--soft-shadow:0 12px 38px rgba(32,35,58,.07)}*{box-sizing:border-box}body{margin:0;font-family:Montserrat,Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,#fff 0%,#F7F4EF 100%)}.dv-hero{padding:34px 22px 68px;background:radial-gradient(circle at 10% 5%,rgba(221,236,246,.9),transparent 30%),radial-gradient(circle at 90% 0%,rgba(199,160,90,.22),transparent 28%),#fff;border-bottom:1px solid var(--line)}.dv-hero-in{max-width:1280px;margin:auto;display:grid;grid-template-columns:1fr auto;gap:28px;align-items:end}.dv-brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:26px}.dv-hero h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em}.dv-hero p{max-width:760px;margin:20px 0 0;color:var(--muted);font-size:16px;line-height:1.6;font-weight:600}.dv-period{min-width:280px;padding:18px 20px;border:1px solid var(--line);background:rgba(255,255,255,.8);border-radius:28px;box-shadow:var(--soft-shadow);font-size:16px;font-weight:800}.dv-period span{display:block;margin-bottom:8px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}.dv-wrap{max-width:1280px;margin:-36px auto 0;padding:0 22px 64px}.dv-panel{padding:22px;background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:30px;box-shadow:var(--shadow)}.dv-kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.dv-kpi article,.dv-trend{border:1px solid var(--line);border-radius:22px;padding:16px;background:linear-gradient(145deg,#fff,rgba(247,244,239,.55))}.dv-kpi span,.dv-trend span,.dv-metrics span{display:block;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.09em;font-weight:850}.dv-kpi b{display:block;margin-top:10px;font-size:26px;letter-spacing:-.05em}.dv-trends{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.dv-trend b{display:block;margin-top:8px;font-size:17px}.dv-bars{height:76px;display:flex;align-items:end;gap:3px;margin-top:12px}.dv-bars i{display:block;flex:1;min-width:3px;border-radius:4px 4px 1px 1px;background:linear-gradient(180deg,#5D91B4,#DDECF6)}.dv-trend.bounce .dv-bars i{background:linear-gradient(180deg,#C8A44A,#F7EBC6)}.dv-trend.time .dv-bars i{background:linear-gradient(180deg,#2F7D5A,#D8EEE3)}.dv-tools{display:grid;grid-template-columns:1fr auto auto;gap:12px;margin:16px 0}.dv-search{min-height:44px;border:1px solid var(--line);border-radius:999px;padding:0 18px;font:700 13px Montserrat;color:var(--ink)}.dv-button{min-height:44px;padding:0 18px;border:1px solid rgba(199,160,90,.3);border-radius:999px;background:linear-gradient(135deg,#F7F4EF,rgba(221,236,246,.55));font:850 13px Montserrat;color:var(--ink);cursor:pointer}.dv-node{margin:12px 0;border:1px solid var(--line);border-radius:26px;background:#fff;box-shadow:var(--soft-shadow);overflow:hidden}.dv-node summary{list-style:none;display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:18px;align-items:center;padding:18px 20px;cursor:pointer}.dv-node summary::-webkit-details-marker{display:none}.dv-node summary:before{content:'+';position:absolute;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(199,160,90,.13);color:var(--bronze);font-weight:850}.dv-node[open] summary:before{content:'−'}.dv-node summary>div:first-child{padding-left:38px}.dv-node[open]>summary{background:rgba(221,236,246,.17)}.dv-project{border-left:5px solid var(--gold)}.dv-platform,.dv-format{margin-left:18px;border-left:4px solid rgba(89,145,180,.34)}.dv-format{border-left-color:rgba(156,107,67,.34)}.dv-children{padding:0 14px 14px}.dv-leaf{margin:10px 0 10px 18px;padding:16px 18px;display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:18px;align-items:center;border:1px solid var(--line);border-radius:22px;background:linear-gradient(145deg,#fff,rgba(247,244,239,.42))}.dv-name{font-size:16px;font-weight:800;letter-spacing:-.025em}.dv-sub{margin-top:5px;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:800}.dv-metrics{display:grid;grid-template-columns:repeat(3,88px);gap:8px;text-align:right}.dv-metrics div{border-left:1px solid var(--line);padding-left:8px}.dv-metrics b{display:block;margin-top:5px;font-size:13px;white-space:nowrap}.value-good{color:var(--green)!important}.value-warn{color:var(--amber)!important}.value-bad{color:var(--orange)!important}.dv-empty{padding:28px;border:1px solid var(--line);border-radius:22px;background:#fff;color:var(--muted);line-height:1.6}@media(max-width:900px){.dv-hero-in{grid-template-columns:1fr}.dv-period{width:100%}.dv-wrap{padding:0 12px 44px}.dv-panel{padding:14px;border-radius:24px}.dv-kpi,.dv-trends{grid-template-columns:1fr}.dv-tools{grid-template-columns:1fr}.dv-button,.dv-search{width:100%}.dv-node summary,.dv-leaf{grid-template-columns:1fr}.dv-metrics{grid-template-columns:repeat(3,minmax(0,1fr));text-align:left}.dv-platform,.dv-format,.dv-leaf{margin-left:8px}}</style></head><body><header class="dv-hero"><div class="dv-hero-in"><div><div class="dv-brand">Level Group · Metrika analytics</div><h1>Устройства</h1><p>Иерархия: ЖК → Площадка → Формат → Тип устройства. Данные только из Яндекс Метрики: визиты, отказы и время на сайте.</p></div><div class="dv-period"><span>Период</span>${period}</div></div></header><main class="dv-wrap"><section class="dv-panel"><section class="dv-kpi"><article><span>Визиты</span><b>${formatNumber(totals.visits)}</b></article><article><span>Отказы</span><b class="${bounceClass(totals.bounce)}">${formatPercent(totals.bounce)}</b></article><article><span>Время на сайте</span><b class="${timeClass(totals.timeSec)}">${formatTime(totals.timeSec)}</b></article></section><section class="dv-trends">${deviceTrendHtml("Динамика визитов", totals.days, formatNumber, "visits")}${deviceTrendHtml("Динамика отказов", totals.bounceDays, formatPercent, "bounce")}${deviceTrendHtml("Динамика времени", totals.timeDays, formatTime, "time")}</section><div class="dv-tools"><input class="dv-search" id="dvSearch" placeholder="Поиск по ЖК, площадке, формату или устройству"><button class="dv-button" id="dvExpand">Развернуть всё</button><button class="dv-button" id="dvCollapse">Свернуть всё</button></div><section id="dvTree">${content}</section></section></main><script>(function(){const root=document.getElementById('dvTree');const search=document.getElementById('dvSearch');document.getElementById('dvExpand').addEventListener('click',()=>root.querySelectorAll('details').forEach(item=>item.open=true));document.getElementById('dvCollapse').addEventListener('click',()=>root.querySelectorAll('details').forEach(item=>item.open=false));search.addEventListener('input',()=>{const query=search.value.trim().toLowerCase();root.querySelectorAll('.dv-node,.dv-leaf').forEach(item=>{const match=!query||item.textContent.toLowerCase().includes(query);item.style.display=match?'':'none';if(match&&query){let parent=item.parentElement;while(parent){if(parent.tagName==='DETAILS')parent.open=true;parent=parent.parentElement}}});if(!query)root.querySelectorAll('details').forEach(item=>item.open=false)});root.querySelectorAll('details').forEach(item=>item.open=false)})();<\/script></body></html>`;
     }
