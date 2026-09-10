@@ -182,7 +182,11 @@ def write_json(path: Path, payload: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(
-        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=False) + "\n",
+        # Dashboard data is delivered as JSON and parsed in the browser, so
+        # pretty-printing only inflates the Git artifact.  In particular, the
+        # device dimension adds enough rows that the pretty version exceeds
+        # GitHub's 100 MB per-file limit.
+        json.dumps(payload, ensure_ascii=False, separators=(",", ":"), sort_keys=False) + "\n",
         encoding="utf-8",
     )
     temporary.replace(path)
