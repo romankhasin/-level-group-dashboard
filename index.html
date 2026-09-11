@@ -10888,17 +10888,47 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       }
     }
 
+    function expandCompactRows(value) {
+      if (Array.isArray(value)) return value;
+      if (!value || !Array.isArray(value.columns) || !Array.isArray(value.data)) return null;
+
+      const { columns, data } = value;
+      const dictionaries = value.dictionaries || {};
+      const missing = value.missing || {};
+      if (columns.length !== data.length) return null;
+      const rowCount = data.length ? data[0].length : 0;
+      if (!data.every(column => Array.isArray(column) && column.length === rowCount)) return null;
+
+      const missingIndexes = Object.fromEntries(
+        Object.entries(missing).map(([column, indexes]) => [column, new Set(indexes)])
+      );
+      return Array.from({ length: rowCount }, (_, rowIndex) => {
+        const row = {};
+        columns.forEach((column, columnIndex) => {
+          if (missingIndexes[column] && missingIndexes[column].has(rowIndex)) return;
+          const cell = data[columnIndex][rowIndex];
+          const dictionary = dictionaries[column];
+          row[column] = Array.isArray(dictionary) ? dictionary[cell] : cell;
+        });
+        return row;
+      });
+    }
+
     async function loadAutomaticReportData() {
       if (EMBEDDED_REPORT_DATA || window.location.protocol === "file:") return false;
 
       try {
-        const response = await fetch(`data/latest.json?v=${Date.now()}`, { cache: "no-store" });
+        const version = STARTUP_SUMMARY && STARTUP_SUMMARY.generatedAt;
+        const url = `data/latest.json${version ? `?v=${encodeURIComponent(version)}` : ""}`;
+        const response = await fetch(url, { cache: "default" });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const payload = await response.json();
-        if (!payload || !Array.isArray(payload.rawRows) || !payload.rawRows.length) return false;
+        const rawRows = expandCompactRows(payload && payload.rawRows);
+        const verifierRows = expandCompactRows(payload && payload.verifierRows);
+        if (!payload || !rawRows || !rawRows.length) return false;
 
-        RAW_ROWS = payload.rawRows;
-        VERIFIER_ROWS = Array.isArray(payload.verifierRows) ? payload.verifierRows : null;
+        RAW_ROWS = rawRows;
+        VERIFIER_ROWS = verifierRows;
         AUTOMATIC_GOOGLE_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(isGoogleVerifierSource);
         AUTOMATIC_TARGETADS_VERIFIER_ROWS = (VERIFIER_ROWS || []).filter(row => !isGoogleVerifierSource(row));
         CURRENT_VERIFIER_ROWS = [];
@@ -11258,7 +11288,6 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
     (async () => {
       await loadStartupSummary();
-      await loadDashboardDetailsInBackground();
     })();
     document.addEventListener("click", event => {
       const target = event.target;

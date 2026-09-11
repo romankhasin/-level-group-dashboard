@@ -192,6 +192,48 @@ def write_json(path: Path, payload: object) -> None:
     temporary.replace(path)
 
 
+def compact_rows(rows: list[dict]) -> dict:
+    """Store repeated row fields once, while retaining every original value.
+
+    The browser expands this representation before the existing report logic
+    reads it.  Keeping non-string columns untouched avoids any rounding or
+    other changes to reporting metrics.
+    """
+    if not rows:
+        return {"columns": [], "dictionaries": {}, "data": []}
+
+    columns = list(dict.fromkeys(column for row in rows for column in row))
+    dictionaries: dict[str, list[str]] = {}
+    data: list[list[object]] = []
+    missing: dict[str, list[int]] = {}
+
+    for column in columns:
+        missing_indexes = [index for index, row in enumerate(rows) if column not in row]
+        values = [row.get(column) for row in rows]
+        if values and all(isinstance(value, str) or value is None for value in values):
+            dictionary = list(dict.fromkeys(value for value in values if isinstance(value, str)))
+            indexes = {value: index for index, value in enumerate(dictionary)}
+            dictionaries[column] = dictionary
+            data.append([indexes[value] if value is not None else -1 for value in values])
+        else:
+            data.append(values)
+        if missing_indexes:
+            missing[column] = missing_indexes
+
+    return {"columns": columns, "dictionaries": dictionaries, "missing": missing, "data": data}
+
+
+def compact_row_count(rows: object) -> int:
+    """Return a row count from either the legacy or compact representation."""
+    if isinstance(rows, list):
+        return len(rows)
+    if isinstance(rows, dict):
+        data = rows.get("data")
+        if isinstance(data, list) and data and isinstance(data[0], list):
+            return len(data[0])
+    return 0
+
+
 def build_startup_summary(latest: dict) -> dict:
     """Return the tiny, safe-to-fetch payload used for the dashboard shell.
 
@@ -212,8 +254,8 @@ def build_startup_summary(latest: dict) -> dict:
             }
         },
         "counts": {
-            "metrikaRows": len(raw_rows),
-            "verifierRows": len(verifier_rows),
+            "metrikaRows": compact_row_count(raw_rows),
+            "verifierRows": compact_row_count(verifier_rows),
         },
         "detailUrl": "data/latest.json",
     }
@@ -1496,11 +1538,11 @@ def main() -> None:
     verifier_rows = merge_verifier_rows(targetads_rows, google_rows)
     generated_at = now_utc.isoformat().replace("+00:00", "Z")
     latest = {
-        "version": 1,
+        "version": 2,
         "generatedAt": generated_at,
         "period": {"from": START_DATE.isoformat(), "to": yesterday.isoformat()},
-        "rawRows": metrika_rows,
-        "verifierRows": verifier_rows,
+        "rawRows": compact_rows(metrika_rows),
+        "verifierRows": compact_rows(verifier_rows),
         "sourceFile": "Автоматическая выгрузка Яндекс Метрики",
         "verifierFile": (
             "Google Данные_метрика + августовский PRG Google-отчёт "
