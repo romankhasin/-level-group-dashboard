@@ -38,6 +38,7 @@ VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
 VOLGA_PROJECT_TOKEN = "lvol"
 TARGETING_LANDING_BACKFILL_START_DATE = dt.date(2026, 9, 1)
 DEVICE_DIMENSION_BACKFILL_START_DATE = START_DATE
+RECENT_METRIKA_REFRESH_DAYS = 3
 ALTERNATIVE_LANDING_HOSTS = frozenset({
     "vojkovskaya.level.ru",
     "work-nizhegorodskaya.level.ru",
@@ -417,10 +418,20 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             for key in keyed
             if key[0] == counter_id and key[1]
         ]
+        recent_refresh_start = max(
+            START_DATE,
+            yesterday - dt.timedelta(days=RECENT_METRIKA_REFRESH_DAYS - 1),
+        )
         if needs_quality_calls_backfill or not counter_dates:
             fetch_from = START_DATE
         else:
-            fetch_from = max(counter_dates) + dt.timedelta(days=1)
+            # Metrika can finish attribution and revise visits after the first
+            # daily export. Re-fetch the recent window on every run instead of
+            # preserving an early, incomplete snapshot.
+            fetch_from = min(
+                max(counter_dates) + dt.timedelta(days=1),
+                recent_refresh_start,
+            )
         # Add the new Волга object from the beginning of July once.  The
         # regular incremental refresh cannot otherwise retrieve historical
         # July rows after the object mapping is introduced.
@@ -442,14 +453,16 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
             "quality_calls_backfill": needs_quality_calls_backfill,
             "targeting_landing_backfill": needs_targeting_landing_backfill,
             "device_dimension_backfill": needs_device_dimension_backfill,
+            "recent_refresh_days": RECENT_METRIKA_REFRESH_DAYS,
         }
         if fetch_from > yesterday:
             continue
 
-        if needs_targeting_landing_backfill or needs_device_dimension_backfill:
-            for key in list(keyed):
-                if key[0] == counter_id and fetch_from.isoformat() <= key[1] <= yesterday.isoformat():
-                    del keyed[key]
+        # Replace the whole refreshed interval. This removes rows whose final
+        # value became zero as well as updating rows that Metrika recalculated.
+        for key in list(keyed):
+            if key[0] == counter_id and fetch_from.isoformat() <= key[1] <= yesterday.isoformat():
+                del keyed[key]
 
         chunk_days = 1 if needs_targeting_landing_backfill else 31
         for chunk_start, chunk_end in date_chunks(fetch_from, yesterday, days=chunk_days):
