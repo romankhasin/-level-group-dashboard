@@ -4863,14 +4863,12 @@ body.help-open { overflow: hidden; }
       return rows.filter(row => isDateInPeriod(dateAccessor(row)));
     }
 
-    function campaignMatchesReportingMonth(campaign, dateValue) {
+    function hasValidReportingDate(dateValue) {
       const date = parseDate(dateValue);
-      if (Number.isNaN(date.getTime()) || date.getTime() === 0) return false;
-
-      const monthCodes = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
-      const expected = `${monthCodes[date.getMonth()]}${String(date.getFullYear()).slice(-2)}`;
-      const tokens = String(campaign || "").trim().toLowerCase().split("_").filter(Boolean);
-      return tokens.includes(expected);
+      // The selected visit dates are the reporting boundary. A campaign can
+      // legitimately keep delivering after the month token in its UTM name,
+      // so matching aug26/sep26 here would silently drop in-period visits.
+      return !Number.isNaN(date.getTime()) && date.getTime() !== 0;
     }
 
     function createMetric(dates) {
@@ -5258,10 +5256,9 @@ body.help-open { overflow: hidden; }
       rows.forEach(row => {
         const campaign = String(row[campaignColumn] || "");
 
-        // Keep only the campaign cycle that matches the reporting date. This
-        // applies the aug26 rule to Target Ads and Google fact rows too, so
-        // late delivery from previous placements cannot inflate August.
-        if (!shouldKeepCampaign(campaign) || !campaignMatchesReportingMonth(campaign, row[dateColumn])) return;
+        // Date-range selection is authoritative for both Metrika and media
+        // facts, including delivery that continues after a UTM month token.
+        if (!shouldKeepCampaign(campaign) || !hasValidReportingDate(row[dateColumn])) return;
 
         const parsed = parseCampaign(campaign);
 
@@ -6005,7 +6002,7 @@ body.help-open { overflow: hidden; }
 
       const rows = rawRows
         .filter(row => shouldKeepCampaign(row[campaignColumn]))
-        .filter(row => campaignMatchesReportingMonth(row[campaignColumn], row[dateColumn]))
+        .filter(row => hasValidReportingDate(row[dateColumn]))
         .map(row => {
           const parsed = parseCampaign(row[campaignColumn]);
 
@@ -9468,7 +9465,7 @@ body.help-open { overflow: hidden; }
         RAW_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => isDateInPeriod(row[cols.date]))
-          .filter(row => campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
+          .filter(row => hasValidReportingDate(row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
@@ -9487,7 +9484,7 @@ body.help-open { overflow: hidden; }
         VERIFIER_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => !cols.date || isDateInPeriod(row[cols.date]))
-          .filter(row => !cols.date || campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
+          .filter(row => !cols.date || hasValidReportingDate(row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
@@ -9642,7 +9639,7 @@ body.help-open { overflow: hidden; }
         RAW_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => isDateInPeriod(row[cols.date]))
-          .filter(row => campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
+          .filter(row => hasValidReportingDate(row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
@@ -9659,7 +9656,7 @@ body.help-open { overflow: hidden; }
         VERIFIER_ROWS
           .filter(row => shouldKeepCampaign(row[cols.campaign]))
           .filter(row => !cols.date || isDateInPeriod(row[cols.date]))
-          .filter(row => !cols.date || campaignMatchesReportingMonth(row[cols.campaign], row[cols.date]))
+          .filter(row => !cols.date || hasValidReportingDate(row[cols.date]))
           .forEach(row => {
             const campaign = String(row[cols.campaign] || "");
             const parsed = parseTargetingCreative(campaign);
@@ -10236,7 +10233,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       RAW_ROWS
         .filter(row => shouldKeepCampaign(row[campaignColumn]))
         .filter(row => isDateInPeriod(row[dateColumn]))
-        .filter(row => campaignMatchesReportingMonth(row[campaignColumn], row[dateColumn]))
+        .filter(row => hasValidReportingDate(row[dateColumn]))
         .forEach(row => {
           const parsed = parseCampaign(String(row[campaignColumn] || ""));
           const project = node(store, parsed.projectCode, parsed.project, "platforms");
@@ -10574,7 +10571,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         if (!shouldKeepCampaign(campaign)) return;
         const key = dateKey(row[metricDate]);
         if (!key || key < exportFrom || key > exportTo) return;
-        if (!campaignMatchesReportingMonth(campaign, row[metricDate])) return;
+        if (!hasValidReportingDate(row[metricDate])) return;
 
         const parsed = parseCampaign(campaign);
         const segment = excelSegment(key, segmentation, exportFrom, exportTo);

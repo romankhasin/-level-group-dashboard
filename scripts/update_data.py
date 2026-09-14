@@ -36,6 +36,7 @@ JOURNAL_PATH = ROOT / "journal.html"
 START_DATE = dt.date(2026, 5, 1)
 VOLGA_FACTS_START_DATE = dt.date(2026, 7, 1)
 VOLGA_PROJECT_TOKEN = "lvol"
+VOLGA_COUNTER_IDS = frozenset({53197618})
 TARGETING_LANDING_BACKFILL_START_DATE = dt.date(2026, 9, 1)
 DEVICE_DIMENSION_BACKFILL_START_DATE = START_DATE
 RECENT_METRIKA_REFRESH_DAYS = 3
@@ -435,13 +436,14 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
         # Add the new Волга object from the beginning of July once.  The
         # regular incremental refresh cannot otherwise retrieve historical
         # July rows after the object mapping is introduced.
-        has_volga_rows = any(
-            key[0] == counter_id
-            and str(row.get("UTM Campaign") or "").lower().startswith(VOLGA_PROJECT_TOKEN)
-            for key, row in keyed.items()
-        )
-        if not has_volga_rows:
-            fetch_from = min(fetch_from, VOLGA_FACTS_START_DATE)
+        if counter_id in VOLGA_COUNTER_IDS:
+            has_volga_rows = any(
+                key[0] == counter_id
+                and str(row.get("UTM Campaign") or "").lower().startswith(VOLGA_PROJECT_TOKEN)
+                for key, row in keyed.items()
+            )
+            if not has_volga_rows:
+                fetch_from = min(fetch_from, VOLGA_FACTS_START_DATE)
         if needs_targeting_landing_backfill:
             fetch_from = min(fetch_from, TARGETING_LANDING_BACKFILL_START_DATE)
         if needs_device_dimension_backfill:
