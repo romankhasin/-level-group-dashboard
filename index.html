@@ -250,7 +250,7 @@
 
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 14px;
       margin-bottom: 22px;
     }
@@ -2609,7 +2609,7 @@ details.project-card > summary{
 .platform-metrics{
   grid-template-columns:
     88px 78px 72px 68px
-    106px 88px 72px
+    106px 88px 72px 64px
     120px 72px 72px!important;
   gap:8px!important;
   align-items:start!important;
@@ -2643,7 +2643,7 @@ details.project-card > summary{
 }
 
 .format-table{
-  min-width:1120px!important;
+  min-width:1200px!important;
 }
 
 .format-table th:first-child,
@@ -2738,8 +2738,8 @@ details.project-card > summary{
 .period-compare-actions{display:flex;justify-content:flex-end;gap:10px;padding:16px 24px 22px}
 .period-compare-actions .compare-apply{background:linear-gradient(135deg,var(--gold),var(--bronze));color:#fff;border-color:transparent}
 .comparison-project-card{margin-bottom:12px;border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--soft-shadow);overflow:hidden}
-.comparison-project-summary{display:grid;grid-template-columns:minmax(176px,.4fr) minmax(930px,2.6fr);gap:12px;align-items:center;padding:15px 18px}
-.comparison-metric-row{display:grid;grid-template-columns:64px 64px 58px 54px 86px 72px 60px 96px 62px 62px;gap:6px;align-items:start}
+.comparison-project-summary{display:grid;grid-template-columns:minmax(176px,.4fr) minmax(990px,2.6fr);gap:12px;align-items:center;padding:15px 18px}
+.comparison-metric-row{display:grid;grid-template-columns:64px 64px 58px 54px 86px 72px 60px 58px 96px 62px 62px;gap:6px;align-items:start}
 .compare-delta{margin-top:3px;font-size:8px;font-weight:850;line-height:1;white-space:nowrap}
 .compare-good{color:var(--green)}
 .compare-bad{color:var(--orange)}
@@ -2756,7 +2756,7 @@ details.project-card > summary{
 
 /* Dashboard Engine 5.6 Naming — comparison values for both periods */
 .comparison-project-card > summary{
-  grid-template-columns:minmax(176px,.4fr) minmax(930px,2.6fr)!important;
+  grid-template-columns:minmax(176px,.4fr) minmax(990px,2.6fr)!important;
 }
 .comparison-project-card .project-body{
   display:block;
@@ -2787,7 +2787,7 @@ details.project-card > summary{
   margin-top:3px;
 }
 .comparison-format-table{
-  min-width:1320px!important;
+  min-width:1410px!important;
 }
 .comparison-format-table th{
   white-space:nowrap;
@@ -2803,6 +2803,9 @@ details.project-card > summary{
   line-height:1.1;
   white-space:nowrap;
 }
+.pi-good{color:var(--green)!important}
+.pi-warn{color:var(--amber)!important}
+.pi-bad{color:var(--red)!important}
 .compare-table-previous{
   margin-top:4px;
   font-size:9px;
@@ -3145,9 +3148,10 @@ details.project-card > summary{
   .format-table td:nth-child(6)::before { content: "Показы"; }
   .format-table td:nth-child(7)::before { content: "Клики"; }
   .format-table td:nth-child(8)::before { content: "CTR"; }
-  .format-table td:nth-child(9)::before { content: "Бюджет"; }
-  .format-table td:nth-child(10)::before { content: "CPM"; }
-  .format-table td:nth-child(11)::before { content: "CPC"; }
+  .format-table td:nth-child(9)::before { content: "PI%"; }
+  .format-table td:nth-child(10)::before { content: "Бюджет"; }
+  .format-table td:nth-child(11)::before { content: "CPM"; }
+  .format-table td:nth-child(12)::before { content: "CPC"; }
 
   .format-name,
   .nested-name {
@@ -3692,6 +3696,11 @@ body.help-open { overflow: hidden; }
           <div class="kpi-value" id="totalCtr">—</div>
           <div class="kpi-note">клики / показы Target Ads</div>
         </div>
+        <div class="kpi">
+          <div class="kpi-label">PI%</div>
+          <div class="kpi-value" id="totalPi">—</div>
+          <div class="kpi-note">Passing Index · визиты / клики</div>
+        </div>
       </div>
 
       <div class="dashboard-summary" id="executiveSummaryBlock">
@@ -3846,6 +3855,10 @@ body.help-open { overflow: hidden; }
         ivt: {
           goodMax: 0.04,
           warnMax: 0.06
+        },
+        passingIndex: {
+          goodMin: 0.75,
+          warnMin: 0.45
         }
       },
       excludedCampaignTokens: ["move"],
@@ -4081,6 +4094,7 @@ body.help-open { overflow: hidden; }
             <div class="help-formula"><b>Время на сайте</b>Средневзвешенное по визитам.</div>
             <div class="help-formula"><b>IVT</b>Невалидные показы / показы с данными IVT.</div>
             <div class="help-formula"><b>CTR</b>Клики / показы.</div>
+            <div class="help-formula"><b>PI%</b>Визиты / клики × 100%. Зелёная зона — от 75%, жёлтая — от 45% до 74%, красная — ниже 45%.</div>
             <div class="help-formula"><b>CPM</b>Фактический бюджет / показы × 1 000.</div>
             <div class="help-formula"><b>CPC</b>Фактический бюджет / клики.</div>
           </div>
@@ -4514,6 +4528,23 @@ body.help-open { overflow: hidden; }
     function formatCtr(value) {
       if (value === null || value === undefined || Number.isNaN(value)) return "—";
       return `${((value || 0) * 100).toFixed(2).replace(".", ",")}%`;
+    }
+
+    function passingIndex(metrics) {
+      if (!metrics || !Number(metrics.clicks)) return null;
+      return (Number(metrics.visits) || 0) / Number(metrics.clicks);
+    }
+
+    function formatPi(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return "—";
+      return `${Math.round(value * 100)}%`;
+    }
+
+    function piClass(value) {
+      if (value === null || value === undefined || Number.isNaN(value)) return "";
+      if (value >= DASHBOARD_CONFIG.thresholds.passingIndex.goodMin) return "pi-good";
+      if (value >= DASHBOARD_CONFIG.thresholds.passingIndex.warnMin) return "pi-warn";
+      return "pi-bad";
     }
 
     function formatOptionalPercent(value) {
@@ -6419,6 +6450,8 @@ body.help-open { overflow: hidden; }
 
     function metricCompareHtml(current, previous) {
       previous = previous || {};
+      const currentPi = passingIndex(current);
+      const previousPi = passingIndex(previous);
       return `
         <div class="metric compare-metric">
           <div class="metric-label">Визиты</div>
@@ -6447,6 +6480,10 @@ body.help-open { overflow: hidden; }
         <div class="metric compare-metric">
           <div class="metric-label">CTR</div>
           ${comparisonValuePair(current.ctr, previous.ctr, formatCtr, comparisonPoints(current.ctr, previous.ctr), "points")}
+        </div>
+        <div class="metric compare-metric">
+          <div class="metric-label">PI%</div>
+          ${comparisonValuePair(currentPi, previousPi, formatPi, comparisonPoints(currentPi, previousPi), "points", false, piClass(currentPi))}
         </div>
         <div class="metric compare-metric cost-metric">
           <div class="metric-label">Бюджет</div>
@@ -6481,13 +6518,13 @@ body.help-open { overflow: hidden; }
       return map;
     }
 
-    function comparisonTableValue(current, previous, formatter, delta, deltaType = "relative", inverse = false) {
+    function comparisonTableValue(current, previous, formatter, delta, deltaType = "relative", inverse = false, valueClass = "") {
       const previousText = previous === null || previous === undefined || Number.isNaN(previous)
         ? "—"
         : formatter(previous);
 
       return `
-        <div class="compare-table-current">${formatter(current)}</div>
+        <div class="compare-table-current ${valueClass}">${formatter(current)}</div>
         <div class="compare-table-previous">${previousText}</div>
         ${comparisonDeltaHtml(delta, deltaType, inverse)}
       `;
@@ -6510,6 +6547,7 @@ body.help-open { overflow: hidden; }
           <td class="num compare-cell">${comparisonTableValue(a.impressions, b.impressions, formatNumber, comparisonRelative(a.impressions, b.impressions))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.clicks, b.clicks, formatNumber, comparisonRelative(a.clicks, b.clicks))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.ctr, b.ctr, formatCtr, comparisonPoints(a.ctr, b.ctr), "points")}</td>
+          <td class="num compare-cell">${comparisonTableValue(passingIndex(a), passingIndex(b), formatPi, comparisonPoints(passingIndex(a), passingIndex(b)), "points", false, piClass(passingIndex(a)))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.factBudget, b.factBudget, formatMoney, comparisonRelative(a.factBudget, b.factBudget))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.factCpm, b.factCpm, formatCost, comparisonRelative(a.factCpm, b.factCpm), "relative", true)}</td>
           <td class="num compare-cell">${comparisonTableValue(a.factCpc, b.factCpc, formatCost, comparisonRelative(a.factCpc, b.factCpc), "relative", true)}</td>
@@ -6563,6 +6601,7 @@ body.help-open { overflow: hidden; }
                 <th class="num">Показы</th>
                 <th class="num">Клики</th>
                 <th class="num">CTR</th>
+                <th class="num">PI%</th>
                 <th class="num">Бюджет</th>
                 <th class="num">CPM</th>
                 <th class="num">CPC</th>
@@ -6674,6 +6713,7 @@ body.help-open { overflow: hidden; }
           <td class="num compare-cell">${comparisonTableValue(a.impressions, b.impressions, formatNumber, comparisonRelative(a.impressions, b.impressions))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.clicks, b.clicks, formatNumber, comparisonRelative(a.clicks, b.clicks))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.ctr, b.ctr, formatCtr, comparisonPoints(a.ctr, b.ctr), "points")}</td>
+          <td class="num compare-cell">${comparisonTableValue(passingIndex(a), passingIndex(b), formatPi, comparisonPoints(passingIndex(a), passingIndex(b)), "points", false, piClass(passingIndex(a)))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.factBudget, b.factBudget, formatMoney, comparisonRelative(a.factBudget, b.factBudget))}</td>
           <td class="num compare-cell">${comparisonTableValue(a.factCpm, b.factCpm, formatCost, comparisonRelative(a.factCpm, b.factCpm), "relative", true)}</td>
           <td class="num compare-cell">${comparisonTableValue(a.factCpc, b.factCpc, formatCost, comparisonRelative(a.factCpc, b.factCpc), "relative", true)}</td>
@@ -6718,6 +6758,7 @@ body.help-open { overflow: hidden; }
                 <th class="num">Показы</th>
                 <th class="num">Клики</th>
                 <th class="num">CTR</th>
+                <th class="num">PI%</th>
                 <th class="num">Бюджет</th>
                 <th class="num">CPM</th>
                 <th class="num">CPC</th>
@@ -6942,6 +6983,7 @@ body.help-open { overflow: hidden; }
         <div class="metric"><div class="metric-label">Показы</div>${formatFactWithDelta(metrics.impressions, metrics.impressionsPlanRatio)}</div>
         <div class="metric"><div class="metric-label">Клики</div>${formatFactWithDelta(metrics.clicks, metrics.clicksPlanRatio)}</div>
         <div class="metric"><div class="metric-label">CTR</div>${formatFactWithDelta(metrics.ctr, metrics.ctrPlanRatio, formatCtr)}</div>
+        <div class="metric"><div class="metric-label">PI%</div><div class="metric-value ${piClass(passingIndex(metrics))}">${formatPi(passingIndex(metrics))}</div></div>
         <div class="metric cost-metric"><div class="metric-label">Бюджет</div>${formatFactWithDelta(metrics.factBudget, metrics.budgetPlanRatio, formatMoney)}</div>
         <div class="metric cost-metric"><div class="metric-label">CPM</div>${formatFactWithDelta(metrics.factCpm, metrics.cpmPlanRatio, formatCost, true)}</div>
         <div class="metric cost-metric"><div class="metric-label">CPC</div>${formatFactWithDelta(metrics.factCpc, metrics.cpcPlanRatio, formatCost, true)}</div>
@@ -6957,6 +6999,7 @@ body.help-open { overflow: hidden; }
         <div class="metric"><div class="metric-label">Показы</div>${formatFactWithDelta(metrics.impressions, metrics.impressionsPlanRatio)}</div>
         <div class="metric"><div class="metric-label">Клики</div>${formatFactWithDelta(metrics.clicks, metrics.clicksPlanRatio)}</div>
         <div class="metric"><div class="metric-label">CTR</div>${formatFactWithDelta(metrics.ctr, metrics.ctrPlanRatio, formatCtr)}</div>
+        <div class="metric"><div class="metric-label">PI%</div><div class="metric-value ${piClass(passingIndex(metrics))}">${formatPi(passingIndex(metrics))}</div></div>
         <div class="metric cost-metric"><div class="metric-label">Бюджет</div>${formatFactWithDelta(metrics.factBudget, metrics.budgetPlanRatio, formatMoney)}</div>
         <div class="metric cost-metric"><div class="metric-label">CPM</div>${formatFactWithDelta(metrics.factCpm, metrics.cpmPlanRatio, formatCost, true)}</div>
         <div class="metric cost-metric"><div class="metric-label">CPC</div>${formatFactWithDelta(metrics.factCpc, metrics.cpcPlanRatio, formatCost, true)}</div>
@@ -7060,6 +7103,7 @@ body.help-open { overflow: hidden; }
                 <th class="num">Показы</th>
                 <th class="num">Клики</th>
                 <th class="num">CTR</th>
+                <th class="num">PI%</th>
                 <th class="num">Бюджет</th>
                 <th class="num">CPM</th>
                 <th class="num">CPC</th>
@@ -7082,6 +7126,7 @@ body.help-open { overflow: hidden; }
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.impressions, format.metrics.impressionsPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.clicks, format.metrics.clicksPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.ctr, format.metrics.ctrPlanRatio, formatCtr)}</td>
+          <td class="num ${piClass(passingIndex(format.metrics))}">${formatPi(passingIndex(format.metrics))}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.factBudget, format.metrics.budgetPlanRatio, formatMoney)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.factCpm, format.metrics.cpmPlanRatio, formatCost, true)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(format.metrics.factCpc, format.metrics.cpcPlanRatio, formatCost, true)}</td>
@@ -7140,6 +7185,7 @@ body.help-open { overflow: hidden; }
                 <th class="num">Показы</th>
                 <th class="num">Клики</th>
                 <th class="num">CTR</th>
+                <th class="num">PI%</th>
                 <th class="num">Бюджет</th>
                 <th class="num">CPM</th>
                 <th class="num">CPC</th>
@@ -7180,6 +7226,7 @@ body.help-open { overflow: hidden; }
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.impressions, displayMetrics.impressionsPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.clicks, displayMetrics.clicksPlanRatio)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.ctr, displayMetrics.ctrPlanRatio, formatCtr)}</td>
+          <td class="num ${piClass(passingIndex(displayMetrics))}">${formatPi(passingIndex(displayMetrics))}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.factBudget, displayMetrics.budgetPlanRatio, formatMoney)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.factCpm, displayMetrics.cpmPlanRatio, formatCost, true)}</td>
           <td class="num fact-plan-cell">${formatTableFactWithDelta(displayMetrics.factCpc, displayMetrics.cpcPlanRatio, formatCost, true)}</td>
@@ -7875,6 +7922,8 @@ body.help-open { overflow: hidden; }
         totalIvtElement.className = "kpi-value";
         const totalCtrElement = document.getElementById("totalCtr");
         if (totalCtrElement) { totalCtrElement.textContent = "—"; totalCtrElement.className = "kpi-value"; }
+        const totalPiElement = document.getElementById("totalPi");
+        if (totalPiElement) { totalPiElement.textContent = "—"; totalPiElement.className = "kpi-value"; }
         document.getElementById("periodBadge").textContent = "Файл не загружен";
         fitSummaryKpiValues();
         return;
@@ -7895,6 +7944,12 @@ body.help-open { overflow: hidden; }
       if (totalCtrElement) {
         totalCtrElement.textContent = formatCtr(DATA.total.ctr);
         totalCtrElement.className = `kpi-value ${ctrPlanClass(DATA.total)}`;
+      }
+      const totalPiElement = document.getElementById("totalPi");
+      if (totalPiElement) {
+        const totalPi = passingIndex(DATA.total);
+        totalPiElement.textContent = formatPi(totalPi);
+        totalPiElement.className = `kpi-value ${piClass(totalPi)}`;
       }
 
       const start = formatDate(DATA.dates[0]);
@@ -10662,6 +10717,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
           "Фактические показы": item.impressions,
           "Фактические клики": item.clicks,
           "Фактические визиты": item.visits,
+          "PI%": item.clicks ? item.visits / item.clicks : null,
           "Фактический бюджет": factBudget
         };
       }).sort((a, b) =>
@@ -10696,7 +10752,10 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
         item["Фактический бюджет"] += row["Фактический бюджет"] || 0;
       });
 
-      return Array.from(store.values()).sort(
+      return Array.from(store.values()).map(item => ({
+        ...item,
+        "PI%": item["Фактические клики"] ? item["Фактические визиты"] / item["Фактические клики"] : null
+      })).sort(
         (a, b) => (b["Фактические визиты"] || 0) - (a["Фактические визиты"] || 0)
       );
     }
@@ -10731,6 +10790,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
           const cell = sheet[XLSX.utils.encode_cell({ r: row, c: col })];
           if (!cell) continue;
           if (header === "Фактический бюджет") cell.z = '#,##0" ₽"';
+          if (header === "PI%") cell.z = "0%";
           if (["Фактические показы","Фактические клики","Фактические визиты"].includes(header)) {
             cell.z = "#,##0";
           }
