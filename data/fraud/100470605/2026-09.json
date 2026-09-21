@@ -4,8 +4,8 @@
   "counterName": "business.level.ru",
   "month": "2026-09",
   "from": "2026-09-01",
-  "to": "2026-09-19",
-  "generatedAt": "2026-09-20T08:45:56.299788Z",
+  "to": "2026-09-20",
+  "generatedAt": "2026-09-21T09:13:06.881255Z",
   "source": "Yandex Metrica Logs API",
   "campaignFilter": [
     "prg",
@@ -14,10 +14,10 @@
   ],
   "privacy": "Only daily aggregates are stored; raw IP, ClientID and VisitID are discarded.",
   "summary": {
-    "visits": 35229,
-    "dailySourceRows": 126,
-    "sources": 14,
-    "days": 16
+    "visits": 36584,
+    "dailySourceRows": 134,
+    "sources": 15,
+    "days": 17
   },
   "rows": [
     {
@@ -9994,7 +9994,7 @@
         "share": 0.125
       },
       "topProfile": {
-        "key": "yandex_browser 26.8 · android_16 · 2 · 370x822",
+        "key": "chromemobile 152 · android_13 · 2 · 360x800",
         "value": 1,
         "share": 0.025
       },
@@ -10434,7 +10434,7 @@
         "share": 0.14473684210526316
       },
       "topProfile": {
-        "key": "chromemobile 153 · android_16 · 2 · 384x854",
+        "key": "yandex_browser 26.8 · android_16 · 2 · 339x735",
         "value": 2,
         "share": 0.02631578947368421
       },
@@ -10610,7 +10610,7 @@
         "share": 0.17543859649122806
       },
       "topProfile": {
-        "key": "safari_mobile 26.6 · ios26 · 2 · 414x896",
+        "key": "samsung_internet 30 · android_16 · 2 · 384x832",
         "value": 2,
         "share": 0.03508771929824561
       },
@@ -11040,7 +11040,7 @@
         "primary": 0.0
       },
       "topBrowser": {
-        "key": "miui 14.62",
+        "key": "yandex_browser 25.4",
         "value": 3,
         "share": 0.13043478260869565
       },
@@ -11171,6 +11171,710 @@
         "highRiskVisits": 0,
         "reviewVisits": 0,
         "lowRiskVisits": 61,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "adspector",
+      "date": "2026-09-20",
+      "visits": 1,
+      "tech": {
+        "visits": 1,
+        "users": 1,
+        "bounce": 0.0,
+        "time": 25.0,
+        "newShare": 1.0,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 1,
+        "users": 1,
+        "bounce": 0.0,
+        "time": 25.0,
+        "newShare": 1.0,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 1,
+        "users": 1,
+        "bounce": 0.0,
+        "time": 25.0,
+        "newShare": 1.0,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "yandex_browser 26.3",
+        "value": 1,
+        "share": 1.0
+      },
+      "topResolution": {
+        "key": "360x800",
+        "value": 1,
+        "share": 1.0
+      },
+      "topProfile": {
+        "key": "yandex_browser 26.3 · android_11 · 2 · 360x800",
+        "value": 1,
+        "share": 1.0
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 1.0
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 1.0
+      },
+      "clientIdVisits": 1,
+      "uniqueClientIds": 1,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 1.0
+      },
+      "top10ClientShare": 1.0,
+      "visitsPerClientId": 1.0,
+      "repeatClientVisitShare": 0.0,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.0,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 1,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 1,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "alfabank",
+      "date": "2026-09-20",
+      "visits": 50,
+      "tech": {
+        "visits": 50,
+        "users": 49,
+        "bounce": 0.54,
+        "time": 50.98,
+        "newShare": 0.92,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 50,
+        "users": 49,
+        "bounce": 0.54,
+        "time": 50.98,
+        "newShare": 0.92,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 50,
+        "users": 49,
+        "bounce": 0.54,
+        "time": 50.98,
+        "newShare": 0.92,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "chromemobile 153",
+        "value": 8,
+        "share": 0.16
+      },
+      "topResolution": {
+        "key": "360x800",
+        "value": 8,
+        "share": 0.16
+      },
+      "topProfile": {
+        "key": "chromemobile 152 · android_13 · 2 · 360x806",
+        "value": 2,
+        "share": 0.04
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.04
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.04
+      },
+      "clientIdVisits": 50,
+      "uniqueClientIds": 49,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.04
+      },
+      "top10ClientShare": 0.22,
+      "visitsPerClientId": 1.0204081632653061,
+      "repeatClientVisitShare": 0.02,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.26,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 50,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 50,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "mobidriven",
+      "date": "2026-09-20",
+      "visits": 1,
+      "tech": {
+        "visits": 1,
+        "users": 1,
+        "bounce": 1.0,
+        "time": 0.0,
+        "newShare": 1.0,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 1,
+        "users": 1,
+        "bounce": 1.0,
+        "time": 0.0,
+        "newShare": 1.0,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 1,
+        "users": 1,
+        "bounce": 1.0,
+        "time": 0.0,
+        "newShare": 1.0,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "android_browser 15",
+        "value": 1,
+        "share": 1.0
+      },
+      "topResolution": {
+        "key": "393x895",
+        "value": 1,
+        "share": 1.0
+      },
+      "topProfile": {
+        "key": "android_browser 15 · android_15 · 2 · 393x895",
+        "value": 1,
+        "share": 1.0
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 1.0
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 1.0
+      },
+      "clientIdVisits": 1,
+      "uniqueClientIds": 1,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 1.0
+      },
+      "top10ClientShare": 1.0,
+      "visitsPerClientId": 1.0,
+      "repeatClientVisitShare": 0.0,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 1.0,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 1,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 1,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "mts",
+      "date": "2026-09-20",
+      "visits": 1126,
+      "tech": {
+        "visits": 1126,
+        "users": 1122,
+        "bounce": 0.3046181172291297,
+        "time": 101.68117229129662,
+        "newShare": 0.9955595026642984,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 1126,
+        "users": 1122,
+        "bounce": 0.3046181172291297,
+        "time": 101.68117229129662,
+        "newShare": 0.9955595026642984,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 1126,
+        "users": 1122,
+        "bounce": 0.3046181172291297,
+        "time": 101.68117229129662,
+        "newShare": 0.9955595026642984,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "yandex_browser 26.3",
+        "value": 593,
+        "share": 0.5266429840142096
+      },
+      "topResolution": {
+        "key": "1920x1080",
+        "value": 383,
+        "share": 0.3401420959147424
+      },
+      "topProfile": {
+        "key": "yandex_browser 26.3 · android_14 · 2 · 412x892",
+        "value": 141,
+        "share": 0.12522202486678508
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 18,
+        "share": 0.015985790408525755
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 18,
+        "share": 0.015985790408525755
+      },
+      "clientIdVisits": 1126,
+      "uniqueClientIds": 1098,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 3,
+        "share": 0.0026642984014209592
+      },
+      "top10ClientShare": 0.018650088809946713,
+      "visitsPerClientId": 1.0255009107468125,
+      "repeatClientVisitShare": 0.02486678507992895,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.0008880994671403197,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 1126,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 1126,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Высокая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "t-invest",
+      "date": "2026-09-20",
+      "visits": 2,
+      "tech": {
+        "visits": 2,
+        "users": 2,
+        "bounce": 0.5,
+        "time": 13.0,
+        "newShare": 0.5,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 2,
+        "users": 2,
+        "bounce": 0.5,
+        "time": 13.0,
+        "newShare": 0.5,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 2,
+        "users": 2,
+        "bounce": 0.5,
+        "time": 13.0,
+        "newShare": 0.5,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "yasearchapp 26.83",
+        "value": 1,
+        "share": 0.5
+      },
+      "topResolution": {
+        "key": "360x820",
+        "value": 1,
+        "share": 0.5
+      },
+      "topProfile": {
+        "key": "yasearchapp 26.83 · android_14 · 2 · 360x820",
+        "value": 1,
+        "share": 0.5
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 0.5
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 0.5
+      },
+      "clientIdVisits": 2,
+      "uniqueClientIds": 2,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 1,
+        "share": 0.5
+      },
+      "top10ClientShare": 1.0,
+      "visitsPerClientId": 1.0,
+      "repeatClientVisitShare": 0.0,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.5,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 2,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 2,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "voxexchange",
+      "date": "2026-09-20",
+      "visits": 83,
+      "tech": {
+        "visits": 83,
+        "users": 80,
+        "bounce": 0.43373493975903615,
+        "time": 100.89156626506023,
+        "newShare": 0.8795180722891566,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 83,
+        "users": 80,
+        "bounce": 0.43373493975903615,
+        "time": 100.89156626506023,
+        "newShare": 0.8795180722891566,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 83,
+        "users": 80,
+        "bounce": 0.43373493975903615,
+        "time": 100.89156626506023,
+        "newShare": 0.8795180722891566,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "chromemobile 153",
+        "value": 22,
+        "share": 0.26506024096385544
+      },
+      "topResolution": {
+        "key": "393x873",
+        "value": 12,
+        "share": 0.14457831325301204
+      },
+      "topProfile": {
+        "key": "chromemobile 153 · android_12 · 2 · 393x873",
+        "value": 3,
+        "share": 0.03614457831325301
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.024096385542168676
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.024096385542168676
+      },
+      "clientIdVisits": 83,
+      "uniqueClientIds": 80,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 3,
+        "share": 0.03614457831325301
+      },
+      "top10ClientShare": 0.1566265060240964,
+      "visitsPerClientId": 1.0375,
+      "repeatClientVisitShare": 0.03614457831325301,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.2891566265060241,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 83,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 83,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "yabbi",
+      "date": "2026-09-20",
+      "visits": 22,
+      "tech": {
+        "visits": 22,
+        "users": 18,
+        "bounce": 0.6363636363636364,
+        "time": 108.0,
+        "newShare": 0.7727272727272727,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 22,
+        "users": 18,
+        "bounce": 0.6363636363636364,
+        "time": 108.0,
+        "newShare": 0.7727272727272727,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 22,
+        "users": 18,
+        "bounce": 0.6363636363636364,
+        "time": 108.0,
+        "newShare": 0.7727272727272727,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "samsung_internet 29",
+        "value": 3,
+        "share": 0.13636363636363635
+      },
+      "topResolution": {
+        "key": "360x640",
+        "value": 5,
+        "share": 0.22727272727272727
+      },
+      "topProfile": {
+        "key": "samsung_internet 29 · android_11 · 2 · 412x892",
+        "value": 3,
+        "share": 0.13636363636363635
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.09090909090909091
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 2,
+        "share": 0.09090909090909091
+      },
+      "clientIdVisits": 22,
+      "uniqueClientIds": 18,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 3,
+        "share": 0.13636363636363635
+      },
+      "top10ClientShare": 0.6363636363636364,
+      "visitsPerClientId": 1.2222222222222223,
+      "repeatClientVisitShare": 0.18181818181818182,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.22727272727272727,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 22,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 22,
+        "suspiciousVisits": 0,
+        "suspiciousShare": 0.0,
+        "confidence": "Низкая",
+        "comment": "Выраженных сочетаний признаков на уровне отдельных визитов не найдено.",
+        "reasons": [],
+        "method": "rule-based visit clusters v1"
+      },
+      "automationVisits": 0,
+      "automationShare": 0.0,
+      "automation": false,
+      "concentrationScope": "daily",
+      "dataSource": "yandex-metrica-logs-api"
+    },
+    {
+      "source": "yandex",
+      "date": "2026-09-20",
+      "visits": 70,
+      "tech": {
+        "visits": 70,
+        "users": 62,
+        "bounce": 0.4142857142857143,
+        "time": 124.72857142857143,
+        "newShare": 0.8285714285714286,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "ip": {
+        "visits": 70,
+        "users": 62,
+        "bounce": 0.4142857142857143,
+        "time": 124.72857142857143,
+        "newShare": 0.8285714285714286,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "metrics": {
+        "visits": 70,
+        "users": 62,
+        "bounce": 0.4142857142857143,
+        "time": 124.72857142857143,
+        "newShare": 0.8285714285714286,
+        "quality": 0.0,
+        "primary": 0.0
+      },
+      "topBrowser": {
+        "key": "chromemobile 153",
+        "value": 10,
+        "share": 0.14285714285714285
+      },
+      "topResolution": {
+        "key": "360x800",
+        "value": 8,
+        "share": 0.11428571428571428
+      },
+      "topProfile": {
+        "key": "chromemobile 152 · android_16 · 2 · 825x360",
+        "value": 4,
+        "share": 0.05714285714285714
+      },
+      "topIp": {
+        "key": "скрыто",
+        "value": 5,
+        "share": 0.07142857142857142
+      },
+      "topSubnet": {
+        "key": "скрыто",
+        "value": 5,
+        "share": 0.07142857142857142
+      },
+      "clientIdVisits": 70,
+      "uniqueClientIds": 62,
+      "topClientId": {
+        "key": "скрыто",
+        "value": 5,
+        "share": 0.07142857142857142
+      },
+      "top10ClientShare": 0.2571428571428571,
+      "visitsPerClientId": 1.1290322580645162,
+      "repeatClientVisitShare": 0.11428571428571428,
+      "clientIdCoverage": 1.0,
+      "ipv6Share": 0.18571428571428572,
+      "unknownBrowserShare": 0.0,
+      "cookieEnabledShare": 1.0,
+      "visitRisk": {
+        "classifiedVisits": 70,
+        "highRiskVisits": 0,
+        "reviewVisits": 0,
+        "lowRiskVisits": 70,
         "suspiciousVisits": 0,
         "suspiciousShare": 0.0,
         "confidence": "Низкая",
