@@ -909,7 +909,7 @@
       left: 0;
       right: 0;
       bottom: var(--benchmark-position, 58.7%);
-      border-top: 1px dashed rgba(139,45,58,0.40);
+      border-top: 1px dashed rgba(139,45,58,0.24);
       pointer-events: none;
     }
 
@@ -929,7 +929,7 @@
       left: 0;
       right: 0;
       bottom: var(--benchmark-position, 50%);
-      border-top: 1px dashed rgba(47,125,90,0.42);
+      border-top: 1px dashed rgba(47,125,90,0.25);
       pointer-events: none;
     }
 
@@ -939,7 +939,7 @@
       left: 0;
       right: 0;
       bottom: var(--benchmark-position, 50%);
-      border-top: 1px dashed rgba(200,107,45,0.46);
+      border-top: 1px dashed rgba(200,107,45,0.28);
       pointer-events: none;
     }
 
@@ -961,7 +961,7 @@
       left: 0;
       right: 0;
       bottom: var(--benchmark-position, 58.7%);
-      border-top: 1px dashed rgba(139,45,58,0.38);
+      border-top: 1px dashed rgba(139,45,58,0.22);
       pointer-events: none;
     }
 
@@ -981,7 +981,7 @@
       left: 0;
       right: 0;
       bottom: var(--benchmark-position, 50%);
-      border-top: 1px dashed rgba(47,125,90,0.40);
+      border-top: 1px dashed rgba(47,125,90,0.24);
       pointer-events: none;
     }
 
@@ -991,7 +991,7 @@
       left: 0;
       right: 0;
       bottom: var(--benchmark-position, 50%);
-      border-top: 1px dashed rgba(200,107,45,0.44);
+      border-top: 1px dashed rgba(200,107,45,0.26);
       pointer-events: none;
     }
 
@@ -1063,6 +1063,9 @@
     }
 
     .platform-name {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 15px;
       font-weight: 800;
       letter-spacing: -0.03em;
@@ -2763,8 +2766,8 @@ details.project-card > summary{
 
 .metric-inline-spark{
   width:100%;
-  height:20px;
-  margin-top:6px;
+  height:22px;
+  margin-top:4px;
 }
 
 .metric-inline-spark .bar-spark,
@@ -2774,7 +2777,7 @@ details.project-card > summary{
   width:100%!important;
   min-width:0!important;
   max-width:none!important;
-  height:20px!important;
+  height:22px!important;
   margin:0!important;
   gap:2px!important;
 }
@@ -7179,7 +7182,7 @@ body.help-open { overflow: hidden; }
         : ` style="--benchmark-position:${Math.min(100, Math.max(0, benchmark / max * 100)).toFixed(3)}%"`;
 
       const bars = clean.map((value) => {
-        const minHeight = type === "ivt" && value > 0 ? 14 : 8;
+        const minHeight = type === "ivt" && value > 0 ? 22 : 18;
         const height = Math.max(minHeight, Math.min(100, Math.round((value / max) * 100)));
         const title = type === "bounce"
           ? `${formatPercent(value)} отказов`
