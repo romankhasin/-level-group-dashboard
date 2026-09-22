@@ -3574,6 +3574,20 @@ body.help-open { overflow: hidden; }
   font-weight: 650;
 }
 
+.period-range-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+
+.period-range-apply-top {
+  min-height: 34px;
+  padding: 0 16px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .period-range-nav { display: flex; gap: 7px; }
 .period-range-nav button {
   width: 34px;
@@ -3909,9 +3923,12 @@ body.help-open { overflow: hidden; }
                 <strong>Выберите период</strong>
                 <span id="periodRangeHint">Сначала начало, затем конец</span>
               </div>
-              <div class="period-range-nav">
-                <button type="button" id="periodRangePrev" aria-label="Предыдущий месяц">←</button>
-                <button type="button" id="periodRangeNext" aria-label="Следующий месяц">→</button>
+              <div class="period-range-head-actions">
+                <button class="button primary period-range-apply-top" id="applyPeriodTop" type="button" disabled>Применить</button>
+                <div class="period-range-nav">
+                  <button type="button" id="periodRangePrev" aria-label="Предыдущий месяц">←</button>
+                  <button type="button" id="periodRangeNext" aria-label="Следующий месяц">→</button>
+                </div>
               </div>
             </div>
             <div class="period-range-months" id="periodRangeMonths"></div>
@@ -4956,6 +4973,7 @@ body.help-open { overflow: hidden; }
       const hint = document.getElementById("periodRangeHint");
       const draft = document.getElementById("periodRangeDraft");
       const apply = document.getElementById("applyPeriod");
+      const applyTop = document.getElementById("applyPeriodTop");
       const from = RANGE_PICKER_STATE.draftFrom;
       const to = RANGE_PICKER_STATE.draftTo;
 
@@ -4968,6 +4986,7 @@ body.help-open { overflow: hidden; }
         ? `${formatRangePickerDate(from)}${to ? ` — ${formatRangePickerDate(to)}` : " — …"}`
         : "Диапазон не выбран";
       if (apply) apply.disabled = !(from && to);
+      if (applyTop) applyTop.disabled = !(from && to);
     }
 
     function renderRangePicker() {
@@ -11353,14 +11372,17 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       button.addEventListener("click", () => applyRangePickerPreset(button.dataset.rangePreset));
     });
 
-    document.getElementById("applyPeriod").addEventListener("click", () => {
+    function applySelectedPeriodRange() {
       if (!RANGE_PICKER_STATE.draftFrom || !RANGE_PICKER_STATE.draftTo) return;
       PERIOD_FILTER.from = RANGE_PICKER_STATE.draftFrom;
       PERIOD_FILTER.to = RANGE_PICKER_STATE.draftTo;
       syncPeriodRangeUi();
       closePeriodRangePicker();
       refreshDashboard();
-    });
+    }
+
+    document.getElementById("applyPeriod").addEventListener("click", applySelectedPeriodRange);
+    document.getElementById("applyPeriodTop").addEventListener("click", applySelectedPeriodRange);
 
     document.getElementById("resetPeriod").addEventListener("click", () => {
       PERIOD_FILTER.from = "";
