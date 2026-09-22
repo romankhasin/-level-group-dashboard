@@ -44,6 +44,16 @@ ALTERNATIVE_LANDING_HOSTS = frozenset({
     "work-nizhegorodskaya.level.ru",
     "pavcity.level.ru",
 })
+# Keep the complete set explicit: these five counters feed the main report.
+# The three landing-specific counters are normalized below so their visits are
+# attributed to the correct project without duplicating them in 53197618.
+METRIKA_COUNTER_IDS = (
+    53197618,
+    100470605,
+    110064588,
+    110064048,
+    102348376,
+)
 COUNTER_CONFIGS = {
     # The legacy counters remain the source for their own domains.  The three
     # alternative landings have their own counters and must not be counted a
@@ -54,7 +64,7 @@ COUNTER_CONFIGS = {
     110064048: {"landing_host": "work-nizhegorodskaya.level.ru"},
     102348376: {"landing_host": "pavcity.level.ru"},
 }
-COUNTER_IDS = tuple(COUNTER_CONFIGS)
+COUNTER_IDS = METRIKA_COUNTER_IDS
 METRIKA_QUALITY_CALL_GOAL_IDS = {
     53197618: 411053186,
     100470605: 411053614,
@@ -243,12 +253,21 @@ def build_startup_summary(latest: dict) -> dict:
     """
     raw_rows = latest.get("rawRows") or []
     verifier_rows = latest.get("verifierRows") or []
+    metrika_status = (latest.get("status") or {}).get("metrika") or {}
+    counter_ids = metrika_status.get("counterIds") or [
+        int(counter_id)
+        for counter_id in (metrika_status.get("ranges") or {})
+        if str(counter_id).isdigit()
+    ]
     return {
         "version": 1,
         "generatedAt": latest.get("generatedAt"),
         "period": latest.get("period") or {},
         "sourceFile": latest.get("sourceFile"),
         "status": {
+            "metrika": {
+                "counterIds": sorted(set(counter_ids)),
+            },
             "targetads": {
                 "enabled": bool((latest.get("status") or {}).get("targetads", {}).get("enabled")),
                 "mode": (latest.get("status") or {}).get("targetads", {}).get("mode"),
@@ -488,7 +507,12 @@ def update_metrika(token: str, yesterday: dt.date) -> tuple[list[dict], dict]:
         ),
     )
     write_json(METRIKA_HISTORY_PATH, {"rows": rows})
-    return rows, {"new_rows": fetched_count, "total_rows": len(rows), "ranges": ranges}
+    return rows, {
+        "new_rows": fetched_count,
+        "total_rows": len(rows),
+        "counterIds": list(COUNTER_IDS),
+        "ranges": ranges,
+    }
 
 
 def cell_date(value: object) -> dt.date | None:
