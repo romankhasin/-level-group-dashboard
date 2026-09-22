@@ -350,7 +350,7 @@
       font-size: clamp(28px, 4vw, 42px);
       line-height: 1;
       letter-spacing: -0.065em;
-      font-weight: 750;
+      font-weight: 650;
     }
 
     .kpi-note {
@@ -8048,16 +8048,28 @@ body.help-open { overflow: hidden; }
 
     function fitSummaryKpiValues() {
       window.requestAnimationFrame(() => {
-        document.querySelectorAll(".kpi-grid .kpi-value").forEach(element => {
-          element.style.fontSize = "";
+        const elements = Array.from(document.querySelectorAll(".kpi-grid .kpi-value"));
+        elements.forEach(element => { element.style.fontSize = ""; });
+
+        // Every KPI value shares one font size, picked as the smallest size
+        // any single card needs to avoid overflow — otherwise cards with a
+        // short number (e.g. "16") render much larger than cards with a
+        // long one (e.g. "43 263 775"), which reads as an inconsistent,
+        // accidental hierarchy rather than a deliberate one.
+        let sharedSize = null;
+        elements.forEach(element => {
           const availableWidth = element.clientWidth;
           const naturalWidth = element.scrollWidth;
           if (!availableWidth || naturalWidth <= availableWidth) return;
 
           const baseSize = Number.parseFloat(window.getComputedStyle(element).fontSize) || 42;
           const fittedSize = Math.max(24, Math.floor(baseSize * availableWidth / naturalWidth));
-          element.style.fontSize = `${fittedSize}px`;
+          sharedSize = sharedSize === null ? fittedSize : Math.min(sharedSize, fittedSize);
         });
+
+        if (sharedSize !== null) {
+          elements.forEach(element => { element.style.fontSize = `${sharedSize}px`; });
+        }
       });
     }
 
