@@ -199,6 +199,75 @@
       margin: 0 0 14px;
     }
 
+    .data-load-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 0 0 18px;
+      padding: 16px 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(199,160,90,0.5);
+      background: linear-gradient(135deg, rgba(199,160,90,0.16), rgba(221,236,246,0.28));
+    }
+
+    .data-load-banner[hidden] {
+      display: none !important;
+    }
+
+    .data-load-banner-text {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 220px;
+      flex: 1 1 320px;
+    }
+
+    .data-load-banner-text strong {
+      font-size: 14px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .data-load-banner-text span {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .button.cta-primary {
+      flex: 0 0 auto;
+      min-height: 44px;
+      padding: 0 22px;
+      border: none;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--gold), var(--bronze));
+      color: #fff;
+      font-family: "Montserrat", sans-serif;
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(156,107,67,0.3);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+
+    .button.cta-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(156,107,67,0.36);
+    }
+
+    .button.cta-primary:disabled {
+      opacity: 0.7;
+      cursor: progress;
+      transform: none;
+    }
+
+    .kpi-grid.is-pending .kpi-value {
+      opacity: 0.32;
+    }
+
     .panel-disclosure.attention-disclosure {
       margin-top: 18px;
     }
@@ -293,11 +362,36 @@
     }
 
     .toolbar {
-      display: grid;
-      grid-template-columns: 1fr auto auto auto auto auto auto;
+      display: flex;
+      flex-wrap: wrap;
       gap: 12px;
       margin: 4px 0 22px;
       align-items: center;
+    }
+
+    .toolbar .search {
+      flex: 1 1 240px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 0 0 auto;
+      padding: 0 12px;
+      border-left: 1px solid var(--line);
+    }
+
+    .toolbar-group:first-of-type {
+      border-left: none;
+      padding-left: 0;
+    }
+
+    @media (max-width: 900px) {
+      .toolbar-group {
+        border-left: none;
+        padding: 0;
+      }
     }
 
     .period-card {
@@ -702,6 +796,34 @@
       display: none;
     }
 
+    .disclosure-chevron {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      color: var(--bronze);
+      opacity: 0.75;
+    }
+
+    .disclosure-chevron::before {
+      content: "";
+      display: block;
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg);
+      transition: transform 0.2s ease;
+      margin-top: -3px;
+    }
+
+    details[open] > summary .disclosure-chevron::before {
+      transform: rotate(-135deg);
+      margin-top: 3px;
+    }
+
     .project-main { min-width: 0; }
 
     .project-name {
@@ -905,6 +1027,19 @@
       color: var(--orange);
     }
 
+    /* Status is conveyed by color for sighted users with normal color vision;
+       these markers repeat "needs attention" as shape/text so the signal
+       still reads for colorblind users and in print/grayscale. */
+    .value-warn::before {
+      content: "\25CF\FE0E ";
+      font-size: 0.85em;
+    }
+
+    .value-bad::before {
+      content: "\25B2\FE0E ";
+      font-size: 0.8em;
+    }
+
     .project-body {
       padding: 2px 18px 18px;
     }
@@ -1084,12 +1219,16 @@
     @media (max-width: 620px) {
       .panel { padding: 18px; }
 
-      .kpi-grid, .metric-row, .platform-metrics { grid-template-columns: 1fr; }
+      .metric-row, .platform-metrics { grid-template-columns: 1fr; }
+
+      .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
       .kpi-grid .kpi,
       .kpi-grid .kpi:nth-child(4),
       .kpi-grid .kpi:nth-child(5) {
-        grid-column: auto;
+        grid-column: span 1;
       }
+      .kpi { padding: 14px; min-height: 92px; }
+      .kpi-value { font-size: 22px; }
 
       .format-table { min-width: 880px; }
 
@@ -1385,7 +1524,7 @@
   }
 
   .kpi-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .kpi {
@@ -1393,7 +1532,7 @@
   }
 
   .kpi-value {
-    font-size: 32px;
+    font-size: 20px;
   }
 
   .summary-list {
@@ -2007,6 +2146,8 @@ body.client-view #openTargetingCreative {
 .ctr-plan-good { color: var(--green) !important; }
 .ctr-plan-warn { color: var(--amber) !important; }
 .ctr-plan-bad { color: var(--orange) !important; }
+.ctr-plan-warn::before { content: "\25CF\FE0E "; font-size: 0.85em; }
+.ctr-plan-bad::before { content: "\25B2\FE0E "; font-size: 0.8em; }
 
 .summary-text {
   font-size: 14px;
@@ -2806,6 +2947,8 @@ details.project-card > summary{
 .pi-good{color:var(--green)!important}
 .pi-warn{color:var(--amber)!important}
 .pi-bad{color:var(--red)!important}
+.pi-warn::before{content:"\25CF\FE0E ";font-size:0.85em}
+.pi-bad::before{content:"\25B2\FE0E ";font-size:0.8em}
 .compare-table-previous{
   margin-top:4px;
   font-size:9px;
@@ -3564,10 +3707,16 @@ body.help-open { overflow: hidden; }
 
   <main class="wrap">
     <div class="panel">
+      <div class="data-load-banner" id="dataLoadBanner" hidden role="status">
+        <div class="data-load-banner-text">
+          <strong>Детали отчёта ещё не загружены</strong>
+          <span id="dataLoadBannerDetail">Загружена только компактная сводка. Нажмите кнопку, чтобы построить полную аналитику по объектам и площадкам.</span>
+        </div>
+        <button class="button cta-primary" id="loadDashboardDetails" type="button">Загрузить детали отчёта</button>
+      </div>
       <div class="panel-disclosure">
         <button class="panel-disclosure-button" id="toggleBudgetMetrics" type="button" aria-pressed="false">Скрыть бюджеты</button>
         <button class="panel-disclosure-button" id="toggleTechnicalPanel" type="button" aria-expanded="false" aria-controls="technicalPanel">Показать ручную загрузку</button>
-        <button class="panel-disclosure-button" id="loadDashboardDetails" type="button" hidden>Загрузить детали отчёта</button>
       </div>
       <div class="collapsible-panel" id="technicalPanel" hidden>
       <div class="upload-grid">
@@ -3645,7 +3794,7 @@ body.help-open { overflow: hidden; }
       </div>
       </div>
 
-      <div class="kpi-grid">
+      <div class="kpi-grid is-pending" id="kpiGrid">
         <div class="kpi">
           <div class="kpi-label">Всего визитов</div>
           <div class="kpi-value" id="totalVisits">—</div>
@@ -3809,11 +3958,15 @@ body.help-open { overflow: hidden; }
 
       <div class="toolbar">
         <input class="search" id="searchInput" placeholder="Поиск по ЖК, площадке или формату" />
-        <button class="button" id="toggleHierarchy">Сортировка по Площадкам</button>
-        <button class="button compare-periods-button" id="openPeriodComparison" type="button">Сравнение периодов</button>
+        <div class="toolbar-group">
+          <button class="button" id="toggleHierarchy">Сортировка по Площадкам</button>
+          <button class="button compare-periods-button" id="openPeriodComparison" type="button">Сравнение периодов</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="button" id="toggleProjects">Развернуть всё</button>
+          <button class="button" id="togglePlatforms">Развернуть 2-й уровень</button>
+        </div>
         <button class="button help-button" id="openHelp" type="button">Справка</button>
-        <button class="button" id="toggleProjects">Развернуть всё</button>
-        <button class="button" id="togglePlatforms">Развернуть 2-й уровень</button>
       </div>
 
       <div class="section-title">
@@ -7058,6 +7211,7 @@ body.help-open { overflow: hidden; }
               <div class="project-name">
                 <span>${project.name}</span>
                 <span class="project-code">${project.code}</span>
+                <span class="disclosure-chevron" aria-hidden="true"></span>
               </div>
               <div class="project-sub">Средние показатели по объекту и всем площадкам</div>
             </div>
@@ -7080,7 +7234,7 @@ body.help-open { overflow: hidden; }
         <details class="platform" ${platformsOpen ? "open" : ""}>
           <summary>
             <div>
-              <div class="platform-name">${platform.name}</div>
+              <div class="platform-name">${platform.name}<span class="disclosure-chevron" aria-hidden="true"></span></div>
               <div class="platform-note">Площадка · ${platform.formats.length} формат(а)</div>
             </div>
             <div class="metric-row platform-metrics">
@@ -7140,6 +7294,7 @@ body.help-open { overflow: hidden; }
               <div class="project-name">
                 <span>${platform.name}</span>
                 <span class="project-code">${platform.code}</span>
+                <span class="disclosure-chevron" aria-hidden="true"></span>
               </div>
               <div class="project-sub">Площадка · форматы и объекты внутри</div>
             </div>
@@ -8845,6 +9000,9 @@ body.help-open { overflow: hidden; }
     }
 
     function refreshDashboard() {
+      const kpiGrid = document.getElementById("kpiGrid");
+      if (kpiGrid) kpiGrid.classList.toggle("is-pending", !RAW_ROWS);
+
       if (REPORT_MODE === "artcl") {
         updateReportModeUi();
         renderArticleDashboard();
@@ -10916,7 +11074,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
       const period = summary.period || {};
       const status = document.getElementById("uploadStatus");
-      const button = document.getElementById("loadDashboardDetails");
+      const banner = document.getElementById("dataLoadBanner");
+      const bannerDetail = document.getElementById("dataLoadBannerDetail");
       const summaryText = document.getElementById("executiveSummary");
       const badge = document.getElementById("periodBadge");
       const metrikaRows = Number(summary.counts && summary.counts.metrikaRows) || 0;
@@ -10932,7 +11091,10 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       if (summaryText) {
         summaryText.textContent = "Первый экран загружен без тяжёлых исходных данных. Нажмите «Загрузить детали отчёта», чтобы открыть разрезы по объектам, площадкам, периодам и экспорт.";
       }
-      if (button) button.hidden = false;
+      if (bannerDetail) {
+        bannerDetail.textContent = `Готова компактная сводка (${formatNumber(metrikaRows)} строк Метрики, ${formatNumber(verifierRows)} строк площадок). Нажмите кнопку, чтобы построить полную аналитику по объектам и площадкам — это может занять до минуты.`;
+      }
+      if (banner) banner.hidden = false;
     }
 
     async function loadStartupSummary() {
@@ -10974,15 +11136,81 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       });
     }
 
+    // The full report payload is tens of megabytes, so re-downloading it on
+    // every visit/reload is wasteful (and painful on mobile data). We cache
+    // the raw JSON in IndexedDB, keyed by its own generatedAt version, so a
+    // returning visitor on the same device/browser gets it back instantly
+    // without hitting the network again.
+    const REPORT_CACHE_DB = "level-dashboard-cache";
+    const REPORT_CACHE_STORE = "reports";
+    const REPORT_CACHE_KEY = "latest";
+
+    function openReportCacheDb() {
+      return new Promise((resolve, reject) => {
+        if (typeof indexedDB === "undefined") { reject(new Error("no indexedDB")); return; }
+        const request = indexedDB.open(REPORT_CACHE_DB, 1);
+        request.onupgradeneeded = () => {
+          if (!request.result.objectStoreNames.contains(REPORT_CACHE_STORE)) {
+            request.result.createObjectStore(REPORT_CACHE_STORE);
+          }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function getCachedReportPayload(version) {
+      try {
+        const db = await openReportCacheDb();
+        const record = await new Promise((resolve, reject) => {
+          const tx = db.transaction(REPORT_CACHE_STORE, "readonly");
+          const req = tx.objectStore(REPORT_CACHE_STORE).get(REPORT_CACHE_KEY);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => reject(req.error);
+        });
+        db.close();
+        if (!record || (version && record.version !== version)) return null;
+        return record.payload;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    async function putCachedReportPayload(version, payload) {
+      try {
+        const db = await openReportCacheDb();
+        await new Promise((resolve, reject) => {
+          const tx = db.transaction(REPORT_CACHE_STORE, "readwrite");
+          tx.objectStore(REPORT_CACHE_STORE).put({ version, payload }, REPORT_CACHE_KEY);
+          tx.oncomplete = resolve;
+          tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+      } catch (error) {
+        console.warn("Не удалось сохранить кэш отчёта в IndexedDB:", error);
+      }
+    }
+
+    async function hasCachedReportFor(version) {
+      if (!version) return false;
+      return Boolean(await getCachedReportPayload(version));
+    }
+
     async function loadAutomaticReportData() {
       if (EMBEDDED_REPORT_DATA || window.location.protocol === "file:") return false;
 
       try {
         const version = STARTUP_SUMMARY && STARTUP_SUMMARY.generatedAt;
-        const url = `data/latest.json${version ? `?v=${encodeURIComponent(version)}` : ""}`;
-        const response = await fetch(url, { cache: "default" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
+        let payload = version ? await getCachedReportPayload(version) : null;
+
+        if (!payload) {
+          const url = `data/latest.json${version ? `?v=${encodeURIComponent(version)}` : ""}`;
+          const response = await fetch(url, { cache: "default" });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          payload = await response.json();
+          if (version && payload) putCachedReportPayload(version, payload);
+        }
+
         const rawRows = expandCompactRows(payload && payload.rawRows);
         const verifierRows = expandCompactRows(payload && payload.verifierRows);
         if (!payload || !rawRows || !rawRows.length) return false;
@@ -11318,6 +11546,7 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
     applyEmbeddedReportData();
     const loadDetailsButton = document.getElementById("loadDashboardDetails");
+    const dataLoadBanner = document.getElementById("dataLoadBanner");
     let dashboardDetailsLoading = false;
 
     async function loadDashboardDetailsInBackground() {
@@ -11325,7 +11554,6 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
 
       dashboardDetailsLoading = true;
       if (loadDetailsButton) {
-        loadDetailsButton.hidden = false;
         loadDetailsButton.disabled = true;
         loadDetailsButton.textContent = "Загружаем детали…";
       }
@@ -11333,8 +11561,8 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
       const loaded = await loadAutomaticReportData();
       dashboardDetailsLoading = false;
 
+      if (dataLoadBanner) dataLoadBanner.hidden = loaded;
       if (loadDetailsButton) {
-        loadDetailsButton.hidden = loaded;
         loadDetailsButton.disabled = false;
         loadDetailsButton.textContent = loaded ? "Загрузить детали отчёта" : "Повторить загрузку деталей";
       }
@@ -11347,7 +11575,14 @@ h1{margin:0;font-size:clamp(42px,5vw,72px);line-height:.94;letter-spacing:-.07em
     }
 
     (async () => {
-      await loadStartupSummary();
+      const gotSummary = await loadStartupSummary();
+      // If we already have this exact report cached from a previous visit,
+      // restore it straight away instead of leaving the visitor to notice
+      // and click the banner — there is no fresh multi-megabyte download to
+      // ask permission for, so there's nothing to gain by waiting.
+      if (gotSummary && STARTUP_SUMMARY && await hasCachedReportFor(STARTUP_SUMMARY.generatedAt)) {
+        loadDashboardDetailsInBackground();
+      }
     })();
     document.addEventListener("click", event => {
       const target = event.target;
