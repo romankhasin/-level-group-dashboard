@@ -22,6 +22,7 @@
     h1{margin:12px 0 0;font-size:clamp(38px,6vw,72px);line-height:.95;letter-spacing:-.065em}
     .lead{max-width:780px;margin:20px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
     .period{display:inline-flex;margin-top:18px;padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.75);font-size:10px;font-weight:800;color:var(--muted)}
+    .period-select{margin-left:9px;border:0;background:transparent;color:var(--ink);font:inherit;font-weight:800;outline:none;cursor:pointer}
     .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:34px}
     .metric{padding:22px;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.92);box-shadow:var(--shadow)}
     .metric-label{color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
@@ -68,7 +69,7 @@
     <div class="eyebrow">Target Ads · Reach / Frequency</div>
     <h1>Охваты и частота</h1>
     <p class="lead">Дедуплицированный охват Level Group по Device ID: общий Total, каналы и отдельные объекты. Охваты дочерних строк не складываются — каждый уровень рассчитывается независимо.</p>
-    <div class="period" id="period">Загрузка периода…</div>
+    <div class="period"><span id="period">Загрузка периода…</span><select class="period-select" id="periodSelect" aria-label="Период отчёта"><option value="august">Август 2026</option><option value="september">1–20 сентября 2026</option></select></div>
 
     <section class="summary" aria-label="Итоги Level Group">
       <div class="metric"><div class="metric-label">Reach Total</div><div class="metric-value" id="totalReach">—</div><div class="metric-note">Уникальные Device ID за период</div></div>
@@ -100,7 +101,10 @@
   </main>
   <script src="../shared/navigation.js"></script>
   <script>
-    const DATA_URL = '../data/reach_frequency_july_2026.json';
+    const REPORTS = {
+      august: '../data/reach_frequency_august_2026.json',
+      september: '../data/reach_frequency_september_1_20_2026.json',
+    };
     const fmt = new Intl.NumberFormat('ru-RU');
     const pct = (v) => `${(v * 100).toFixed(1).replace('.', ',')}%`;
     const freq = (v) => v == null ? '—' : Number(v).toFixed(2).replace('.', ',');
@@ -144,7 +148,8 @@
     async function load(){
       const status = document.getElementById('status');
       try{
-        const res = await fetch(`${DATA_URL}?v=${Date.now()}`, {cache:'no-store'});
+        const selected = document.getElementById('periodSelect').value;
+        const res = await fetch(`${REPORTS[selected]}?v=${Date.now()}`, {cache:'no-store'});
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const total = data.total || {};
@@ -166,6 +171,7 @@
         status.textContent = `Не удалось загрузить отчёт: ${err.message}`;
       }
     }
+    document.getElementById('periodSelect').addEventListener('change', load);
     load();
   </script>
 </body>

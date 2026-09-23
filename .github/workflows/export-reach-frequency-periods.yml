@@ -1,0 +1,88 @@
+name: Export Reach Frequency August and September
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/export-reach-frequency-periods.yml"
+      - "scripts/reach_frequency_chunk_leafonly.py"
+      - "scripts/reach_frequency_merge_leafonly.py"
+      - "scripts/export_reach_frequency_july_leaf.py"
+      - "scripts/export_reach_frequency_july_fast.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: export-reach-frequency-periods
+  cancel-in-progress: false
+
+jobs:
+  chunk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - { report: august, idx: "01", start: "2026-08-01", end: "2026-08-04" }
+          - { report: august, idx: "02", start: "2026-08-05", end: "2026-08-08" }
+          - { report: august, idx: "03", start: "2026-08-09", end: "2026-08-12" }
+          - { report: august, idx: "04", start: "2026-08-13", end: "2026-08-16" }
+          - { report: august, idx: "05", start: "2026-08-17", end: "2026-08-20" }
+          - { report: august, idx: "06", start: "2026-08-21", end: "2026-08-24" }
+          - { report: august, idx: "07", start: "2026-08-25", end: "2026-08-28" }
+          - { report: august, idx: "08", start: "2026-08-29", end: "2026-08-31" }
+          - { report: september, idx: "01", start: "2026-09-01", end: "2026-09-04" }
+          - { report: september, idx: "02", start: "2026-09-05", end: "2026-09-08" }
+          - { report: september, idx: "03", start: "2026-09-09", end: "2026-09-12" }
+          - { report: september, idx: "04", start: "2026-09-13", end: "2026-09-16" }
+          - { report: september, idx: "05", start: "2026-09-17", end: "2026-09-20" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - name: Process raw-data chunk
+        env:
+          TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
+          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
+        run: python scripts/reach_frequency_chunk_leafonly.py --from-date "${{ matrix.start }}" --to-date "${{ matrix.end }}" --out "${{ matrix.report }}-${{ matrix.idx }}.pkl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reach-${{ matrix.report }}-${{ matrix.idx }}
+          path: ${{ matrix.report }}-${{ matrix.idx }}.pkl
+          compression-level: 0
+          retention-days: 1
+
+  aggregate:
+    needs: chunk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: reach-august-*
+          path: august-chunks
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: reach-september-*
+          path: september-chunks
+          merge-multiple: true
+      - run: python scripts/reach_frequency_merge_leafonly.py --input august-chunks --out data/reach_frequency_august_2026.json --from-date 2026-08-01 --to-date 2026-08-31
+      - run: python scripts/reach_frequency_merge_leafonly.py --input september-chunks --out data/reach_frequency_september_1_20_2026.json --from-date 2026-09-01 --to-date 2026-09-20
+      - name: Commit export
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/reach_frequency_august_2026.json data/reach_frequency_september_1_20_2026.json
+          git diff --cached --quiet || git commit -m "Export August and September 2026 Reach Frequency"
+          git push
