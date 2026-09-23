@@ -53,7 +53,7 @@
     .hero {
       position: relative;
       overflow: hidden;
-      padding: 78px 24px 118px;
+      padding: 36px 24px 76px;
       border-bottom: 1px solid rgba(233, 228, 218, 0.72);
     }
 
@@ -95,17 +95,16 @@
     .hero-inner {
       position: relative;
       z-index: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 310px;
-      gap: 54px;
-      align-items: end;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 9px;
-      margin-bottom: 22px;
+      margin-bottom: 14px;
       color: var(--bronze);
       font-size: 11px;
       font-weight: 800;
@@ -123,77 +122,24 @@
     h1 {
       max-width: 860px;
       margin: 0;
-      font-size: clamp(44px, 7.3vw, 86px);
-      line-height: 0.92;
+      font-size: clamp(36px, 4.5vw, 58px);
+      line-height: 0.98;
       font-weight: 800;
       letter-spacing: -0.07em;
     }
 
     .hero-copy {
       max-width: 760px;
-      margin: 26px 0 0;
+      margin: 18px 0 0;
       color: var(--muted);
-      font-size: clamp(15px, 1.6vw, 18px);
-      line-height: 1.75;
-    }
-
-    .hero-summary {
-      padding: 26px;
-      border: 1px solid rgba(156, 107, 67, 0.16);
-      border-radius: 28px;
-      background: rgba(255, 255, 255, 0.72);
-      box-shadow: 0 20px 60px rgba(32, 35, 58, 0.07);
-      backdrop-filter: blur(18px);
-    }
-
-    .hero-summary__label {
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    .hero-summary__value {
-      margin-top: 10px;
-      font-size: 58px;
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: -0.07em;
-    }
-
-    .hero-summary__note {
-      margin-top: 11px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .hero-summary__status {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin-top: 20px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 750;
-    }
-
-    .hero-summary__status::before {
-      width: 8px;
-      height: 8px;
-      content: "";
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 0 5px rgba(47, 125, 90, 0.1);
+      font-size: clamp(14px, 1.4vw, 16px);
+      line-height: 1.55;
     }
 
     .content {
       position: relative;
       z-index: 2;
-      margin-top: -54px;
+      margin-top: -40px;
       padding: 0 24px 82px;
     }
 
@@ -490,19 +436,6 @@
     }
 
     @media (max-width: 900px) {
-      .hero {
-        padding-top: 58px;
-      }
-
-      .hero-inner {
-        grid-template-columns: 1fr;
-        gap: 30px;
-      }
-
-      .hero-summary {
-        max-width: 360px;
-      }
-
       .tools-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -519,7 +452,7 @@
 
     @media (max-width: 640px) {
       .hero {
-        padding: 48px 16px 96px;
+        padding: 32px 16px 68px;
       }
 
       .hero-copy {
@@ -577,12 +510,6 @@
         </p>
       </div>
 
-      <aside class="hero-summary" aria-label="Статус портала">
-        <div class="hero-summary__label">Инструментов в системе</div>
-        <div class="hero-summary__value">5</div>
-        <div class="hero-summary__note">Пять рабочих инструментов с общей навигацией.</div>
-        <div class="hero-summary__status">Портал работает</div>
-      </aside>
     </div>
   </header>
 

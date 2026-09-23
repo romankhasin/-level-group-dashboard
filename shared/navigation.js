@@ -95,12 +95,6 @@
       </div>`;
     grid.appendChild(card);
 
-    const value = document.querySelector('.hero-summary__value');
-    const note = document.querySelector('.hero-summary__note');
-    const heroCopy = document.querySelector('.hero-copy');
-    if (value) value.textContent = '4';
-    if (note) note.textContent = 'Четыре рабочих инструмента с общей навигацией.';
-    if (heroCopy) heroCopy.textContent = 'Отчёт по размещениям, охваты и частота, проверка креативов и новости рынка — в одной системе.';
   };
 
   document.querySelectorAll("[data-level-navigation]").forEach(renderNavigation);
