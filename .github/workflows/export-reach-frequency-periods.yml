@@ -8,6 +8,7 @@ on:
       - ".github/workflows/export-reach-frequency-periods.yml"
       - "scripts/reach_frequency_chunk_leafonly.py"
       - "scripts/reach_frequency_merge_leafonly.py"
+      - "scripts/reach_frequency_merge_projects_stream.py"
       - "scripts/export_reach_frequency_july_leaf.py"
       - "scripts/export_reach_frequency_july_fast.py"
 
@@ -79,8 +80,8 @@ jobs:
           pattern: reach-september-*
           path: september-chunks
           merge-multiple: true
-      - run: python scripts/reach_frequency_merge_leafonly.py --input august-chunks --out data/reach_frequency_august_2026.json --from-date 2026-08-01 --to-date 2026-08-31
-      - run: python scripts/reach_frequency_merge_leafonly.py --input september-chunks --out data/reach_frequency_september_1_20_2026.json --from-date 2026-09-01 --to-date 2026-09-20
+      - run: python scripts/reach_frequency_merge_projects_stream.py --input august-chunks --out data/reach_frequency_august_2026.json --from-date 2026-08-01 --to-date 2026-08-31
+      - run: python scripts/reach_frequency_merge_projects_stream.py --input september-chunks --out data/reach_frequency_september_1_20_2026.json --from-date 2026-09-01 --to-date 2026-09-20
       - name: Commit export
         run: |
           git config user.name "github-actions[bot]"

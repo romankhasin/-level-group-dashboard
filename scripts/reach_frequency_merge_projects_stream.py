@@ -14,6 +14,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--from-date", required=True)
+    parser.add_argument("--to-date", required=True)
     args = parser.parse_args()
 
     files = sorted(Path(args.input).rglob("*.pkl"))
@@ -47,9 +49,22 @@ def main() -> None:
             project_scopes.setdefault(name, project["scope"])
         del chunk
 
+    # Build the exact monthly Total in a separate streaming pass.  Do not keep
+    # per-project accumulators here: a full month has too many leaf bitmaps for
+    # a standard GitHub runner to hold at once.
+    total_devices = BitMap64()
+    for path in files:
+        with path.open("rb") as stream:
+            chunk = pickle.load(stream)
+        for project in chunk["projects"].values():
+            for bucket in [*project["channels"].values(), project["unclassified"]]:
+                total_devices |= bucket["devices"]
+        del chunk
+        gc.collect()
+
     rows = []
     project_items = list(project_scopes.items())
-    batch_size = 5
+    batch_size = 1
     for batch_start in range(0, len(project_items), batch_size):
         batch = project_items[batch_start:batch_start + batch_size]
         accumulators = {
@@ -92,12 +107,11 @@ def main() -> None:
     ))
 
     output_path = Path(args.out)
-    existing = json.loads(output_path.read_text(encoding="utf-8"))
-    total_reach = int(existing["total"]["reach"])
+    total_reach = len(total_devices)
     result = {
-        "period": {"from": "2026-07-01", "to": "2026-07-31"},
+        "period": {"from": args.from_date, "to": args.to_date},
         "projectId": project_id,
-        "method": "Target Ads Raw Data API v2; project-only streaming Roaring Bitmap unions; unchanged exact period Total reach reused from the previous calculation",
+        "method": "Target Ads Raw Data API v2; exact streaming Roaring Bitmap unions with bounded memory",
         "important": "Reach is deduplicated independently for Total and each project. Do not sum project Reach rows.",
         "channelClassificationVersion": "none-2026-08-19",
         "projectClassificationVersion": "v2-2026-08-19",
