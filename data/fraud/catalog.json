@@ -122,6 +122,39 @@
           "browserResolution",
           "fingerprint"
         ]
+      },
+      "monthlyPeriodMetrics": {
+        "version": 4,
+        "from": "2026-01-01",
+        "to": "2026-01-31",
+        "maxDays": 31,
+        "months": [
+          "2026-01"
+        ],
+        "pathTemplate": "53197618/clientid-periods/{from}.json",
+        "method": "exact-period-metrics-v4-cookie-segments",
+        "scope": "calendar-months-only"
+      },
+      "monthlySliceMetrics": {
+        "version": 1,
+        "from": "2026-01-01",
+        "to": "2026-01-31",
+        "maxDays": 31,
+        "months": [
+          "2026-01"
+        ],
+        "pathTemplate": "53197618/slices/{month}.json",
+        "method": "safe-daily-slices-v1",
+        "scope": "calendar-months-only",
+        "dimensions": [
+          "browser",
+          "resolution",
+          "os",
+          "deviceModel",
+          "referrer",
+          "browserResolution",
+          "fingerprint"
+        ]
       }
     },
     {
@@ -235,6 +268,39 @@
           "browserResolution",
           "fingerprint"
         ]
+      },
+      "monthlyPeriodMetrics": {
+        "version": 4,
+        "from": "2026-01-01",
+        "to": "2026-01-31",
+        "maxDays": 31,
+        "months": [
+          "2026-01"
+        ],
+        "pathTemplate": "100470605/clientid-periods/{from}.json",
+        "method": "exact-period-metrics-v4-cookie-segments",
+        "scope": "calendar-months-only"
+      },
+      "monthlySliceMetrics": {
+        "version": 1,
+        "from": "2026-01-01",
+        "to": "2026-01-31",
+        "maxDays": 31,
+        "months": [
+          "2026-01"
+        ],
+        "pathTemplate": "100470605/slices/{month}.json",
+        "method": "safe-daily-slices-v1",
+        "scope": "calendar-months-only",
+        "dimensions": [
+          "browser",
+          "resolution",
+          "os",
+          "deviceModel",
+          "referrer",
+          "browserResolution",
+          "fingerprint"
+        ]
       }
     }
   ],
@@ -243,5 +309,7 @@
   "clientIdPeriodsGeneratedAt": "2026-09-22T08:55:07.409984Z",
   "clientIdPeriodModel": "exact-period-metrics-v4-cookie-segments",
   "sliceMetricsGeneratedAt": "2026-09-22T08:55:07.409984Z",
-  "sliceMetricsModel": "safe-daily-slices-v1"
+  "sliceMetricsModel": "safe-daily-slices-v1",
+  "monthlyPeriodMetricsGeneratedAt": "2026-09-29T18:14:00.788981Z",
+  "monthlySliceMetricsGeneratedAt": "2026-09-29T18:14:00.788981Z"
 }
