@@ -1,6 +1,6 @@
 {
   "version": 4,
-  "generatedAt": "2026-09-22T08:45:00.664715Z",
+  "generatedAt": "2026-09-29T14:44:48.259714Z",
   "dataThrough": "2026-09-21",
   "refresh": "daily, previous 3 complete days",
   "campaignFilter": [
@@ -16,10 +16,17 @@
       "name": "level.ru",
       "site": "level.ru",
       "permission": "view",
-      "from": "2026-05-01",
+      "from": "2026-01-01",
       "to": "2026-09-21",
-      "visits": 2688523,
+      "visits": 2857723,
       "files": [
+        {
+          "month": "2026-01",
+          "path": "53197618/2026-01.json",
+          "from": "2026-01-01",
+          "to": "2026-01-31",
+          "visits": 169200
+        },
         {
           "month": "2026-05",
           "path": "53197618/2026-05.json",
@@ -101,10 +108,17 @@
       "name": "business.level.ru",
       "site": "business.level.ru",
       "permission": "view",
-      "from": "2026-05-01",
+      "from": "2026-01-01",
       "to": "2026-09-21",
-      "visits": 484512,
+      "visits": 492619,
       "files": [
+        {
+          "month": "2026-01",
+          "path": "100470605/2026-01.json",
+          "from": "2026-01-01",
+          "to": "2026-01-31",
+          "visits": 8107
+        },
         {
           "month": "2026-05",
           "path": "100470605/2026-05.json",
