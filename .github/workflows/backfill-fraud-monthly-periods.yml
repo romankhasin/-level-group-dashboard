@@ -1,0 +1,53 @@
+name: Backfill fraud calendar-month metrics
+
+on: workflow_dispatch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backfill-fraud-calendar-month-metrics
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: /tmp/fraud-python-cache
+      YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate period aggregation
+        run: |
+          python -m py_compile scripts/update_clientid_periods.py scripts/backfill_fraud_monthly_periods.py
+          python scripts/update_clientid_periods.py --self-test
+      - name: Backfill and publish each calendar month
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for month in 01 02 03 04; do
+            for attempt in 1 2 3; do
+              if python -u scripts/backfill_fraud_monthly_periods.py --month "2026-$month"; then
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "Calendar-month metrics failed for 2026-$month after 3 attempts"
+                exit 1
+              fi
+              echo "Retrying 2026-$month after a failed download"
+              sleep 30
+            done
+            git add data/fraud
+            if git diff --cached --quiet; then
+              echo "2026-$month is already published"
+            else
+              git commit -m "Backfill exact fraud metrics for 2026-$month"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            fi
+          done

@@ -670,7 +670,10 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
         previous = previous_counters.get(counter["id"], {})
         preserved_metrics = {
             key: previous[key]
-            for key in ("periodMetrics", "clientIdPeriods", "sliceMetrics")
+            for key in (
+                "periodMetrics", "clientIdPeriods", "sliceMetrics",
+                "monthlyPeriodMetrics", "monthlySliceMetrics",
+            )
             if key in previous
         }
         catalog_counters.append(
@@ -697,6 +700,7 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
         "periodMetricsGeneratedAt", "periodMetricsModel",
         "clientIdPeriodsGeneratedAt", "clientIdPeriodModel",
         "sliceMetricsGeneratedAt", "sliceMetricsModel",
+        "monthlyPeriodMetricsGeneratedAt", "monthlySliceMetricsGeneratedAt",
     ):
         if key in previous_catalog:
             catalog[key] = previous_catalog[key]
