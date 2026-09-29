@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 240
     env:
       PYTHONDONTWRITEBYTECODE: '1'
+      PYTHONPYCACHEPREFIX: /tmp/fraud-python-cache
       YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
       DATE_FROM: ${{ inputs.date_from }}
       DATE_TO: ${{ inputs.date_to }}
