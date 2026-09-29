@@ -1,16 +1,6 @@
 name: Backfill fraud analysis history
 
-on:
-  workflow_dispatch:
-    inputs:
-      date_from:
-        description: First historical date (YYYY-MM-DD)
-        required: true
-        default: '2026-01-01'
-      date_to:
-        description: Last historical date (YYYY-MM-DD)
-        required: true
-        default: '2026-04-30'
+on: workflow_dispatch
 
 permissions:
   contents: write
@@ -27,37 +17,65 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
       PYTHONPYCACHEPREFIX: /tmp/fraud-python-cache
       YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
-      DATE_FROM: ${{ inputs.date_from }}
-      DATE_TO: ${{ inputs.date_to }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Validate historical range and aggregation
+      - name: Validate aggregation
         run: |
           python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py
           python scripts/fraud_visit_classifier.py
           python scripts/update_fraud_data.py --self-test
-          python - <<'PY'
-          import datetime as dt
-          import os
-          first = dt.date.fromisoformat(os.environ['DATE_FROM'])
-          last = dt.date.fromisoformat(os.environ['DATE_TO'])
-          if not (dt.date(2026, 1, 1) <= first <= last <= dt.date(2026, 4, 30)):
-              raise SystemExit('This workflow only backfills January-April 2026')
-          PY
-      - name: Download and aggregate historical visits
-        run: python -u scripts/update_fraud_data.py --date-from "$DATE_FROM" --date-to "$DATE_TO"
-      - name: Publish historical aggregates
+      - name: Backfill and publish each month
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/fraud
-          if git diff --cached --quiet; then
-            echo "No historical aggregate changes"
-          else
-            git commit -m "Backfill January-April fraud aggregates"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
+          for month in 01 02 03 04; do
+            if python - "$month" <<'PY'
+          import calendar
+          import json
+          import sys
+          from pathlib import Path
+
+          month = int(sys.argv[1])
+          first = f"2026-{month:02d}-01"
+          last = f"2026-{month:02d}-{calendar.monthrange(2026, month)[1]}"
+          for counter_id in (53197618, 100470605):
+              path = Path(f"data/fraud/{counter_id}/2026-{month:02d}.json")
+              if not path.exists():
+                  raise SystemExit(1)
+              payload = json.loads(path.read_text(encoding="utf-8"))
+              if payload.get("from") != first or payload.get("to") != last:
+                  raise SystemExit(1)
+              if not payload.get("rows") or not payload.get("summary", {}).get("visits"):
+                  raise SystemExit(1)
+          PY
+            then
+              echo "2026-$month is already published"
+              continue
+            fi
+
+            date_from="2026-$month-01"
+            date_to="$(date -d "$date_from +1 month -1 day" +%F)"
+            for attempt in 1 2 3; do
+              if python -u scripts/update_fraud_data.py --date-from "$date_from" --date-to "$date_to"; then
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "Backfill failed for 2026-$month after 3 attempts"
+                exit 1
+              fi
+              echo "Retrying 2026-$month after a failed download"
+              sleep 30
+            done
+
+            git add data/fraud
+            if git diff --cached --quiet; then
+              echo "No changes for 2026-$month"
+            else
+              git commit -m "Backfill fraud aggregates for 2026-$month"
+              git pull --rebase origin main
+              git push origin HEAD:main
+            fi
+          done
