@@ -126,11 +126,12 @@
       "monthlyPeriodMetrics": {
         "version": 4,
         "from": "2026-01-01",
-        "to": "2026-02-28",
+        "to": "2026-03-31",
         "maxDays": 31,
         "months": [
           "2026-01",
-          "2026-02"
+          "2026-02",
+          "2026-03"
         ],
         "pathTemplate": "53197618/clientid-periods/{from}.json",
         "method": "exact-period-metrics-v4-cookie-segments",
@@ -139,11 +140,12 @@
       "monthlySliceMetrics": {
         "version": 1,
         "from": "2026-01-01",
-        "to": "2026-02-28",
+        "to": "2026-03-31",
         "maxDays": 31,
         "months": [
           "2026-01",
-          "2026-02"
+          "2026-02",
+          "2026-03"
         ],
         "pathTemplate": "53197618/slices/{month}.json",
         "method": "safe-daily-slices-v1",
@@ -274,11 +276,12 @@
       "monthlyPeriodMetrics": {
         "version": 4,
         "from": "2026-01-01",
-        "to": "2026-02-28",
+        "to": "2026-03-31",
         "maxDays": 31,
         "months": [
           "2026-01",
-          "2026-02"
+          "2026-02",
+          "2026-03"
         ],
         "pathTemplate": "100470605/clientid-periods/{from}.json",
         "method": "exact-period-metrics-v4-cookie-segments",
@@ -287,11 +290,12 @@
       "monthlySliceMetrics": {
         "version": 1,
         "from": "2026-01-01",
-        "to": "2026-02-28",
+        "to": "2026-03-31",
         "maxDays": 31,
         "months": [
           "2026-01",
-          "2026-02"
+          "2026-02",
+          "2026-03"
         ],
         "pathTemplate": "100470605/slices/{month}.json",
         "method": "safe-daily-slices-v1",
@@ -314,6 +318,6 @@
   "clientIdPeriodModel": "exact-period-metrics-v4-cookie-segments",
   "sliceMetricsGeneratedAt": "2026-09-22T08:55:07.409984Z",
   "sliceMetricsModel": "safe-daily-slices-v1",
-  "monthlyPeriodMetricsGeneratedAt": "2026-09-29T18:19:27.271507Z",
-  "monthlySliceMetricsGeneratedAt": "2026-09-29T18:19:27.271507Z"
+  "monthlyPeriodMetricsGeneratedAt": "2026-09-29T18:28:20.242629Z",
+  "monthlySliceMetricsGeneratedAt": "2026-09-29T18:28:20.242629Z"
 }
