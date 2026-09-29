@@ -1,0 +1,62 @@
+name: Backfill fraud analysis history
+
+on:
+  workflow_dispatch:
+    inputs:
+      date_from:
+        description: First historical date (YYYY-MM-DD)
+        required: true
+        default: '2026-01-01'
+      date_to:
+        description: Last historical date (YYYY-MM-DD)
+        required: true
+        default: '2026-04-30'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backfill-fraud-analysis-history
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      YANDEX_METRIKA_TOKEN: ${{ secrets.YANDEX_METRIKA_TOKEN }}
+      DATE_FROM: ${{ inputs.date_from }}
+      DATE_TO: ${{ inputs.date_to }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate historical range and aggregation
+        run: |
+          python -m py_compile scripts/fraud_visit_classifier.py scripts/update_fraud_data.py
+          python scripts/fraud_visit_classifier.py
+          python scripts/update_fraud_data.py --self-test
+          python - <<'PY'
+          import datetime as dt
+          import os
+          first = dt.date.fromisoformat(os.environ['DATE_FROM'])
+          last = dt.date.fromisoformat(os.environ['DATE_TO'])
+          if not (dt.date(2026, 1, 1) <= first <= last <= dt.date(2026, 4, 30)):
+              raise SystemExit('This workflow only backfills January-April 2026')
+          PY
+      - name: Download and aggregate historical visits
+        run: python -u scripts/update_fraud_data.py --date-from "$DATE_FROM" --date-to "$DATE_TO"
+      - name: Publish historical aggregates
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/fraud
+          if git diff --cached --quiet; then
+            echo "No historical aggregate changes"
+          else
+            git commit -m "Backfill January-April fraud aggregates"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi

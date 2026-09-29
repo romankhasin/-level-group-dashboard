@@ -630,6 +630,14 @@ def update_counter(
 
 
 def build_catalog(counters: list[dict], generated_at: str) -> dict:
+    previous_catalog = read_json(CATALOG_PATH, {})
+    if not isinstance(previous_catalog, dict):
+        previous_catalog = {}
+    previous_counters = {
+        item.get("id"): item
+        for item in previous_catalog.get("counters", [])
+        if isinstance(item, dict)
+    }
     catalog_counters = []
     for counter in counters:
         counter_dir = DATA_DIR / str(counter["id"])
@@ -659,6 +667,12 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
                         "visits": int(summary.get("visits") or 0),
                     }
                 )
+        previous = previous_counters.get(counter["id"], {})
+        preserved_metrics = {
+            key: previous[key]
+            for key in ("periodMetrics", "clientIdPeriods", "sliceMetrics")
+            if key in previous
+        }
         catalog_counters.append(
             {
                 **counter,
@@ -666,9 +680,10 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
                 "to": max(all_dates) if all_dates else "",
                 "visits": total_visits,
                 "files": files,
+                **preserved_metrics,
             }
         )
-    return {
+    catalog = {
         "version": DATA_VERSION,
         "generatedAt": generated_at,
         "dataThrough": max((item["to"] for item in catalog_counters), default=""),
@@ -678,6 +693,14 @@ def build_catalog(counters: list[dict], generated_at: str) -> dict:
         "privacy": "Public files contain daily aggregates only; raw IP, ClientID and VisitID are never committed.",
         "counters": catalog_counters,
     }
+    for key in (
+        "periodMetricsGeneratedAt", "periodMetricsModel",
+        "clientIdPeriodsGeneratedAt", "clientIdPeriodModel",
+        "sliceMetricsGeneratedAt", "sliceMetricsModel",
+    ):
+        if key in previous_catalog:
+            catalog[key] = previous_catalog[key]
+    return catalog
 
 
 def self_test() -> None:
