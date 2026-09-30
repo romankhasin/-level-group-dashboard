@@ -234,6 +234,58 @@ def compact_rows(rows: list[dict]) -> dict:
     return {"columns": columns, "dictionaries": dictionaries, "missing": missing, "data": data}
 
 
+def expand_compact_rows(value: object) -> list[dict]:
+    """Read both the old row list and the compact dashboard representation."""
+    if isinstance(value, list):
+        if not all(isinstance(row, dict) for row in value):
+            raise ValueError("Dashboard rows must be objects")
+        return value
+    if not isinstance(value, dict):
+        raise ValueError("Dashboard rows have an unknown format")
+
+    columns = value.get("columns")
+    data = value.get("data")
+    dictionaries = value.get("dictionaries", {})
+    missing = value.get("missing", {})
+    if (
+        not isinstance(columns, list)
+        or not all(isinstance(column, str) for column in columns)
+        or len(set(columns)) != len(columns)
+        or not isinstance(data, list)
+        or len(columns) != len(data)
+        or not isinstance(dictionaries, dict)
+        or not isinstance(missing, dict)
+    ):
+        raise ValueError("Invalid compact dashboard columns")
+
+    row_count = len(data[0]) if data else 0
+    if not all(isinstance(values, list) and len(values) == row_count for values in data):
+        raise ValueError("Invalid compact dashboard column lengths")
+    if any(
+        column not in columns
+        or not isinstance(indexes, list)
+        or any(not isinstance(index, int) or index < 0 or index >= row_count for index in indexes)
+        for column, indexes in missing.items()
+    ):
+        raise ValueError("Invalid compact dashboard missing values")
+
+    absent = {column: set(indexes) for column, indexes in missing.items()}
+    rows = [{} for _ in range(row_count)]
+    for column, values in zip(columns, data):
+        dictionary = dictionaries.get(column)
+        if dictionary is not None and not isinstance(dictionary, list):
+            raise ValueError("Invalid compact dashboard dictionary")
+        for index, cell in enumerate(values):
+            if index in absent.get(column, ()):
+                continue
+            if dictionary is not None:
+                if not isinstance(cell, int) or cell < -1 or cell >= len(dictionary):
+                    raise ValueError("Invalid compact dashboard dictionary index")
+                cell = None if cell == -1 else dictionary[cell]
+            rows[index][column] = cell
+    return rows
+
+
 def compact_row_count(rows: object) -> int:
     """Return a row count from either the legacy or compact representation."""
     if isinstance(rows, list):

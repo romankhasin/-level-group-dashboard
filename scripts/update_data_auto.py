@@ -54,9 +54,9 @@ def load_targetads_baseline(previous_latest: dict) -> tuple[dict, bool]:
     bootstrap_path.parent.mkdir(parents=True, exist_ok=True)
     base.download_file(PRE_DISABLE_LATEST_URL, bootstrap_path)
     bootstrap = read_json_object(bootstrap_path)
-    bootstrap_rows = bootstrap.get("verifierRows") or []
+    bootstrap_rows = base.expand_compact_rows(bootstrap.get("verifierRows"))
     bootstrap_to = parse_date((bootstrap.get("period") or {}).get("to"))
-    if not isinstance(bootstrap_rows, list) or not bootstrap_rows or not bootstrap_to:
+    if not bootstrap_rows or not bootstrap_to:
         raise RuntimeError("Could not load the pre-disable Target Ads dashboard baseline")
     return bootstrap, True
 
@@ -71,9 +71,9 @@ def targetads_incremental_rows(
     placements, creatives = base.fetch_targetads_metadata(token, project_id)
 
     baseline_latest, bootstrap_used = load_targetads_baseline(previous_latest)
-    previous_rows = baseline_latest.get("verifierRows") or []
-    if not isinstance(previous_rows, list):
-        previous_rows = []
+    previous_rows = base.expand_compact_rows(baseline_latest.get("verifierRows"))
+    if not previous_rows:
+        raise RuntimeError("Target Ads dashboard baseline has no verifier rows")
 
     previous_to = parse_date((baseline_latest.get("period") or {}).get("to"))
     if previous_to and previous_to < yesterday:
@@ -224,8 +224,8 @@ def main() -> None:
         "version": 1,
         "generatedAt": generated_at,
         "period": {"from": base.START_DATE.isoformat(), "to": yesterday.isoformat()},
-        "rawRows": metrika_rows,
-        "verifierRows": verifier_rows,
+        "rawRows": base.compact_rows(metrika_rows),
+        "verifierRows": base.compact_rows(verifier_rows),
         "sourceFile": "Автоматическая выгрузка Яндекс Метрики",
         "verifierFile": (
             "Target Ads Raw Data API v2 + Google Данные_метрика + "
