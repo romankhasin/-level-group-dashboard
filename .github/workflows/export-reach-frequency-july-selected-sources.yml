@@ -1,0 +1,64 @@
+name: Export July selected sources reach frequency
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chunk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - { idx: "01", start: "2026-07-01", end: "2026-07-04" }
+          - { idx: "02", start: "2026-07-05", end: "2026-07-08" }
+          - { idx: "03", start: "2026-07-09", end: "2026-07-12" }
+          - { idx: "04", start: "2026-07-13", end: "2026-07-16" }
+          - { idx: "05", start: "2026-07-17", end: "2026-07-20" }
+          - { idx: "06", start: "2026-07-21", end: "2026-07-24" }
+          - { idx: "07", start: "2026-07-25", end: "2026-07-28" }
+          - { idx: "08", start: "2026-07-29", end: "2026-07-31" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - name: Process raw impressions
+        env:
+          TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
+          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
+        run: python scripts/export_reach_frequency_july_selected_sources.py chunk --from-date "${{ matrix.start }}" --to-date "${{ matrix.end }}" --out "july-${{ matrix.idx }}.pkl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: july-selected-${{ matrix.idx }}
+          path: july-${{ matrix.idx }}.pkl
+          compression-level: 0
+          retention-days: 2
+
+  aggregate:
+    needs: chunk
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: july-selected-*
+          path: july-selected-chunks
+          merge-multiple: true
+      - run: python scripts/export_reach_frequency_july_selected_sources.py merge --input july-selected-chunks --out data/reach_frequency_july_2026_selected_sources.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reach-frequency-july-2026-selected-sources
+          path: data/reach_frequency_july_2026_selected_sources.json
+          retention-days: 7
