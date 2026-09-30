@@ -1,0 +1,28 @@
+name: Export July selected sources via aggregate API
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check pyroaring==1.1.0
+      - name: Query July source reach
+        env:
+          TARGETADS_TOKEN: ${{ secrets.TARGETADS_TOKEN }}
+          TARGETADS_PROJECT_ID: ${{ secrets.TARGETADS_PROJECT_ID }}
+        run: python scripts/export_reach_frequency_july_selected_sources_agg.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reach-frequency-july-2026-selected-sources-agg
+          path: data/reach_frequency_july_2026_selected_sources.json
+          retention-days: 7
