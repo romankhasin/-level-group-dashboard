@@ -8116,7 +8116,9 @@ body.help-open { overflow: hidden; }
         if (totalCtrElement) { totalCtrElement.textContent = "—"; totalCtrElement.className = "kpi-value"; }
         const totalPiElement = document.getElementById("totalPi");
         if (totalPiElement) { totalPiElement.textContent = "—"; totalPiElement.className = "kpi-value"; }
-        document.getElementById("periodBadge").textContent = "Файл не загружен";
+        document.getElementById("periodBadge").textContent = RAW_ROWS
+          ? "За выбранный период нет данных"
+          : "Файл не загружен";
         fitSummaryKpiValues();
         return;
       }
@@ -9088,8 +9090,11 @@ body.help-open { overflow: hidden; }
       } catch (error) {
         DATA = null;
         currentProjects = [];
-        status.textContent = `Ошибка: ${error.message}`;
-        status.style.color = "var(--red)";
+        const noRowsForPeriod = error.message.startsWith("В выбранной выгрузке не найдены данные режима ");
+        status.textContent = noRowsForPeriod ? error.message : `Ошибка: ${error.message}`;
+        status.style.color = noRowsForPeriod
+          ? "var(--muted)"
+          : "var(--red)";
         renderSummary();
         render();
       }
