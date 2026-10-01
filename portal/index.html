@@ -47,19 +47,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* фоновая панорама набережной — декоративная, очень прозрачная, чтобы не отвлекать от контента */
-    body::before {
-      position: fixed;
-      inset: 0;
-      content: "";
-      background-image: url("panorama.svg");
-      background-repeat: no-repeat;
-      background-position: center bottom;
-      background-size: min(1600px, 140vw) auto;
-      opacity: 0.05;
-      pointer-events: none;
-    }
-
     a {
       color: inherit;
     }
