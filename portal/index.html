@@ -35,6 +35,7 @@
     }
 
     body {
+      position: relative;
       margin: 0;
       min-height: 100vh;
       color: var(--ink);
@@ -44,6 +45,19 @@
         linear-gradient(145deg, #ffffff 0%, #f7f4ef 58%, #f4f8fb 100%);
       font-family: "Montserrat", Arial, sans-serif;
       font-variant-numeric: tabular-nums;
+    }
+
+    /* фоновая панорама набережной — декоративная, очень прозрачная, чтобы не отвлекать от контента */
+    body::before {
+      position: fixed;
+      inset: 0;
+      content: "";
+      background-image: url("panorama.svg");
+      background-repeat: no-repeat;
+      background-position: center bottom;
+      background-size: min(1600px, 140vw) auto;
+      opacity: 0.05;
+      pointer-events: none;
     }
 
     a {
@@ -170,19 +184,19 @@
 
     .tools-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
     }
 
     .tool-card {
       position: relative;
-      min-height: 282px;
+      min-height: 196px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      padding: 22px;
+      padding: 16px;
       border: 1px solid rgba(233, 228, 218, 0.94);
-      border-radius: 26px;
+      border-radius: 18px;
       background: rgba(255, 255, 255, 0.92);
       box-shadow: var(--shadow);
       text-decoration: none;
@@ -191,10 +205,10 @@
 
     .tool-card::after {
       position: absolute;
-      width: 180px;
-      height: 180px;
-      right: -74px;
-      bottom: -88px;
+      width: 120px;
+      height: 120px;
+      right: -50px;
+      bottom: -58px;
       content: "";
       border-radius: 50%;
       background: var(--card-accent, rgba(221, 236, 246, 0.48));
@@ -239,6 +253,10 @@
       --card-accent: rgba(79, 209, 197, 0.22);
     }
 
+    .tool-card--reach {
+      --card-accent: rgba(156, 107, 67, 0.16);
+    }
+
     .tool-card--disabled {
       cursor: default;
       background: rgba(255, 255, 255, 0.62);
@@ -258,19 +276,19 @@
     }
 
     .tool-card__icon {
-      width: 44px;
-      height: 44px;
+      width: 34px;
+      height: 34px;
       display: grid;
       place-items: center;
       border: 1px solid rgba(156, 107, 67, 0.14);
-      border-radius: 14px;
+      border-radius: 11px;
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(247, 244, 239, 0.8));
       box-shadow: 0 12px 32px rgba(32, 35, 58, 0.07);
     }
 
     .tool-card__icon svg {
-      width: 21px;
-      height: 21px;
+      width: 16px;
+      height: 16px;
       fill: none;
       stroke: currentColor;
       stroke-width: 1.8;
@@ -312,64 +330,64 @@
       display: flex;
       flex: 1;
       flex-direction: column;
-      margin-top: 26px;
+      margin-top: 16px;
     }
 
     .tool-card__category {
       color: var(--bronze);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 800;
       letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
     .tool-card h3 {
-      margin: 8px 0 0;
-      font-size: clamp(21px, 2vw, 28px);
-      line-height: 1.08;
+      margin: 6px 0 0;
+      font-size: clamp(16px, 1.4vw, 19px);
+      line-height: 1.1;
       font-weight: 800;
-      letter-spacing: -0.06em;
+      letter-spacing: -0.05em;
     }
 
     .tool-card__description {
       max-width: 510px;
-      margin: 12px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
-      font-size: 11px;
-      line-height: 1.55;
+      font-size: 10px;
+      line-height: 1.5;
     }
 
     .tool-card__features {
       display: flex;
       flex-wrap: wrap;
-      gap: 7px;
-      margin-top: 16px;
+      gap: 6px;
+      margin-top: 12px;
     }
 
     .tool-card__feature {
-      padding: 6px 8px;
+      padding: 5px 7px;
       border: 1px solid rgba(233, 228, 218, 0.92);
       border-radius: 999px;
       color: var(--muted);
       background: rgba(247, 244, 239, 0.54);
-      font-size: 8px;
+      font-size: 7.5px;
       font-weight: 700;
     }
 
     .tool-card__action {
       display: inline-flex;
       align-items: center;
-      gap: 9px;
+      gap: 8px;
       margin-top: auto;
-      padding-top: 18px;
+      padding-top: 12px;
       color: var(--ink);
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 800;
     }
 
     .tool-card__action svg {
-      width: 16px;
-      height: 16px;
+      width: 14px;
+      height: 14px;
       fill: none;
       stroke: currentColor;
       stroke-width: 2;
@@ -439,6 +457,12 @@
       color: var(--ink);
     }
 
+    @media (max-width: 1100px) {
+      .tools-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 900px) {
       .tools-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -469,9 +493,9 @@
       }
 
       .tool-card {
-        min-height: 282px;
-        padding: 22px;
-        border-radius: 26px;
+        min-height: 196px;
+        padding: 16px;
+        border-radius: 18px;
       }
 
       .tools-grid {
@@ -563,6 +587,26 @@
         </div>
       </a>
 
+      <a class="tool-card tool-card--taskflow" href="https://taskflow.111.88.146.67.sslip.io/" target="_blank" rel="noopener">
+        <div class="tool-card__top">
+          <span class="tool-card__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 8h8"/><path d="M8 12h5"/><path d="M8 16h7"/><path d="m5.5 8 .5.5 1-1"/><path d="m5.5 12 .5.5 1-1"/><path d="m5.5 16 .5.5 1-1"/></svg>
+          </span>
+          <span class="tool-card__status">Работает</span>
+        </div>
+        <div class="tool-card__bottom">
+          <span class="tool-card__category">Управление задачами</span>
+          <h3>Task Flow</h3>
+          <p class="tool-card__description">Единый пул задач команды и клиента: направления работ, ответственные, дедлайны и актуальные статусы.</p>
+          <div class="tool-card__features">
+            <span class="tool-card__feature">Задачи</span>
+            <span class="tool-card__feature">Дедлайны</span>
+            <span class="tool-card__feature">Статусы</span>
+          </div>
+          <span class="tool-card__action">Открыть Task Flow <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+        </div>
+      </a>
+
       <a class="tool-card tool-card--calendar" href="https://romankhasin.github.io/calendar-activity/" target="_blank" rel="noopener">
         <div class="tool-card__top">
           <span class="tool-card__icon" aria-hidden="true">
@@ -583,23 +627,23 @@
         </div>
       </a>
 
-      <a class="tool-card tool-card--creative" href="https://creative-quality-checker-one.vercel.app/" target="_blank" rel="noopener">
+      <a class="tool-card tool-card--reach" data-tool="reach" href="https://romankhasin.github.io/level-reach-frequency-report/" target="_blank" rel="noopener">
         <div class="tool-card__top">
           <span class="tool-card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 16 3-3 2 2 3-4 2 2"/><circle cx="9" cy="8" r="1.5"/></svg>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/><path d="M4 12H2"/><path d="M22 12h-2"/></svg>
           </span>
           <span class="tool-card__status">Работает</span>
         </div>
         <div class="tool-card__bottom">
-          <span class="tool-card__category">Контроль качества</span>
-          <h3>Проверка креативов</h3>
-          <p class="tool-card__description">Проверка сетки, дисклеймеров, юридической информации и общего качества рекламных материалов перед запуском.</p>
+          <span class="tool-card__category">Охват и частота</span>
+          <h3>Охваты</h3>
+          <p class="tool-card__description">Дедуплицированный Reach и Frequency по Level Group, объектам и медиаканалам на основе Device ID из Target Ads.</p>
           <div class="tool-card__features">
-            <span class="tool-card__feature">OCR</span>
-            <span class="tool-card__feature">Сетка</span>
-            <span class="tool-card__feature">ИИ-комментарии</span>
+            <span class="tool-card__feature">Total Level Group</span>
+            <span class="tool-card__feature">По объектам</span>
+            <span class="tool-card__feature">По каналам</span>
           </div>
-          <span class="tool-card__action">Открыть проверку <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+          <span class="tool-card__action">Открыть отчёт <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
 
@@ -623,23 +667,23 @@
         </div>
       </a>
 
-      <a class="tool-card tool-card--taskflow" href="https://taskflow.111.88.146.67.sslip.io/" target="_blank" rel="noopener">
+      <a class="tool-card tool-card--creative" href="https://creative-quality-checker-one.vercel.app/" target="_blank" rel="noopener">
         <div class="tool-card__top">
           <span class="tool-card__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M8 8h8"/><path d="M8 12h5"/><path d="M8 16h7"/><path d="m5.5 8 .5.5 1-1"/><path d="m5.5 12 .5.5 1-1"/><path d="m5.5 16 .5.5 1-1"/></svg>
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m7 16 3-3 2 2 3-4 2 2"/><circle cx="9" cy="8" r="1.5"/></svg>
           </span>
           <span class="tool-card__status">Работает</span>
         </div>
         <div class="tool-card__bottom">
-          <span class="tool-card__category">Управление задачами</span>
-          <h3>Task Flow</h3>
-          <p class="tool-card__description">Единый пул задач команды и клиента: направления работ, ответственные, дедлайны и актуальные статусы.</p>
+          <span class="tool-card__category">Контроль качества</span>
+          <h3>Проверка креативов</h3>
+          <p class="tool-card__description">Проверка сетки, дисклеймеров, юридической информации и общего качества рекламных материалов перед запуском.</p>
           <div class="tool-card__features">
-            <span class="tool-card__feature">Задачи</span>
-            <span class="tool-card__feature">Дедлайны</span>
-            <span class="tool-card__feature">Статусы</span>
+            <span class="tool-card__feature">OCR</span>
+            <span class="tool-card__feature">Сетка</span>
+            <span class="tool-card__feature">ИИ-комментарии</span>
           </div>
-          <span class="tool-card__action">Открыть Task Flow <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
+          <span class="tool-card__action">Открыть проверку <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg></span>
         </div>
       </a>
 
