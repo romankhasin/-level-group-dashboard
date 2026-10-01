@@ -3764,7 +3764,7 @@ body.help-open { overflow: hidden; }
           <div>
             <h2>Медиаплан</h2>
             <p>Загрузите Excel с плановыми показами, кликами и бюджетами. Дашборд рассчитает плановые CPM/CPC и фактический расход по показам Target Ads.</p>
-            <div class="status" id="mediaPlanStatus">Для факта сентября используются Метрика и Target Ads; для плановых KPI загрузите медиаплан сентября. Пока встроен план августа 2026.</div>
+            <div class="status" id="mediaPlanStatus">Для факта октября используются Метрика и Target Ads. План октября пока не подключён; план сентября к октябрьским фактам не применяется.</div>
           </div>
           <div class="upload-actions vertical">
             <label class="file-button" for="mediaPlanFile">Загрузить медиаплан</label>
@@ -4056,7 +4056,7 @@ body.help-open { overflow: hidden; }
       "lwnizh-rmsk": "Нижегородская Коммерция",
       "lwnizh": "Нижегородская Коммерция",
       "lmech-rspb": "Мечникова",
-      "ak": "Академический",
+      "ak": "Академическая",
       "sav17": "Саввинская",
       "lb": "Бауманская",
       "lvol": "Волга",
@@ -4084,6 +4084,8 @@ body.help-open { overflow: hidden; }
       "adspector": "Adspector",
       "ozon": "Ozon",
       "yandex": "Яндекс",
+      "yandex-prime": "Яндекс Прайм",
+      "yandexpanorama": "Яндекс Панорама",
       "yandex-pogoda": "Яндекс Погода",
       "yandexeda": "Яндекс Еда",
       "yandexgo": "Яндекс Go",
@@ -4124,6 +4126,9 @@ body.help-open { overflow: hidden; }
       "soloway": "Soloway",
       "vox": "VOX",
       "voxexchange": "VOX",
+      "bidease": "Bidease",
+      "hhru": "hh.ru",
+      "bfm": "Business FM",
       "adsheads": "AdHeads",
       "first-data": "First Data",
       "fontanka": "Фонтанка",
@@ -4212,8 +4217,8 @@ body.help-open { overflow: hidden; }
           <div class="help-source-grid">
             <article class="help-source-card"><strong>Яндекс Метрика</strong><span>Автоматически через API по пяти счётчикам: 53197618, 100470605, 110064588, 110064048 и 102348376. Забираются дата, UTM Campaign, визиты, отказы, среднее время на сайте и первично-качественные звонки. Точность запроса — full.</span><em>Автоматически</em></article>
             <article class="help-source-card"><strong>Google / Excel «Данные_метрика»</strong><span>Показы, клики и фактическая стоимость для согласованных размещений Yandex, MTS и Avito. Строки объединяются по дате и technical_mark. Фактическая стоимость без НДС приводится к сумме с НДС × 1,22.</span><em>Автоматически</em></article>
-            <article class="help-source-card"><strong>Target Ads</strong><span>Сейчас API-обновление отключено. CSV верификатора загружается вручную и добавляет IVT/GIVT/SIVT, а также доступные показы и клики. Для Yandex/MTS факты из Google имеют приоритет.</span><em>Вручную</em></article>
-            <article class="help-source-card"><strong>Медиаплан</strong><span>Встроен план сентября 2026 по PRG и MED/MRK. Его можно заменить вручную Excel-файлом; показы, клики и бюджет распределяются равномерно по выбранным дням месяца.</span><em>Встроен / вручную</em></article>
+            <article class="help-source-card"><strong>Target Ads</strong><span>Автоматическая выгрузка добавляет показы, клики и доступные показатели IVT/GIVT/SIVT. Для Yandex/MTS факты из Google имеют приоритет.</span><em>Автоматически</em></article>
+            <article class="help-source-card"><strong>Медиаплан</strong><span>Встроен план сентября 2026 по PRG и MED/MRK. Для октября план пока не подключён: сентябрьские плановые KPI к нему не применяются.</span><em>Сентябрь</em></article>
             <article class="help-source-card"><strong>Журнал оптимизаций</strong><span>Лист «Дневник оптимизации» из рабочего Google-файла: проект, канал, площадка, период, комментарии и дальнейшие действия.</span><em>Автоматически</em></article>
             <article class="help-source-card"><strong>ARTCL</strong><span>Встроенные выгрузки Яндекс ПромоСтраниц и Дзена. Этот режим использует собственные показатели статей, дочитываний, переходов и подписок.</span><em>Встроенные файлы</em></article>
           </div>
@@ -4402,8 +4407,8 @@ body.help-open { overflow: hidden; }
     let VERIFIER_FILE = "";
     let currentProjects = [];
     const DEFAULT_REPORT_PERIOD = {
-      from: "2026-09-01",
-      to: "2026-09-30"
+      from: "2026-10-01",
+      to: "2026-10-31"
     };
     let PERIOD_FILTER = { ...DEFAULT_REPORT_PERIOD };
     let RANGE_PICKER_STATE = {
@@ -5281,12 +5286,14 @@ body.help-open { overflow: hidden; }
       }
 
       // Special case: остаточные кампании.
-      // Любой токен "last" в UTM означает объект Остатки.
+      // Любой токен "last" означает Остатки. В октябрьском UTM-конструкторе
+      // кампании lg_..._silver_oct26 также отнесены к Остаткам.
       // Примеры:
       // lg_last_yandex_msk_banner → Остатки / Яндекс / Баннер
       // last_yandex_msk_banner → Остатки / Яндекс / Баннер
       // sp_yandex_last_banner → Остатки / Яндекс / Баннер
-      if (tokens.includes("last")) {
+      const isOctoberSilverLeftover = tokens[0] === "lg" && tokens.includes("silver") && tokens.includes("oct26");
+      if (tokens.includes("last") || isOctoberSilverLeftover) {
         projectCode = "last";
 
         const lastIndex = tokens.indexOf("last");
@@ -9500,10 +9507,16 @@ body.help-open { overflow: hidden; }
 
       tail = tail.filter(token => !service.has(token));
 
-      // По текущей UTM-логике: предпоследний содержательный токен = креатив, последний = аудиторный сегмент.
-      // Пример: ..._cozy-home_real-estate_prg → creative=cozy-home, audience=real-estate.
+      // В октябрьском UTM-конструкторе после oct26 идут креатив, УТП и аудитория.
+      // Более ранние месяцы сохраняют прежнее правило двух последних токенов.
       let audienceCode = tail.length >= 1 ? tail[tail.length - 1] : "no-audience";
       let creativeCode = tail.length >= 2 ? tail[tail.length - 2] : "no-creative";
+      const octoberIndex = tokens.indexOf("oct26");
+      if (octoberIndex >= 0) {
+        const octoberTail = tokens.slice(octoberIndex + 1, endIndex).filter(token => !service.has(token));
+        audienceCode = octoberTail.length ? octoberTail[octoberTail.length - 1] : "no-audience";
+        creativeCode = octoberTail.length >= 3 ? octoberTail[0] : "no-creative";
+      }
 
       return {
         ...parsed,
